@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> Smart rockets </title>
+
+        <link rel="stylesheet" href="styles/styles.css">
+        <link rel="stylesheet" href="../shared/styles/styles.css">
+
+        <!-- BOOTSTRAP WITH ICONS -->
+        <link rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+            crossorigin="anonymous">
+
+        <script src="../shared/p5/p5.js"></script>
+        <script src="../shared/scripts/utils.js"></script>
+        <script src="../shared/scripts/mathematics.js"></script>
+        <script src="../shared/scripts/website.js"></script>
+        <script src="../shared/scripts/storageManager.js"></script>
+
+        <script src="scripts/projectData.js"></script>
+        <script src="scripts/obstacle.js"></script>
+        <script src="scripts/dna.js"></script>
+        <script src="scripts/rocket.js"></script>
+        <script src="scripts/genetics.js"></script>
+
+
+        <script src="scripts/main.js"></script>
+        <script src="scripts/settingsPanel.js"></script>
+    </head>
+    <body>
+        <!-- GENERATED BUTTONS -->
+
+        <div class="backButton noselect" id="backButton"
+            onclick="backToMainWebsite()">
+            Back
+        </div>
+        <div class="openPanelButton noselect" id="openPanelButton"
+            onclick="openSettings();">
+            Open settings
+        </div>
+        <!-- GENERATED SETTINGS PANEL -->
+
+        <div id="settingsPanel" class="panel allTransition">
+            <div class="closeButton noselect" onclick="closeSettings(); ">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+            <div class="container text-center">
+                <div class="row">
+                    <h2>
+                        Settings
+                    </h2>
+                </div>
+                <div class="row customTabNav">
+                    <div class="col-4 noselect tabDiv activeTab"
+                        onclick="tabClick(this)"
+                        data-tabname="look">
+                        Look
+                    </div>
+                    <div class="col-4 noselect tabDiv "
+                        onclick="tabClick(this)"
+                        data-tabname="genetics">
+                        Genetics
+                    </div>
+                    <div class="col-4 noselect tabDiv "
+                        onclick="tabClick(this)"
+                        data-tabname="debug">
+                        Debug
+                    </div>
+                </div>
+            </div>
+            <!-- Generated tab for Look. -->
+            <div id="lookTab" class="tabContent">
+
+
+                <!-- Generated section for Canvas. -->
+                <h4><i>
+                        Canvas
+                    </i></h4>
+
+                <!-- Generated slider for canvasWidth. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="canvasWidthSlider"
+                            class="noselect"> width </label><br>
+                        <input type="range" min="200" max="1000" step="10"
+                            value="600" class="form-range"
+                            id="canvasWidthSlider"
+                            data-variable="canvasWidth"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="canvasWidth">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="canvasWidthText"
+                                data-variable="canvasWidth">600
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="canvasWidth">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for canvasHeight. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="canvasHeightSlider"
+                            class="noselect"> height </label><br>
+                        <input type="range" min="200" max="1000" step="10"
+                            value="600" class="form-range"
+                            id="canvasHeightSlider"
+                            data-variable="canvasHeight"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="canvasHeight">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="canvasHeightText"
+                                data-variable="canvasHeight">600
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="canvasHeight">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated section for Colors. -->
+                <h4><i>
+                        Colors
+                    </i></h4>
+
+                <!-- Generated color for backgroundColor. -->
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        background
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#646464" class="form-range"
+                            id="backgroundColorInput"
+                            data-variable="backgroundColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+                <!-- Generated color for rocketColor. -->
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        rocket
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#03b1fc" class="form-range"
+                            id="rocketColorInput"
+                            data-variable="rocketColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+                <!-- Generated color for eliteRocketColor. -->
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        elite rocket
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#fc0339" class="form-range"
+                            id="eliteRocketColorInput"
+                            data-variable="eliteRocketColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+                <!-- Generated color for obstacleColor. -->
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        obstacles
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#611196" class="form-range"
+                            id="obstacleColorInput"
+                            data-variable="obstacleColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+                <!-- Generated color for targetColor. -->
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        target
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#12751a" class="form-range"
+                            id="targetColorInput"
+                            data-variable="targetColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Generated tab for Genetics. -->
+            <div id="geneticsTab" class="tabContent" hidden>
+
+
+                <!-- Generated section for Population. -->
+                <h4><i>
+                        Population
+                    </i></h4>
+
+                <!-- Generated slider for populationSize. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="populationSizeSlider"
+                            class="noselect"> size </label><br>
+                        <input type="range" min="10" max="1000" step="10"
+                            value="120" class="form-range"
+                            id="populationSizeSlider"
+                            data-variable="populationSize"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="populationSize">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="populationSizeText"
+                                data-variable="populationSize">120
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="populationSize">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for eliteUnits. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="eliteUnitsSlider"
+                            class="noselect"> elite units </label><br>
+                        <input type="range" min="0" max="100" step="1"
+                            value="10" class="form-range"
+                            id="eliteUnitsSlider"
+                            data-variable="eliteUnits"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="eliteUnits">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="eliteUnitsText"
+                                data-variable="eliteUnits">10
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="eliteUnits">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for mutationChance. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="mutationChanceSlider"
+                            class="noselect"> mutation chance </label><br>
+                        <input type="range" min="0.0" max="1.0" step="0.01"
+                            value="0.01" class="form-range"
+                            id="mutationChanceSlider"
+                            data-variable="mutationChance"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="mutationChance">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="mutationChanceText"
+                                data-variable="mutationChance">0.01
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="mutationChance">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for bestGenesStrength. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="bestGenesStrengthSlider"
+                            class="noselect"> stronges influence </label><br>
+                        <input type="range" min="1" max="250" step="1"
+                            value="100" class="form-range"
+                            id="bestGenesStrengthSlider"
+                            data-variable="bestGenesStrength"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="bestGenesStrength">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="bestGenesStrengthText"
+                                data-variable="bestGenesStrength">100
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="bestGenesStrength">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated section for Unit. -->
+                <h4><i>
+                        Unit
+                    </i></h4>
+
+                <!-- Generated slider for lifespan. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="lifespanSlider"
+                            class="noselect"> lifespan </label><br>
+                        <input type="range" min="10" max="2000" step="10"
+                            value="250" class="form-range"
+                            id="lifespanSlider"
+                            data-variable="lifespan"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="lifespan">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="lifespanText"
+                                data-variable="lifespan">250
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="lifespan">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for maxForce. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="maxForceSlider"
+                            class="noselect"> max force </label><br>
+                        <input type="range" min="0" max="5.0" step="0.01"
+                            value="0.35" class="form-range"
+                            id="maxForceSlider"
+                            data-variable="maxForce"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxForce">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="maxForceText"
+                                data-variable="maxForce">0.35
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxForce">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for maxVelocity. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="maxVelocitySlider"
+                            class="noselect"> max velocity </label><br>
+                        <input type="range" min="2.0" max="20.0" step="0.1"
+                            value="4.0" class="form-range"
+                            id="maxVelocitySlider"
+                            data-variable="maxVelocity"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxVelocity">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="maxVelocityText"
+                                data-variable="maxVelocity">4.0
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxVelocity">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated section for Fitness. -->
+                <h4><i>
+                        Fitness
+                    </i></h4>
+
+                <!-- Generated slider for distanceFactor. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="distanceFactorSlider"
+                            class="noselect"> distance factor </label><br>
+                        <input type="range" min="1" max="100" step="1"
+                            value="1" class="form-range"
+                            id="distanceFactorSlider"
+                            data-variable="distanceFactor"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="distanceFactor">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="distanceFactorText"
+                                data-variable="distanceFactor">1
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="distanceFactor">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for speedFactor. -->
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="speedFactorSlider"
+                            class="noselect"> time factor </label><br>
+                        <input type="range" min="1" max="100" step="1"
+                            value="10" class="form-range"
+                            id="speedFactorSlider"
+                            data-variable="speedFactor"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="speedFactor">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="speedFactorText"
+                                data-variable="speedFactor">10
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="speedFactor">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Generated tab for Debug. -->
+            <div id="debugTab" class="tabContent" hidden>
+
+
+                <!-- Generated checkbox for showDebug. -->
+                <div class="row pb-2 pt-1">
+                    <div class="col-8 noselect controlPanelText">
+                        time
+
+                    </div>
+                    <div class="col-4">
+                        <input class="form-check-input" type="checkbox"
+                            value="" aria-label="time"
+                            id="showDebugCheckbox"
+                            onchange="checkboxChange(this)"
+                            checked
+                            data-variable="showDebug">
+                    </div>
+                </div>
+
+                <!-- Generated checkbox for showPopulationDebug. -->
+                <div class="row pb-2 pt-1">
+                    <div class="col-8 noselect controlPanelText">
+                        population
+
+                    </div>
+                    <div class="col-4">
+                        <input class="form-check-input" type="checkbox"
+                            value="" aria-label="population"
+                            id="showPopulationDebugCheckbox"
+                            onchange="checkboxChange(this)"
+                            checked
+                            data-variable="showPopulationDebug">
+                    </div>
+                </div>
+
+                <!-- Generated checkbox for showRocketDebug. -->
+                <div class="row pb-2 pt-1">
+                    <div class="col-8 noselect controlPanelText">
+                        all units
+
+                    </div>
+                    <div class="col-4">
+                        <input class="form-check-input" type="checkbox"
+                            value="" aria-label="all units"
+                            id="showRocketDebugCheckbox"
+                            onchange="checkboxChange(this)"
+                            data-variable="showRocketDebug">
+                    </div>
+                </div>
+
+                <!-- Generated checkbox for showBestDebug. -->
+                <div class="row pb-2 pt-1">
+                    <div class="col-8 noselect controlPanelText">
+                        best unit
+
+                    </div>
+                    <div class="col-4">
+                        <input class="form-check-input" type="checkbox"
+                            value="" aria-label="best unit"
+                            id="showBestDebugCheckbox"
+                            onchange="checkboxChange(this)"
+                            data-variable="showBestDebug">
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <!-- END OF SETTINGS PANEL -->
+
+
+
+    </body>
+</html>

@@ -1,0 +1,57 @@
+﻿body {
+	margin: 0;
+	background: #0e4810 !important;
+	overflow: hidden;
+	text-align: center;
+}
+
+html {
+	min-width: 500px;
+}
+
+.trafficCanvas {
+	background: rgb(36, 36, 36);
+
+	margin: 0;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.customTabNav {
+	margin-top: 12px !important;
+}
+
+.tabDiv {
+	/* padding: 4px 0; */
+	color: rgb(175, 175, 175);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgb(45, 45, 45);
+	border-radius: 8px 8px 0 0;
+}
+
+.tabDiv:hover {
+	cursor: pointer;
+	filter: brightness(80%);
+}
+
+.activeTab {
+	background-color: rgb(25, 25, 25);
+}
+
+.tabContent {
+	padding: 12px;
+	padding-right: 24px;
+	background-color: rgb(25, 25, 25);
+	height: 100%;
+}
+
+.localStorageButtonsConainter {
+	position: absolute;
+	bottom: 20px;
+	width: 100%;
+}

@@ -1,0 +1,258 @@
+.openPanelButton {
+    width: 150px;
+    height: 40px;
+    border-radius: 0px 0px 0px 10px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 100;
+
+    text-align: center;
+    line-height: 32px;
+    font-size: 16px;
+    color: rgb(188, 188, 188);
+    background-color: rgb(45, 45, 45);
+}
+
+.openPanelButton:hover {
+    cursor: pointer;
+    line-height: 34px;
+    font-size: 18px;
+    background-color: rgb(25, 25, 25);
+}
+
+.backButton {
+    width: 150px;
+    height: 40px;
+    border-radius: 0px 0px 10px 0px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+
+    text-align: center;
+    line-height: 32px;
+    font-size: 16px;
+    color: rgb(188, 188, 188);
+    background-color: rgb(45, 45, 45);
+}
+
+.backButton:hover {
+    cursor: pointer;
+    line-height: 34px;
+    font-size: 18px;
+    background-color: rgb(25, 25, 25);
+}
+
+
+.closeButton {
+    background-color: rgb(45, 45, 45);
+    border-radius: 0px 0px 10px 0px;
+
+
+    width: 70px;
+    height: 43px;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    text-align: center;
+    line-height: 36px;
+    font-size: 36px;
+}
+
+.closeButton:hover {
+    cursor: pointer;
+    line-height: 36px;
+    font-size: 42px;
+    background-color: rgb(25, 25, 25);
+}
+
+.panel {
+    background-color: rgb(65, 65, 65);
+    z-index: 100;
+    width: 0;
+    min-width: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    padding: 0px;
+    color: #448c1d !important;
+    content-visibility: hidden;
+    /* display: none; */
+}
+
+.allTransition {
+    /* all style changes will ease-in-out for 1s */
+    -moz-transition: all 1s ease-in-out;
+    -ms-transition: all 1s ease-in-out;
+    -o-transition: all 1s ease-in-out;
+    -webkit-transition: all 1s ease-in-out;
+    transition: all 1s;
+}
+
+select {
+    height: 90%;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    font-size: 14px !important;
+    background-color: rgb(10, 10, 10) !important;
+    outline: none !important;
+    border: none !important;
+    color: rgb(175, 175, 175) !important;
+}
+
+select:focus {
+    box-shadow: none !important;
+}
+
+button:focus {
+    box-shadow: none !important;
+}
+
+
+input {
+    background-color: pink;
+    color: yellow;
+}
+
+.controlPanelText {
+    text-align: left;
+}
+
+.sliderChangerContainer {
+    display: flex !important;
+    flex-direction: column !important;
+    padding-bottom: 12px !important;
+}
+
+.sliderChanger {
+    border: 1px solid rgb(175, 175, 175);
+    border-radius: 6px;
+    margin-top: auto !important;
+}
+
+.sliderButton {
+    text-align: center;
+    align-items: center;
+}
+
+.sliderButton:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.sliderButton:after {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.sliderButton:active {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.30);
+}
+
+.paremeterValue {
+    background-color: transparent !important;
+    /* border: none !important; */
+    outline: none !important;
+    border-left: 1px solid rgb(175, 175, 175);
+    border-right: 1px solid rgb(175, 175, 175);
+    border-top: none;
+    border-bottom: none;
+    text-align: center;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+									supported by Chrome, Edge, Opera and Firefox */
+}
+
+.custom-range::-webkit-slider-thumb {
+    background: gray !important;
+}
+
+.custom-range::-moz-range-thumb {
+    background: gray !important;
+}
+
+.custom-range::-ms-thumb {
+    background: gray !important;
+}
+
+-webkit-slider-thumb:active {
+    background-color: red;
+}
+
+-webkit-slider-thumb,
+.custom-range:focus::-webkit-slider-thumb,
+.custom-range:focus::-moz-range-thumb,
+.custom-range:focus::-ms-thumb {
+    box-shadow: red;
+}
+
+.customAlert {
+    width: 250px;
+    height: 40px;
+    line-height: 5px;
+
+    position: absolute;
+    top: 20px;
+    left: calc(50% - 100px);
+
+    opacity: 1;
+    transition: opacity 1s;
+}
+
+.alertHide {
+    opacity: 0;
+}
+
+
+.customTabNav {
+    margin-top: 12px !important;
+}
+
+.tabDiv {
+    /* padding: 4px 0; */
+    color: rgb(175, 175, 175);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(45, 45, 45);
+    border-radius: 8px 8px 0 0;
+}
+
+.tabDiv:hover {
+    cursor: pointer;
+    filter: brightness(80%);
+}
+
+.activeTab {
+    background-color: rgb(25, 25, 25);
+}
+
+.tabContent {
+    padding: 12px;
+    padding-right: 24px;
+    background-color: rgb(25, 25, 25);
+    height: 100%;
+}
+
+.localStorageButtonsConainter {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+}

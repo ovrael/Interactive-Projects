@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Snake game</title>
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="styles/styles.css">
+        <link rel="stylesheet" href="../shared/styles/styles.css">
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <!-- CSS only -->
+        <link rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+            crossorigin="anonymous">
+    </head>
+    <body>
+        <div>
+            <canvas id="boardCanvas" class="boardCanvas allTransition"></canvas>
+        </div>
+        <canvas id="fireworksCanvas" class="fireworkCanvas"></canvas>
+
+        <div class="openPanelButton noselect" id="openPanelButton"
+            onclick="openSettings(); openMoveUI(); moveCanvas();">
+            Open settings
+        </div>
+
+        <div class="backButton noselect" id="backButton"
+            onclick="backToMainWebsite()">
+            Back
+        </div>
+
+        <div id="successResetRankingAlert" class="alert alert-warning
+            customAlert
+            text-center alertHide" hidden>
+            Successfully reset ranking!
+        </div>
+
+        <div id="newRecordDiv" class="newRecord" hidden>
+            <div class="rainbow rainbow_text_animated">
+                NEW BEST RECORD
+            </div>
+        </div>
+
+        <div id="scoreDiv" class="score smallScore allTransition">
+            <div id="scoreTextDiv" class="scoreText noselect">
+                SCORE: 0
+            </div>
+            <div id="gameOverDiv" class="gameOverText noselect" hidden>
+                GAME OVER
+            </div>
+            <div id="ranking" class="rankingText">
+            </div>
+            <div id="resetGameButton" hidden>
+                <button type="button" class="btn btn-success resetGameButton"
+                    onclick="resetGame()">RESET</button>
+            </div>
+        </div>
+
+
+        <div id="pauseDiv" class="pause allTransition" hidden>
+            <div id="pauseTextDiv" class="pauseText noselect">
+                PAUSE
+            </div>
+        </div>
+
+        <div id="settingsPanel" class="panel allTransition">
+            <div class="closeButton noselect" onclick="closeSettings();
+                closeMoveUI(); moveCanvasBack();">
+                <i class="bi bi-arrow-right"></i>
+            </div>
+
+            <div class="container text-center" style="padding-right: 20px;">
+                <div class="row">
+                    <h2>
+                        Settings
+                    </h2>
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="trafficAccelerationSlider" class="noselect">Board
+                            fields width</label><br>
+                        <input type="range" min="4" max="40" step="1"
+                            value="15" class="form-range"
+                            id="boardFieldsWidthSlider"
+                            data-variable="boardFieldsWidth"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldsWidth">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="boardFieldsWidthText"
+                                data-variable="boardFieldsWidth">15
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldsWidth">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="trafficAccelerationSlider" class="noselect">Board
+                            fields height</label><br>
+                        <input type="range" min="4" max="20" step="1"
+                            value="15" class="form-range"
+                            id="boardFieldsHeightSlider"
+                            data-variable="boardFieldsHeight"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldsHeight">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="boardFieldsHeightText"
+                                data-variable="boardFieldsHeight">15
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldsHeight">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="trafficAccelerationSlider" class="noselect">Board
+                            fields size</label><br>
+                        <input type="range" min="15" max="40" step="1"
+                            value="25" class="form-range"
+                            id="boardFieldSizeSlider"
+                            data-variable="boardFieldSize"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldSize">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="boardFieldSizeText"
+                                data-variable="boardFieldSize">25
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="boardFieldSize">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="trafficAccelerationSlider" class="noselect">Max
+                            food</label><br>
+                        <input type="range" min="1" max="20" step="1"
+                            value="4" class="form-range"
+                            id="maxFoodSlider"
+                            data-variable="maxFood"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxFood">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="maxFoodText"
+                                data-variable="maxFood">4
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxFood">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-8">
+                        <label for="trafficAccelerationSlider" class="noselect">Speed</label><br>
+                        <input type="range" min="2" max="20" step="1"
+                            value="8" class="form-range"
+                            id="speedSlider"
+                            data-variable="speed"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="speed">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="speedText"
+                                data-variable="speed">8
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="speed">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 noselect controlPanelText">
+                        Ground color
+                    </div>
+                    <div class="col-4 noselect controlPanelText">
+                        Snake color
+                    </div>
+                    <div class="col-4 noselect controlPanelText">
+                        Food color
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#3f9139" class="form-range"
+                            id="boardColorInput"
+                            data-variable="boardColor"
+                            oninput="colorChange(this)">
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#faed37" class="form-range"
+                            id="snakeColorInput"
+                            data-variable="snakeColor"
+                            oninput="colorChange(this)">
+                    </div>
+                    <div class="col-4">
+                        <input type="color" value="#eb4e15" class="form-range"
+                            id="foodColorInput"
+                            data-variable="foodColor"
+                            oninput="colorChange(this)">
+                    </div>
+                </div>
+
+                <div class="row pt-5">
+
+                    <div class="col-8 controlPanelText">
+                        <label for="playerNameInput" class="noselect">Player
+                            name</label><br>
+                        <input type="text" minlength="3" maxlength="10"
+                            class="form-range"
+                            id="playerNameInput"
+                            data-variable="playerName"
+                            oninput="changePlayerName(this.value)">
+                        <label id="invalidPlayerName" for="playerNameInput"
+                            class="noselect"
+                            style="color:red" hidden></label><br>
+                    </div>
+                </div>
+
+                <div class="row resetRankingButton">
+                    <div class="col-12 text-center">
+                        <button type="button" class="btn btn-danger"
+                            onclick="resetRanking(this)"
+                            data-security="reset">
+                            Reset ranking <i class="bi bi-trash"></i>
+
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../shared/scripts/utils.js"></script>
+        <script src="../shared/scripts/mathematics.js"></script>
+        <script src="../shared/scripts/website.js"></script>
+
+        <script src="scripts/projectData.js"></script>
+
+        <script src="scripts/game/game.js"></script>
+        <script src="scripts/game/fieldType.js"></script>
+        <script src="scripts/game/controls.js"></script>
+        <script src="scripts/game/board.js"></script>
+
+        <script src="scripts/utils/controlPanel.js"></script>
+        <script src="scripts/utils/fireworks.js"></script>
+
+        <script src="scripts/main.js"></script>
+    </body>
+</html>
