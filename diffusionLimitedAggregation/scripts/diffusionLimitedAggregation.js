@@ -9,8 +9,6 @@ class DiffusionLimitedAggregation {
         this.startParticle = new Particle();
         this.startParticle.setStart();
         this.farthestDistance = this.startParticle.size;
-
-
         this.staticParticles.push(this.startParticle);
     }
 
@@ -92,8 +90,9 @@ class DiffusionLimitedAggregation {
     #checkMovingParticles() {
 
         for (let i = 0; i < this.movingParticles.length; i++) {
-            if (!this.movingParticles[i].isStatic)
+            if (!this.movingParticles[i].isStatic) {
                 continue;
+            }
 
             if (this.movingParticles[i].staticCollide) {
                 this.movingParticles.splice(i, 1);
