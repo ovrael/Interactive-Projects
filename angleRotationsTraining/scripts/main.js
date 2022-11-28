@@ -2,6 +2,8 @@
 let canvas;
 let PROJECT_VARIABLE = {};
 let projectDataBackUp = Object.entries(ProjectData);
+let angle = 0;
+let angleChange = 0.01;
 
 function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
@@ -9,10 +11,15 @@ function setup() {
     centerCanvas();
 }
 
+// Handling website project NUMBER
+
 function draw() {
     background(90);
 
+    rotate(angle)
     triangle(0, 0, ProjectData.CanvasWidth, ProjectData.CanvasHeight / 2, ProjectData.CanvasWidth / 2, ProjectData.CanvasHeight);
+
+    angle += angleChange;
 }
 
 function windowResized() {
