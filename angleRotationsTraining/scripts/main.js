@@ -10,7 +10,9 @@ function setup() {
 }
 
 function draw() {
-    background(90)
+    background(90);
+
+    triangle(0, 0, ProjectData.CanvasWidth, ProjectData.CanvasHeight / 2, ProjectData.CanvasWidth / 2, ProjectData.CanvasHeight);
 }
 
 function windowResized() {
