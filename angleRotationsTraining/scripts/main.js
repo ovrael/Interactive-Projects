@@ -11,7 +11,7 @@ function setup() {
     centerCanvas();
 }
 
-// Handling website project NUMBER
+// Handling website project 2
 
 function draw() {
     background(90);
