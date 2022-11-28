@@ -11,7 +11,7 @@ function setup() {
     centerCanvas();
 }
 
-// Handling website project 2
+// Handling website project 3
 
 function draw() {
     background(90);
