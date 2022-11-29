@@ -56,15 +56,18 @@ class Particle {
 
     #checkBoundaries() {
 
-        if ((this.position.x + this.size / 2 >= ProjectData.CanvasWidth) || (this.position.x - this.size / 2 <= 0)) {
+        if ((this.position.x + this.size / 2 >= ProjectData.CanvasWidth) ||
+            (this.position.x - this.size / 2 <= 0)) {
             this.acceleration.x *= -1;
             this.velocity.x *= -1;
         }
 
-        if ((this.position.y + this.size / 2 >= ProjectData.CanvasHeight) || (this.position.y - this.size / 2 <= 0)) {
+        if ((this.position.y + this.size / 2 >= ProjectData.CanvasHeight) ||
+            (this.position.y - this.size / 2 <= 0)) {
             this.acceleration.y *= -1;
             this.velocity.y *= -1;
         }
+
     }
 
     #checkBoundaries2() {
@@ -141,8 +144,8 @@ class Particle {
 
         // this.acceleration.mult(0);
 
-        // this.#checkBoundaries();
-        this.#checkBoundaries2();
+        this.#checkBoundaries();
+        // this.#checkBoundaries2();
     }
 
     draw() {
