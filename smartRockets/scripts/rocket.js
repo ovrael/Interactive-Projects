@@ -54,8 +54,10 @@ class Rocket {
         this.#computeFitness();
         this.#checkObstacles();
         this.#checkWalls();
-        if (this.crashed)
+        if (this.crashed) {
+            this.lifeTime++;
             return;
+        }
 
         this.#checkTarget();
         if (this.reachedTarget) {
@@ -66,9 +68,9 @@ class Rocket {
             this.distance = 0;
             return;
         }
+        this.lifeTime++;
 
         this.distance = Mathematics.distance(this.position.x, this.position.y, target.x, target.y);
-        this.lifeTime++;
 
         this.applyForce(this.dna.genes[time]);
         this.velocity.add(this.acceleration);
@@ -114,6 +116,9 @@ class Rocket {
 
 
         let fitnessDistance = this.distance > 0 ? this.distance : ProjectData.Epsilon;
+        if (this.lifeTime == ProjectData.Lifespan) {
+            this.crashed = true;
+        }
 
         // this.fitness = 1 / distance;
         // this.fitness = 1 / distance + 1 / (this.lifeTime / (ProjectData.Lifespan + 1));

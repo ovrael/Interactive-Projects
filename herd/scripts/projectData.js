@@ -18,7 +18,7 @@ class ProjectData {
     // HERD
     // section: Herd 
     static MaxHerdSize = 2000;
-    static HerdSize = 300;                  // slider,   Size,  0, 2000, 300, 10
+    static HerdSize = 300;                  // slider,   Size,  1, 2000, 300, 10
     static ClickCreateCount = 8;            // slider,   Created units on click,  0, 64, 8, 1
 
     // UNIT
