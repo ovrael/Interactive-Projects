@@ -29,7 +29,7 @@ class Blackhole {
             this.tmpRadius = this.eventHorizonRadius;
         } else {
             circle(this.position.x, this.position.y, this.tmpRadius);
-            this.tmpRadius -= ProjectData.BlackholeSpeed;
+            this.tmpRadius -= ProjectData.BlackholeAnimationSpeed;
         }
 
         // if (this.#canRunHorizonAnimation) {
@@ -43,6 +43,14 @@ class Blackhole {
     update(particles) {
         for (let i = 0; i < particles.length; i++) {
             this.attract(particles[i]);
+            this.#checkParticlePull(particles[i]);
+        }
+    }
+
+    #checkParticlePull(particle) {
+        let dSquared = Mathematics.distanceSquared(this.position.x, this.position.y, particle.position.x, particle.position.y);
+        if (dSquared < 2) {
+            particle.pulled = true;
         }
     }
 

@@ -20,9 +20,9 @@ function setup() {
     );
 
     particles = [];
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 50; i++) {
         particles.push(
-            new Particle(1)
+            new Particle(1.15, ProjectData.CanvasWidth - 50, ProjectData.CanvasHeight / 2 - 50 - i * 5)
         );
     }
 }
