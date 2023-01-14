@@ -12,7 +12,7 @@ function setup() {
 }
 
 function draw() {
-    background(90)
+    background(90);
 }
 
 function windowResized() {
