@@ -1,6 +1,4 @@
 class Blackhole {
-    #canRunHorizonAnimation = true;
-
     constructor(mass, radius, eventHorizonRadius, posX = 150, posY = 300) {
         this.mass = mass;
         this.radius = radius;
@@ -20,6 +18,11 @@ class Blackhole {
 
         circle(this.position.x, this.position.y, this.radius);
 
+        this.#animateHorizon();
+        pop();
+    }
+
+    #animateHorizon() {
         stroke(180, 30, 140, 80);
         strokeWeight(15);
         noFill();
@@ -34,13 +37,6 @@ class Blackhole {
             this.tmpRadius -= this.animationSpeed;
             this.animationSpeed += ProjectData.BlackholeAnimationSpeedChange;
         }
-
-        // if (this.#canRunHorizonAnimation) {
-        //     this.#canRunHorizonAnimation = false;
-        //     this.#runHorizonAnimation(this.eventHorizonRadius - 2);
-        // }
-
-        pop();
     }
 
     update(particles) {
@@ -49,7 +45,9 @@ class Blackhole {
             if ((particles[i].pulled && particles[i].tail.length == 0)
                 || (particles[i].tooFar && particles[i].outside)) {
 
-                this.#pullParticle(particles[i]);
+                if (ProjectData.BlackholeCanGrow)
+                    this.#pullParticle(particles[i]);
+
                 particles.splice(i, 1);
                 i--;
                 continue;

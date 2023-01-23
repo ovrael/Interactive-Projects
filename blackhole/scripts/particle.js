@@ -38,7 +38,7 @@ class Particle {
     }
 
     drawTail() {
-        stroke(240, 40, 20, 80);
+        stroke(240, 120, 90, 80);
         strokeWeight(1);
         noFill();
         beginShape();
