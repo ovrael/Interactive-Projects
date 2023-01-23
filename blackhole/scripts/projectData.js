@@ -8,9 +8,12 @@ class ProjectData {
     static BlackholeEventHorizonRadius = 400;
     static BlackholePosX = 150;
     static BlackholePosY = 300;
-    static BlackholeAnimationSpeed = 1.2;
+    static BlackholeInitialAnimationSpeed = 1;
+    static BlackholeAnimationSpeedChange = 0.1;
 
-    static ParticleSize = 6;
+    static ParticlesCount = 20;
+    static ParticleSize = 5;
+    static ParticleTailLength = 50;
 
     static GravitationConstant = 1;
     static MaxForce = 5;

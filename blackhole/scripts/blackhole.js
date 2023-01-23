@@ -6,6 +6,7 @@ class Blackhole {
         this.radius = radius;
         this.eventHorizonRadius = eventHorizonRadius;
         this.tmpRadius = eventHorizonRadius;
+        this.animationSpeed = ProjectData.BlackholeInitialAnimationSpeed;
 
         this.position = createVector(posX, posY);
     }
@@ -19,17 +20,19 @@ class Blackhole {
 
         circle(this.position.x, this.position.y, this.radius);
 
-        stroke(180, 30, 140, 100);
-        strokeWeight(2);
+        stroke(180, 30, 140, 80);
+        strokeWeight(15);
         noFill();
 
-        circle(this.position.x, this.position.y, this.eventHorizonRadius);
+        // circle(this.position.x, this.position.y, this.eventHorizonRadius);
 
         if (this.tmpRadius <= this.radius) {
             this.tmpRadius = this.eventHorizonRadius;
+            this.animationSpeed = ProjectData.BlackholeInitialAnimationSpeed;
         } else {
             circle(this.position.x, this.position.y, this.tmpRadius);
-            this.tmpRadius -= ProjectData.BlackholeAnimationSpeed;
+            this.tmpRadius -= this.animationSpeed;
+            this.animationSpeed += ProjectData.BlackholeAnimationSpeedChange;
         }
 
         // if (this.#canRunHorizonAnimation) {
@@ -42,34 +45,31 @@ class Blackhole {
 
     update(particles) {
         for (let i = 0; i < particles.length; i++) {
+            this.#checkParticleDistance(particles[i]);
+            if ((particles[i].pulled && particles[i].tail.length == 0)
+                || (particles[i].tooFar && particles[i].outside)) {
+
+                this.#pullParticle(particles[i]);
+                particles.splice(i, 1);
+                i--;
+                continue;
+            }
+
+
             this.attract(particles[i]);
-            this.#checkParticlePull(particles[i]);
         }
     }
 
-    #checkParticlePull(particle) {
+    #pullParticle(particle) {
+        this.mass += particle.mass;
+        this.radius += 0.1 * particle.mass;
+        this.eventHorizonRadius += 0.5 * particle.mass;
+    }
+
+    #checkParticleDistance(particle) {
         let dSquared = Mathematics.distanceSquared(this.position.x, this.position.y, particle.position.x, particle.position.y);
-        if (dSquared < 2) {
-            particle.pulled = true;
-        }
-    }
-
-    #runHorizonAnimation(newRadius) {
-        if (newRadius <= this.radius) {
-            this.#canRunHorizonAnimation = true;
-            return;
-        }
-
-        stroke(180, 30, 140, 100);
-        strokeWeight(2);
-        fill(0, 200, 50);
-
-        rect(50, 50, 100, 30);
-        circle(this.position.x, this.position.y, newRadius);
-
-        setTimeout(() => {
-            this.#runHorizonAnimation(newRadius - 2);
-        }, 500);
+        particle.pulled = dSquared < 16;
+        particle.tooFar = dSquared > this.eventHorizonRadius * this.eventHorizonRadius
     }
 
     // F=G(m1 m2) /r2

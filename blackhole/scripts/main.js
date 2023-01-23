@@ -20,11 +20,11 @@ function setup() {
     );
 
     particles = [];
-    for (let i = 0; i < 50; i++) {
-        particles.push(
-            new Particle(1.15, ProjectData.CanvasWidth - 50, ProjectData.CanvasHeight / 2 - 50 - i * 5)
-        );
-    }
+    // for (let i = 0; i < 300; i++) {
+    //     particles.push(
+    //         new Particle(1.15, ProjectData.CanvasWidth - 10, i * 2)
+    //     );
+    // }
 }
 
 function draw() {
@@ -38,6 +38,16 @@ function draw() {
     blackhole.draw();
     for (let i = 0; i < particles.length; i++) {
         particles[i].draw();
+    }
+
+    checkParticles();
+}
+
+function checkParticles() {
+    if (particles.length < ProjectData.ParticlesCount) {
+        particles.push(
+            new Particle(-1, ProjectData.CanvasWidth - 5, random(0, ProjectData.CanvasHeight))
+        );
     }
 }
 
