@@ -22,14 +22,20 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    cellGrid = new CellGrid(2);
+    cellGrid = new CellGrid(4, cellImages);
     // cell1 = new Cell(SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE);
     // cell2 = new Cell(SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE);
 
     // console.warn(cell1.checkSide(cell2, SideDirection.Up));
     // console.warn(cell1.checkSide(cell2, SideDirection.Right));
 
-    cellGrid.grid[0][0].collapse(SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE, cellImages[5]);
+    // cellGrid.collapseCell(0, 0, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE, cellImages[5]);
+    // cellGrid.collapseCell(2, 1, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE, SideType.NO_LINE, cellImages[3]);
+    // cellGrid.collapseCell(3, 3, SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, cellImages[1]);
+
+    cellGrid.collapseCell(0, 0);
+    cellGrid.collapseCell(2, 1);
+    cellGrid.collapseCell(3, 3);
 }
 
 function draw() {

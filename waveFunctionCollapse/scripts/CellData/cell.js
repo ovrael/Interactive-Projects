@@ -8,7 +8,7 @@ class Cell {
         this.image = null;
 
         this.collapsed = false;
-        this.options = [0, 1, 2, 3, 4, 5, 6];
+        this.options = MadeCells;
     }
 
     collapse(up, right, down, left, image) {
@@ -18,7 +18,46 @@ class Cell {
         this.left = left;
         this.image = image;
 
+        this.options = null;
         this.collapsed = true;
+    }
+
+    collapse(optionIndex, image) {
+        optionIndex = optionIndex < 0 ? Mathematics.randIntMax(this.options.length) : optionIndex;
+        let option = this.options[optionIndex];
+
+        this.up = option.up;
+        this.right = option.right;
+        this.down = option.down;
+        this.left = option.left;
+        this.image = image;
+
+        this.options = null;
+        this.collapsed = true;
+    }
+
+    updateEntropy(side) {
+        console.warn(side);
+        switch (side) {
+            case SideDirection.Up:
+                this.options = this.options.slice(0, 2);
+                break;
+
+            case SideDirection.Right:
+                this.options.slice(-1, 3);
+                break;
+
+            case SideDirection.Down:
+                this.options.slice(0, 3);
+                break;
+
+            case SideDirection.Left:
+                this.options.slice(-1, 3);
+                break;
+
+            default:
+                break;
+        }
     }
 
     draw(i, j, imageWidth, imageHeight) {
