@@ -1,4 +1,5 @@
 const SideType = {
-    NO_LINE: 0,
-    ONE_LINE: 1,
+    None: 0,
+    Walk: 1,
+    River: 2
 }

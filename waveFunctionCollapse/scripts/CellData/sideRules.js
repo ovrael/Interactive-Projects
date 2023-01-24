@@ -1,8 +1,11 @@
 const SideRules = [
-    SideType.NO_LINE = [
-        SideType.NO_LINE,
+    SideType.None = [
+        SideType.None,
     ],
-    SideType.ONE_LINE = [
-        SideType.ONE_LINE,
+    SideType.Walk = [
+        SideType.Walk,
+    ],
+    SideType.River = [
+        SideType.River,
     ],
 ]

@@ -7,16 +7,35 @@ let cellGrid;
 
 // const images = {};
 const tiles = [];
-const images = [];
+const images = {};
 const imagesDirectory = "images/";
 
+const imageNames = [
+    "NONE_NONE_NONE_NONE",
+    "NONE_NONE_NONE_NONE",
+    "NONE_NONE_RIVER_NONE",
+    "NONE_NONE_WALK_NONE",
+    "NONE_WALK_WALK_NONE",
+    "NONE_RIVER_RIVER_NONE",
+    "RIVER_NONE_RIVER_NONE",
+    "RIVER_WALK_RIVER_WALK",
+    "RIVER_WALK_WALK_RIVER",
+    "WALK_NONE_RIVER_NONE",
+    "WALK_NONE_WALK_NONE",
+    "WALK_WALK_WALK_NONE",
+    "WALK_WALK_WALK_WALK",
+];
+
+const sideTypes = {
+    "NONE": SideType.None,
+    "WALK": SideType.Walk,
+    "RIVER": SideType.River,
+}
+
 function preload() {
-    images[0] = loadImage(imagesDirectory + "blank.png");
-    images[1] = loadImage(imagesDirectory + "half_line.png");
-    images[2] = loadImage(imagesDirectory + "line.png");
-    images[3] = loadImage(imagesDirectory + "turn.png");
-    images[4] = loadImage(imagesDirectory + "line_dash.png");
-    images[5] = loadImage(imagesDirectory + "cross.png");
+    for (let i = 0; i < imageNames.length; i++) {
+        images[i] = loadImage(imagesDirectory + imageNames[i] + ".png");
+    }
 }
 
 function setup() {
@@ -24,7 +43,7 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    loadtiles();
+    loadTiles();
 
     cellGrid = new CellGrid(ProjectData.GridSize, images);
 }
@@ -54,31 +73,49 @@ function resetCanvas() {
     centerCanvas();
 }
 
-function loadtiles() {
-    tiles[0] = new Tile([SideType.NO_LINE, SideType.NO_LINE, SideType.NO_LINE, SideType.NO_LINE], images[0]);
+function loadTiles() {
 
-    tiles[1] = new Tile([SideType.NO_LINE, SideType.ONE_LINE, SideType.NO_LINE, SideType.NO_LINE], images[1]);
-    tiles[2] = tiles[1].rotate(1);
-    tiles[3] = tiles[1].rotate(2);
-    tiles[4] = tiles[1].rotate(3);
+    loadTile(0, 0);
+    loadTile(1, 3);
+    loadTile(2, 3);
+    loadTile(3, 3);
+    loadTile(4, 3);
+    loadTile(5, 1);
+    loadTile(6, 1);
+    loadTile(7, 3);
+    loadTile(8, 3);
+    loadTile(9, 1);
+    loadTile(10, 3);
+    loadTile(11, 0);
 
-    tiles[5] = new Tile([SideType.ONE_LINE, SideType.NO_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[2]);
-    tiles[6] = tiles[5].rotate(1);
+    // tiles[0] = new Tile([SideType.None, SideType.None, SideType.None, SideType.None], images[0]);
 
-    tiles[7] = new Tile([SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[3]);
-    tiles[8] = tiles[7].rotate(1);
-    tiles[9] = tiles[7].rotate(2);
-    tiles[10] = tiles[7].rotate(3);
+    // tiles[1] = new Tile([SideType.None, SideType.None, SideType.River, SideType.None], images[1]);
+    // tiles[2] = tiles[1].rotate(1);
+    // tiles[3] = tiles[1].rotate(2);
+    // tiles[4] = tiles[1].rotate(3);
 
-    tiles[11] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[4]);
-    tiles[12] = tiles[11].rotate(1);
-    tiles[13] = tiles[11].rotate(2);
-    tiles[14] = tiles[11].rotate(3);
+    // tiles[5] = new Tile([SideType.None, SideType.None, SideType.Walk, SideType.None], images[2]);
+    // tiles[6] = tiles[5].rotate(1);
+    // tiles[7] = tiles[5].rotate(2);
+    // tiles[8] = tiles[5].rotate(3);
 
-    tiles[15] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[4]);
-    tiles[16] = tiles[15].rotate(1);
-    tiles[17] = tiles[15].rotate(2);
-    tiles[18] = tiles[15].rotate(3);
+    // tiles[5] = new Tile([SideType.None, SideType.None, SideType.Walk, SideType.None], images[2]);
+    // tiles[6] = tiles[5].rotate(1);
+    // tiles[7] = tiles[5].rotate(2);
+    // tiles[8] = tiles[5].rotate(3);
+}
 
-    tiles[19] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE], images[5]);
+function loadTile(imageIndex, rotations) {
+
+    const sides = imageNames[imageIndex].split('_');
+
+    tiles.push(
+        new Tile([sideTypes[sides[0]], sideTypes[sides[1]], sideTypes[sides[2]], sideTypes[sides[3]]], images[imageIndex])
+    );
+
+    const lastTileIndex = tiles.length - 1;
+    for (let i = 0; i < rotations; i++) {
+        tiles.push(tiles[lastTileIndex].rotate(i + 1));
+    }
 }
