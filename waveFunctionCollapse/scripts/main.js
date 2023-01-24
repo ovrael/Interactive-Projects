@@ -53,9 +53,9 @@ function draw() {
     cellGrid.update();
     cellGrid.draw();
 
-    if (mouseIsPressed) {
-        cellGrid.collapseNextCell();
-    }
+    // if (mouseIsPressed) {
+    //     cellGrid.collapseNextCell();
+    // }
 }
 
 function windowResized() {
@@ -87,23 +87,6 @@ function loadTiles() {
     loadTile(9, 1);
     loadTile(10, 3);
     loadTile(11, 0);
-
-    // tiles[0] = new Tile([SideType.None, SideType.None, SideType.None, SideType.None], images[0]);
-
-    // tiles[1] = new Tile([SideType.None, SideType.None, SideType.River, SideType.None], images[1]);
-    // tiles[2] = tiles[1].rotate(1);
-    // tiles[3] = tiles[1].rotate(2);
-    // tiles[4] = tiles[1].rotate(3);
-
-    // tiles[5] = new Tile([SideType.None, SideType.None, SideType.Walk, SideType.None], images[2]);
-    // tiles[6] = tiles[5].rotate(1);
-    // tiles[7] = tiles[5].rotate(2);
-    // tiles[8] = tiles[5].rotate(3);
-
-    // tiles[5] = new Tile([SideType.None, SideType.None, SideType.Walk, SideType.None], images[2]);
-    // tiles[6] = tiles[5].rotate(1);
-    // tiles[7] = tiles[5].rotate(2);
-    // tiles[8] = tiles[5].rotate(3);
 }
 
 function loadTile(imageIndex, rotations) {

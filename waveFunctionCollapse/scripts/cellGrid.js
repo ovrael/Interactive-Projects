@@ -4,6 +4,9 @@ class CellGrid {
         this.size = size;
         this.images = images;
 
+        this.imageWidth = ProjectData.CanvasWidth / this.size;
+        this.imageHeight = ProjectData.CanvasHeight / this.size;
+
         this.collapsedCells = 0;
         this.grid = new Array(size);
 
@@ -13,9 +16,6 @@ class CellGrid {
                 this.grid[i][j] = new Cell();
             }
         }
-
-        this.imageWidth = ProjectData.CanvasWidth / this.size;
-        this.imageHeight = ProjectData.CanvasHeight / this.size;
     }
 
     update() {
@@ -29,6 +29,18 @@ class CellGrid {
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
                 this.grid[i][j].draw(i, j, this.imageWidth, this.imageHeight);
+            }
+        }
+    }
+
+    reset() {
+        this.collapsedCells = 0;
+        this.grid = new Array(size);
+
+        for (let i = 0; i < this.size; i++) {
+            this.grid[i] = new Array(size);
+            for (let j = 0; j < this.size; j++) {
+                this.grid[i][j] = new Cell();
             }
         }
     }
@@ -81,7 +93,8 @@ class CellGrid {
         }
 
         if (this.grid[i][j].options.length == 0) {
-            console.log("BRAK OPCJI");
+            console.log("CAN'T COLLAPSE - RESTARTING GRID");
+            reset();
             return;
         }
 
