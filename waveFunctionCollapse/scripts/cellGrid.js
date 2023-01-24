@@ -4,6 +4,7 @@ class CellGrid {
         this.size = size;
         this.images = images;
 
+        this.collapsedCells = 0;
         this.grid = new Array(size);
 
         for (let i = 0; i < this.size; i++) {
@@ -12,49 +13,87 @@ class CellGrid {
                 this.grid[i][j] = new Cell();
             }
         }
+
+        this.imageWidth = ProjectData.CanvasWidth / this.size;
+        this.imageHeight = ProjectData.CanvasHeight / this.size;
     }
 
-    collapseCell(i, j, up, right, down, left, image) {
-        this.grid[i][j].collapse(up, right, down, left, image);
-        this.#updateCellEntropy(i, j);
+    update() {
+        if (this.collapsedCells >= this.size * this.size)
+            return;
+
+        this.collapseNextCell();
+    }
+
+    draw() {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                this.grid[i][j].draw(i, j, this.imageWidth, this.imageHeight);
+            }
+        }
+    }
+
+    #findNextCells() {
+        let nextCells = [];
+        let minOptions = tiles.length; // full options
+
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+
+                if (this.grid[i][j].collapsed)
+                    continue;
+
+                if (this.grid[i][j].options.length < minOptions) {
+                    nextCells = [];
+                    minOptions = this.grid[i][j].options.length;
+                }
+
+                if (this.grid[i][j].options.length == minOptions) {
+                    nextCells.push({ x: i, y: j });
+                }
+            }
+        }
+
+        return nextCells;
+    }
+
+
+    collapseNextCell() {
+        if (this.collapsedCells >= this.size * this.size)
+            return;
+
+        let nextCells = this.#findNextCells();
+        let minCellPos = { x: 0, y: 0 };
+        if (nextCells.length == this.size * this.size)
+            minCellPos = { x: Mathematics.randIntMax(this.size), y: Mathematics.randIntMax(this.size) };
+        else
+            minCellPos = random(nextCells);
+
+        this.collapseCell(minCellPos.x, minCellPos.y);
+        this.collapsedCells++;
     }
 
     collapseCell(i, j) {
-        let index = Mathematics.randIntMax(this.grid[i][j].options.length);
-        this.grid[i][j].collapse(index, this.images[index]);
+
+        if (this.collapsed) {
+            console.warn(`CELL [${i}][${j}] is already collapsed, check if everything work as it should?`);
+            return;
+        }
+
+        if (this.grid[i][j].options.length == 0) {
+            console.log("BRAK OPCJI");
+            return;
+        }
+
+        this.grid[i][j].collapse();
         this.#updateCellEntropy(i, j);
     }
 
     #updateCellEntropy(i, j) {
-        if (i > 0) this.grid[i - 1][j].updateEntropy(SideDirection.Left);
-        if (i < this.size - 1) this.grid[i + 1][j].updateEntropy(SideDirection.Right);
+        if (i > 0) this.grid[i - 1][j].updateEntropy(SideDirection.Right, this.grid[i][j]);
+        if (i < this.size - 1) this.grid[i + 1][j].updateEntropy(SideDirection.Left, this.grid[i][j]);
 
-        if (j > 0) this.grid[i][j - 1].updateEntropy(SideDirection.Up);
-        if (j < this.size - 1) this.grid[i][j + 1].updateEntropy(SideDirection.Down);
-    }
-
-    draw() {
-        const imageWidth = ProjectData.CanvasWidth / this.size;
-        const imageHeight = ProjectData.CanvasHeight / this.size;
-
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                if (this.grid[i][j].collapsed) {
-                    this.grid[i][j].draw(i, j, imageWidth, imageHeight);
-                }
-                else {
-                    fill(0);
-                    rect(i * imageWidth, j * imageHeight, imageWidth, imageHeight);
-                }
-            }
-        }
-    }
-
-    printOptions() {
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                console.log(this.grid[i][j].options);
-            }
-        }
+        if (j > 0) this.grid[i][j - 1].updateEntropy(SideDirection.Down, this.grid[i][j]);
+        if (j < this.size - 1) this.grid[i][j + 1].updateEntropy(SideDirection.Up, this.grid[i][j]);
     }
 }

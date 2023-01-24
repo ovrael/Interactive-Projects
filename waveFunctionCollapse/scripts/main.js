@@ -5,16 +5,18 @@ let cell2;
 let projectDataBackUp = Object.entries(ProjectData);
 let cellGrid;
 
-const cellImages = [];
+// const images = {};
+const tiles = [];
+const images = [];
+const imagesDirectory = "images/";
 
 function preload() {
-    cellImages[0] = loadImage("CellImages/U0_R0_D0_L0.png");
-    cellImages[1] = loadImage("CellImages/U0_R1_D1_L1.png");
-    cellImages[2] = loadImage("CellImages/U1_R0_D1_L1.png");
-    cellImages[3] = loadImage("CellImages/U1_R1_D0_L0.png");
-    cellImages[4] = loadImage("CellImages/U1_R1_D0_L1.png");
-    cellImages[5] = loadImage("CellImages/U1_R1_D1_L0.png");
-    cellImages[6] = loadImage("CellImages/U1_R1_D1_L1.png");
+    images[0] = loadImage(imagesDirectory + "blank.png");
+    images[1] = loadImage(imagesDirectory + "half_line.png");
+    images[2] = loadImage(imagesDirectory + "line.png");
+    images[3] = loadImage(imagesDirectory + "turn.png");
+    images[4] = loadImage(imagesDirectory + "line_dash.png");
+    images[5] = loadImage(imagesDirectory + "cross.png");
 }
 
 function setup() {
@@ -22,25 +24,19 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    cellGrid = new CellGrid(4, cellImages);
-    // cell1 = new Cell(SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE);
-    // cell2 = new Cell(SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE);
+    loadtiles();
 
-    // console.warn(cell1.checkSide(cell2, SideDirection.Up));
-    // console.warn(cell1.checkSide(cell2, SideDirection.Right));
-
-    // cellGrid.collapseCell(0, 0, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE, cellImages[5]);
-    // cellGrid.collapseCell(2, 1, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE, SideType.NO_LINE, cellImages[3]);
-    // cellGrid.collapseCell(3, 3, SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, cellImages[1]);
-
-    cellGrid.collapseCell(0, 0);
-    cellGrid.collapseCell(2, 1);
-    cellGrid.collapseCell(3, 3);
+    cellGrid = new CellGrid(ProjectData.GridSize, images);
 }
 
 function draw() {
     background(90);
+    cellGrid.update();
     cellGrid.draw();
+
+    if (mouseIsPressed) {
+        cellGrid.collapseNextCell();
+    }
 }
 
 function windowResized() {
@@ -56,4 +52,33 @@ function centerCanvas() {
 function resetCanvas() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     centerCanvas();
+}
+
+function loadtiles() {
+    tiles[0] = new Tile([SideType.NO_LINE, SideType.NO_LINE, SideType.NO_LINE, SideType.NO_LINE], images[0]);
+
+    tiles[1] = new Tile([SideType.NO_LINE, SideType.ONE_LINE, SideType.NO_LINE, SideType.NO_LINE], images[1]);
+    tiles[2] = tiles[1].rotate(1);
+    tiles[3] = tiles[1].rotate(2);
+    tiles[4] = tiles[1].rotate(3);
+
+    tiles[5] = new Tile([SideType.ONE_LINE, SideType.NO_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[2]);
+    tiles[6] = tiles[5].rotate(1);
+
+    tiles[7] = new Tile([SideType.NO_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[3]);
+    tiles[8] = tiles[7].rotate(1);
+    tiles[9] = tiles[7].rotate(2);
+    tiles[10] = tiles[7].rotate(3);
+
+    tiles[11] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[4]);
+    tiles[12] = tiles[11].rotate(1);
+    tiles[13] = tiles[11].rotate(2);
+    tiles[14] = tiles[11].rotate(3);
+
+    tiles[15] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.NO_LINE], images[4]);
+    tiles[16] = tiles[15].rotate(1);
+    tiles[17] = tiles[15].rotate(2);
+    tiles[18] = tiles[15].rotate(3);
+
+    tiles[19] = new Tile([SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE, SideType.ONE_LINE], images[5]);
 }
