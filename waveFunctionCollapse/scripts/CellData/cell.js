@@ -5,6 +5,8 @@ class Cell {
         this.image = null;
 
         this.collapsed = false;
+        this.isNeighbourOfCollapsed = false;
+
         this.options = [];
         for (let i = 0; i < tiles.length; i++) {
             this.options[i] = i;
@@ -36,12 +38,17 @@ class Cell {
         let option = tiles[this.options[index]];
 
         for (let i = 0; i < option.sides.length; i++) {
-            this.sides[i] = option.sides[i];
+            const sideData = option.sides[i];
+            this.sides[i] = [];
+            for (let j = 0; j < sideData.length; j++) {
+                this.sides[i][j] = sideData[j];
+            }
         }
         this.image = option.image;
 
         this.options = null;
         this.collapsed = true;
+        this.isNeighbourOfCollapsed = false;
     }
 
     updateEntropy(sideDirection, otherCell) {
@@ -49,11 +56,13 @@ class Cell {
         if (this.collapsed)
             return;
 
+        this.isNeighbourOfCollapsed = true;
+
         const step = 2;
-        const side = otherCell.sides[(sideDirection + step) % otherCell.sides.length];
+        const otherSide = otherCell.sides[(sideDirection + step) % otherCell.sides.length];
 
         for (let i = 0; i < this.options.length; i++) {
-            if (!this.#checkFit(side, tiles[this.options[i]].sides[sideDirection])) {
+            if (!this.#checkFit(tiles[this.options[i]].sides[sideDirection], otherSide)) {
                 this.options.splice(i, 1);
                 i--;
             }
@@ -61,11 +70,14 @@ class Cell {
     }
 
     #checkFit(thisSide, otherSide) {
-        for (let i = 0; i < SideRules[thisSide].length; i++) {
-            if (SideRules[thisSide][i] == otherSide)
-                return true;
-        }
 
-        return false;
+        for (let i = 0; i < thisSide.length; i++) {
+            const sidePart = thisSide[i];
+            for (let j = 0; j < SideRules[sidePart].length; j++) {
+                if (SideRules[sidePart][j] != otherSide[i][j])
+                    return false;
+            }
+        }
+        return true;
     }
 }

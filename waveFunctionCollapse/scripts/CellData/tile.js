@@ -18,7 +18,11 @@ class Tile {
         const newSides = [];
         const sidesLength = this.sides.length;
         for (let i = 0; i < sidesLength; i++) {
-            newSides[i] = this.sides[(i - rotation + sidesLength) % sidesLength];
+            const sideData = this.sides[(i - rotation + sidesLength) % sidesLength];
+            newSides[i] = [];
+            for (let j = 0; j < sideData.length; j++) {
+                newSides[i][j] = sideData[j];
+            }
         }
 
         return new Tile(newSides, newImage);

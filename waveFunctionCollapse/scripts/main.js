@@ -12,7 +12,6 @@ const imagesDirectory = "images/";
 
 const imageNames = [
     "NONE_NONE_NONE_NONE",
-    "NONE_NONE_NONE_NONE",
     "NONE_NONE_RIVER_NONE",
     "NONE_NONE_WALK_NONE",
     "NONE_WALK_WALK_NONE",
@@ -40,7 +39,7 @@ function preload() {
 
 function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
-    frameRate(60);
+    // frameRate(60);
     centerCanvas();
 
     loadTiles();
@@ -74,19 +73,18 @@ function resetCanvas() {
 }
 
 function loadTiles() {
-
-    loadTile(0, 0);
-    loadTile(1, 3);
-    loadTile(2, 3);
-    loadTile(3, 3);
-    loadTile(4, 3);
-    loadTile(5, 1);
-    loadTile(6, 1);
-    loadTile(7, 3);
-    loadTile(8, 3);
-    loadTile(9, 1);
-    loadTile(10, 3);
-    loadTile(11, 0);
+    loadTile(0, 0);    //   "NONE_NONE_NONE_NONE"
+    loadTile(1, 3);    //   "NONE_NONE_RIVER_NONE"
+    loadTile(2, 3);    //   "NONE_NONE_WALK_NONE"
+    loadTile(3, 3);    //   "NONE_WALK_WALK_NONE"
+    loadTile(4, 3);    //   "NONE_RIVER_RIVER_NONE"
+    loadTile(5, 1);    //   "RIVER_NONE_RIVER_NONE"
+    loadTile(6, 1);    //   "RIVER_WALK_RIVER_WALK"
+    loadTile(7, 3);    //   "RIVER_WALK_WALK_RIVER"
+    loadTile(8, 3);    //   "WALK_NONE_RIVER_NONE"
+    loadTile(9, 1);    //   "WALK_NONE_WALK_NONE"
+    loadTile(10, 3);   //   "WALK_WALK_WALK_NONE"
+    loadTile(11, 0);   //   "WALK_WALK_WALK_WALK"
 }
 
 function loadTile(imageIndex, rotations) {
@@ -94,7 +92,7 @@ function loadTile(imageIndex, rotations) {
     const sides = imageNames[imageIndex].split('_');
 
     tiles.push(
-        new Tile([sideTypes[sides[0]], sideTypes[sides[1]], sideTypes[sides[2]], sideTypes[sides[3]]], images[imageIndex])
+        new Tile([[sideTypes[sides[0]]], [sideTypes[sides[1]]], [sideTypes[sides[2]]], [sideTypes[sides[3]]]], images[imageIndex])
     );
 
     const lastTileIndex = tiles.length - 1;
