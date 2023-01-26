@@ -14,22 +14,23 @@ class Cell {
     }
 
     draw(i, j, imageWidth, imageHeight) {
+
         if (this.collapsed) {
             image(this.image, i * imageWidth, j * imageHeight, imageWidth, imageHeight);
+            return;
         }
-        else {
 
-            push();
-            stroke(200, 100, 50);
-            fill(0);
-            rect(i * imageWidth, j * imageHeight, imageWidth, imageHeight);
-            pop();
+        push();
+        stroke(200, 100, 50);
+        fill(0);
+        rect(i * imageWidth, j * imageHeight, imageWidth, imageHeight);
+        pop();
 
-            fill(200, 100, 50);
-            textSize(0.5 * ProjectData.CanvasWidth / ProjectData.GridSize);
-            textAlign(CENTER, CENTER);
-            text(this.options.length, i * imageWidth + imageWidth / 2, j * imageHeight + imageHeight / 2);
-        }
+        fill(200, 100, 50);
+        textSize(0.5 * ProjectData.CanvasWidth / ProjectData.GridSize);
+        textAlign(CENTER, CENTER);
+        text(this.options.length, i * imageWidth + imageWidth / 2, j * imageHeight + imageHeight / 2);
+
     }
 
     collapse() {
