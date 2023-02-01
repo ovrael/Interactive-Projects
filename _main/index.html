@@ -5,14 +5,23 @@
         <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"><!--  JQUERY  -->
         <script
             src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+            crossorigin="anonymous">
         <title> Interactive Projects Management </title>
     </head>
     <body>
         <h1> Interactive projects</h1>
-        <div id="projectsContainer">
+        <div class="mainContainer">
+            <div id="projectsContainer" class="row">
+
+            </div>
         </div>
     </body>
-    <script>
+</html>
+<script>
         
     const projectsContainerNode = document.getElementById("projectsContainer");
     $.getJSON('../', data => {
@@ -25,10 +34,32 @@
 
     function generateProjectNode(folderName){
         console.log(projectsContainerNode);
-        let node = document.createElement('a');
-        node.innerHTML = folderName;
-        node.href = "/" + folderName + "/index.html";
+        let node = document.createElement('div');
+        let linkNode = document.createElement('a');
+        linkNode.innerHTML = folderName;
+        linkNode.href = "/" + folderName + "/index.html";
+        node.classList = 'projectItem col-4';
+        node.append(linkNode);
         projectsContainerNode.append(node);
         projectsContainerNode.append(document.createElement('br'));
     }
-  </script>
+</script>
+<style>
+    
+body{
+    background-color: rgb(58, 58, 58);
+}
+
+.mainContainer{
+    width: 90%;
+    margin: 0 auto;
+}
+
+.projectItem{
+    margin: 8px auto;
+    padding: 8px;
+    width: 30%;
+    background-color: rgb(250, 206, 62);
+    border-radius: 10px;
+}
+</style>
