@@ -37,5 +37,11 @@ function moveCanvasBack() {
 }
 
 function backToMainWebsite() {
-    window.location.href = "/projects/interactive";
+    let url = window.location.href;
+    if (url.includes("127.0.0")) {
+        window.location.href = "/_main/index.html";
+    }
+    else {
+        window.location.href = "/projects/interactive";
+    }
 }

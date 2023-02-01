@@ -6,4 +6,5 @@ class ProjectData {
     static StartBranchLength = 100;
     static CurrentBranchLength = 100;
     static RotateAngle = 30;
+    static MaxTreeLevel = 3;
 }

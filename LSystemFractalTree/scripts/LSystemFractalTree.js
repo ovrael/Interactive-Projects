@@ -1,6 +1,6 @@
 class LSystemFractalTree {
     constructor() {
-
+        this.level = 0;
     }
 
     draw(systemLInstructions) {

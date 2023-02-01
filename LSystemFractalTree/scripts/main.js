@@ -34,6 +34,11 @@ function windowResized() {
 }
 
 function mousePressed() {
+
+    if (fractalTree.level > ProjectData.MaxTreeLevel)
+        return;
+
+    fractalTree.level++;
     sysL.nextGeneration();
     ProjectData.CurrentBranchLength *= 0.55;
     // fractalTree.draw(sysL.sentence);

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"><!--  JQUERY  -->
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <title> Interactive Projects Management </title>
+    </head>
+    <body>
+        <h1> Interactive projects</h1>
+        <div id="projectsContainer">
+        </div>
+    </body>
+    <script>
+        
+    const projectsContainerNode = document.getElementById("projectsContainer");
+    $.getJSON('../', data => {
+        
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            generateProjectNode(element);
+        }
+    });
+
+    function generateProjectNode(folderName){
+        console.log(projectsContainerNode);
+        let node = document.createElement('a');
+        node.innerHTML = folderName;
+        node.href = "/" + folderName + "/index.html";
+        projectsContainerNode.append(node);
+        projectsContainerNode.append(document.createElement('br'));
+    }
+  </script>
