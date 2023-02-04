@@ -13,7 +13,7 @@
         <title> Interactive Projects Management </title>
     </head>
     <body>
-        <h1> Interactive projects</h1>
+        <div class="titlePanel"> interactive projects</div>
         <div class="mainContainer">
             <div id="projectsContainer" class="row">
 
@@ -30,19 +30,77 @@
             const element = data[i];
             generateProjectNode(element);
         }
+
+        // let projectNodes = document.getElementsByClassName('projectItem');
+        // for (let i = 0; i < projectNodes.length; i++) {
+        //     projectNodes[i]
+        // }
     });
 
+    function generateTextNode(folderName)
+    {
+        let textNode = document.createElement('div');
+        textNode.innerHTML = splitFolderName(folderName);
+        textNode.classList = 'folderNameDiv';        
+
+        return textNode;
+    }
+
+    function goToProject(folderName)
+    {
+        console.log("XD");
+        // window.location="/" + folderName + "/index.html"
+    }
+
+    const imgNames = ['', 'Green', 'Red', 'Blue', 'Pink', 'Purple'];
+    function generateImgNode()
+    {
+        let imgIndex = Math.floor(Math.random() * imgNames.length);
+        let imgNode = document.createElement('img');
+        imgNode.src = 'img/FolderProject' + imgNames[imgIndex] + '.png';
+
+        return imgNode;
+    }
+
     function generateProjectNode(folderName){
-        console.log(projectsContainerNode);
         let node = document.createElement('div');
-        let linkNode = document.createElement('a');
-        linkNode.innerHTML = folderName;
-        linkNode.href = "/" + folderName + "/index.html";
-        node.classList = 'projectItem col-4';
-        node.append(linkNode);
+        node.classList = 'projectItem col-6 col-sm-3 col-md-2 col-lg-2 col-xl-2 col-xxl-1 noselect';
+        
+        node.append(generateImgNode(folderName));
+        node.append(document.createElement('br'));
+        node.append(generateTextNode(folderName));
+
+        node.addEventListener('click', function () { window.location="/" + folderName + "/index.html"; });
+
         projectsContainerNode.append(node);
         projectsContainerNode.append(document.createElement('br'));
     }
+
+    function splitFolderName(folderName)
+    {
+        let newName = folderName[0].toUpperCase();
+        let start = 1;
+        if(newName == '_')
+        {
+            newName = folderName[1].toUpperCase();
+            start++;
+        }
+
+        for (let i = start; i < folderName.length; i++) {
+            
+            if(folderName[i] == folderName[i].toUpperCase())
+            {
+                newName += ' ' + folderName[i];
+            }
+            else
+            {
+                newName += folderName[i];
+            }
+        }
+
+        return newName;
+    }
+
 </script>
 <style>
     
@@ -50,16 +108,68 @@ body{
     background-color: rgb(58, 58, 58);
 }
 
+.titlePanel{
+    border-radius: 0 0 20px 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 auto;
+    margin-bottom: 50px;
+    width: 80%;
+
+    color: rgb(200, 200, 200);
+    font-size: 38px;
+    font-family: 'Courier New', Courier, monospace;
+    font-variant: small-caps;
+    font-weight: 500;
+    text-align: center;
+}
+
 .mainContainer{
-    width: 90%;
+    width: 80%;
     margin: 0 auto;
 }
 
+.folderNameDiv{
+    color: rgb(210, 210, 210);
+}
+
 .projectItem{
-    margin: 8px auto;
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    
+    /* margin: 8px auto;
     padding: 8px;
     width: 30%;
     background-color: rgb(250, 206, 62);
-    border-radius: 10px;
+    border-radius: 10px; */
 }
+
+.projectItem:hover{
+    cursor: pointer;
+    background-color: rgba(0,0,0,0.15);
+}
+
+.projectItem:active{
+    background-color: rgba(0,0,0,0.4);
+}
+
+
+.noselect {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+									supported by Chrome, Edge, Opera and Firefox */
+}
+
 </style>
