@@ -14,17 +14,17 @@ function setup() {
     neuralNetwork.addLayer(6, ActivationFunctions.Sigmoid);
     neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
 
-    data = [];
-    data.push([2, 1]);
-    data.push([5, 4]);
-    data.push([2, 3]);
-    data.push([3, 7]);
-    data.push([7, 2]);
-    data.push([6, 1]);
+    let trainSet = [];
+    trainSet.push([2, 1]);
+    trainSet.push([5, 4]);
+    trainSet.push([2, 3]);
+    trainSet.push([3, 7]);
+    trainSet.push([7, 2]);
+    trainSet.push([6, 1]);
 
     targets = [1, 2, 3, 4, 5, 6];
 
-    neuralNetwork.train(data, targets);
+    neuralNetwork.train(trainSet, targets);
 }
 
 function draw() {

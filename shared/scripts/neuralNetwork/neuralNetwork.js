@@ -5,12 +5,11 @@ class NeuralNetwork {
         this.learningRate = learningRate;
 
         this.layers = [];
+        this.lastLayer = null;
     }
 
     addLayer(numberOfNeurons, activationFunction) {
-
         let numberOfPreviousNeurons = ((this.layers.length > 0) ? this.layers[this.layers.length - 1].neurons.length : 0);
-
         this.layers.push(
             new Layer(numberOfNeurons, numberOfPreviousNeurons, activationFunction)
         );
@@ -32,8 +31,16 @@ class NeuralNetwork {
             return;
         }
 
-        this.#feedForward(data);
-        let error = this.#computeError(this.layers[this.layers.length - 1].neurons, targets);
+        this.lastLayer = this.layers[this.layers.length - 1];
+
+        let errorSum = 0;
+        for (let i = 0; i < data.length; i++) {
+            this.#feedForward(data[i]);
+
+            let error = this.#computeError(targets[i]);
+        }
+        let meanError = errorSum / targets.length;
+
         console.log("Error: " + error);
         console.log("Predicted:");
         console.log(this.layers[this.layers.length - 1].neurons);
@@ -57,24 +64,28 @@ class NeuralNetwork {
 
             for (let j = 0; j < prevLayer.neurons.length; j++) {
 
-                this.layers[currentIndex].neurons[i] += prevLayer.neurons[j] * this.layers[currentIndex].weights[j][i];
+                this.layers[currentIndex].neurons[i] += prevLayer.neurons[j] * this.layers[currentIndex].weights.data[j][i];
 
             }
             this.layers[currentIndex].neurons[i] += this.layers[currentIndex].biases[i];
         }
+        this.layers[currentIndex].activateNeurons();
     }
 
-    #computeError(predicted, targets) {
+    #computeError(target) {
 
-        let errorSum = 0;
+        let biggestValue = Number.MIN_VALUE;
+        let index = -1;
 
-        for (let i = 0; i < targets.length; i++) {
-            errorSum += this.errorFunction(targets[i], predicted[i]);
+        for (let i = 0; i < this.lastLayer.neurons.length; i++) {
+
+            if (this.lastLayer.neurons[i] > biggestValue) {
+                biggestValue = this.lastLayer.neurons[i];
+                index = i;
+            }
         }
 
-
-        let meanError = sum_score / targets.length;
-
-        return meanError;
+        return this.errorFunction(index, target);
+        // return this.errorFunction(biggestValue, target);
     }
 }
