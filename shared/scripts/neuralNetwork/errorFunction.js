@@ -1,35 +1,35 @@
-class ErrorFunction {
-    constructor(func) {
-        this.func = func;
-    }
-}
-
-// const ErrorFunctions =
-// {
-//     Difference: new ErrorFunction(
-//         (predicted, target) => target - predicted
-//     ),
-
-//     MeanSquaredError: new ErrorFunction(
-//         (predicted, target) => (target - predicted) * (target - predicted)
-//     ),
-
-//     LogLoss: new ErrorFunction(
-//         (predicted, target) => target * Math.log(1e-15 + predicted)
-//     ),
+// class ErrorFunction {
+//     constructor(func) {
+//         this.func = func;
+//     }
 // }
 
 const ErrorFunctions =
 {
-    Difference: function (predicted, target) {
-        return target - predicted;
-    },
+    Regression:
+    {
+        Difference: function (predicted, target) {
+            return target - predicted[0];
+        },
 
-    MeanSquaredError: function (predicted, target) {
-        return (target - predicted) * (target - predicted);
-    },
+        MeanSquaredError: function (predicted, target) {
+            return (target - predicted[0]) * (target - predicted[0]) * 0.5;
+        },
 
-    LogLoss: function (predicted, target) {
-        return target * Math.log(1e-15 + predicted);
+        LogLoss: function (predicted, target) {
+            return target * Math.log(1e-15 + predicted[0]);
+        },
     },
+    BinaryClassification:
+    {
+        BinaryCrossEntropy: function (predicted, target) {
+            return Math.log(1e-15 + predicted[0]) + (1 - target) * Math.log(1 - predicted[0] + 1e-15);
+        }
+    },
+    MultiClassification:
+    {
+        CrossEntropy: function (predicted, target) {
+            return -Math.log(predicted[target]);
+        }
+    }
 }

@@ -9,12 +9,14 @@ class Layer {
             this.biases[i] = Math.random() - 0.5;
         }
 
+        /** @type {Weights} */
         this.weights = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
+        /** @type {ActivationFunction} */
         this.activationFunction = activationFunction;
     }
 
     activateNeurons() {
-
+        this.neurons = this.activationFunction.func(this.neurons);
     }
 
     fillNeurons(dataRow) {

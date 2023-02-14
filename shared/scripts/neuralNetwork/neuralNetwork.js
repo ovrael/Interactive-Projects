@@ -1,10 +1,13 @@
 class NeuralNetwork {
 
     constructor(errorFunction, learningRate = 0.05) {
+        // /** @type {ErrorFunction} */
         this.errorFunction = errorFunction;
         this.learningRate = learningRate;
 
+        /** @type {Array<Layer>} */
         this.layers = [];
+        /** @type {Layer} */
         this.lastLayer = null;
     }
 
@@ -36,16 +39,18 @@ class NeuralNetwork {
         let errorSum = 0;
         for (let i = 0; i < data.length; i++) {
             this.#feedForward(data[i]);
+            errorSum += this.#computeError(targets[i]);
 
-            let error = this.#computeError(targets[i]);
         }
         let meanError = errorSum / targets.length;
 
-        console.log("Error: " + error);
+        console.log("Error: " + meanError);
         console.log("Predicted:");
         console.log(this.layers[this.layers.length - 1].neurons);
         console.log("Targets:");
         console.log(targets);
+        console.log("Network");
+        console.log(this);
     }
 
     // Fills neural network neurons from beggining to the end
@@ -74,18 +79,18 @@ class NeuralNetwork {
 
     #computeError(target) {
 
-        let biggestValue = Number.MIN_VALUE;
-        let index = -1;
+        // let biggestValue = Number.MIN_VALUE;
+        // let index = -1;
 
-        for (let i = 0; i < this.lastLayer.neurons.length; i++) {
+        // for (let i = 0; i < this.lastLayer.neurons.length; i++) {
 
-            if (this.lastLayer.neurons[i] > biggestValue) {
-                biggestValue = this.lastLayer.neurons[i];
-                index = i;
-            }
-        }
+        //     if (this.lastLayer.neurons[i] > biggestValue) {
+        //         biggestValue = this.lastLayer.neurons[i];
+        //         index = i;
+        //     }
+        // }
 
-        return this.errorFunction(index, target);
+        return this.errorFunction(this.lastLayer.neurons, target);
         // return this.errorFunction(biggestValue, target);
     }
 }
