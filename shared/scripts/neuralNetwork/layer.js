@@ -21,6 +21,18 @@ class Layer {
         }
     }
 
+    computeDerivatives() {
+        let derivatives = this.activationFunction.dfunc(this.neurons);
+
+        for (let i = 0; i < derivatives.length; i++) {
+            this.neurons[i].derivative = derivatives[i];
+        }
+    }
+
+    computeActivationsAndDerivatives() {
+        this.neurons = this.activationFunction.bothFunc(this.neurons);
+    }
+
     fillNeurons(dataRow) {
         if (dataRow.length != this.neurons.length) {
             console.error("Data length is different than neurons length!");
