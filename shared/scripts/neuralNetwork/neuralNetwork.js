@@ -11,6 +11,11 @@ class NeuralNetwork {
         this.lastLayer = null;
     }
 
+    compile(errorFunction, learningRate = 0.05) {
+        this.errorFunction = errorFunction;
+        this.learningRate = learningRate;
+    }
+
     addLayer(numberOfNeurons, activationFunction) {
         let numberOfPreviousNeurons = ((this.layers.length > 0) ? this.layers[this.layers.length - 1].neurons.length : 0);
         this.layers.push(
@@ -29,6 +34,11 @@ class NeuralNetwork {
             return;
         }
 
+        if (data.length != targets.length) {
+            console.error("Data is different size than targets!");
+            return;
+        }
+
         if (data[0].length != this.layers[0].neurons.length) {
             console.error("Data is different size than first layer of neural network!");
             return;
@@ -40,15 +50,11 @@ class NeuralNetwork {
         for (let i = 0; i < data.length; i++) {
             this.#feedForward(data[i]);
             errorSum += this.#computeError(targets[i]);
-
         }
-        let meanError = errorSum / targets.length;
 
-        console.log("Error: " + meanError);
+        console.log("Error: " + errorSum);
         console.log("Predicted:");
         console.log(this.layers[this.layers.length - 1].neurons);
-        console.log("Targets:");
-        console.log(targets);
         console.log("Network");
         console.log(this);
     }
@@ -69,10 +75,10 @@ class NeuralNetwork {
 
             for (let j = 0; j < prevLayer.neurons.length; j++) {
 
-                this.layers[currentIndex].neurons[i] += prevLayer.neurons[j] * this.layers[currentIndex].weights.data[j][i];
-
+                this.layers[currentIndex].neurons[i].sum +=
+                    prevLayer.neurons[j].activation * this.layers[currentIndex].weights.data[j][i];
             }
-            this.layers[currentIndex].neurons[i] += this.layers[currentIndex].biases[i];
+            this.layers[currentIndex].neurons[i].sum += this.layers[currentIndex].neurons[i].bias;
         }
         this.layers[currentIndex].activateNeurons();
     }

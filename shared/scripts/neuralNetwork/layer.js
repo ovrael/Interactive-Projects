@@ -1,12 +1,11 @@
 class Layer {
 
     constructor(numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction) {
+        /** @type {Array<Neuron>} */
         this.neurons = new Array(numberOfNeurons);
-        this.biases = new Array(numberOfNeurons);
 
         for (let i = 0; i < numberOfNeurons; i++) {
-            this.neurons[i] = 0;
-            this.biases[i] = Math.random() - 0.5;
+            this.neurons[i] = new Neuron();
         }
 
         /** @type {Weights} */
@@ -16,7 +15,10 @@ class Layer {
     }
 
     activateNeurons() {
-        this.neurons = this.activationFunction.func(this.neurons);
+        let activations = this.activationFunction.func(this.neurons);
+        for (let i = 0; i < activations.length; i++) {
+            this.neurons[i].activation = activations[i];
+        }
     }
 
     fillNeurons(dataRow) {
@@ -26,7 +28,7 @@ class Layer {
         }
 
         for (let i = 0; i < dataRow.length; i++) {
-            this.neurons[i] = dataRow[i];
+            this.neurons[i].activation = dataRow[i];
         }
     }
 
