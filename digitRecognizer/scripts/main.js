@@ -11,8 +11,8 @@ function setup() {
     neuralNetwork = new NeuralNetwork(ErrorFunctions.MultiClassification.CategoricalCrossEntropy, 0.0005);
     neuralNetwork.addLayer(4, ActivationFunctions.Sigmoid);
     neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(10, ActivationFunctions.ReLU);
-    neuralNetwork.addLayer(64, ActivationFunctions.ReLU);
+    neuralNetwork.addLayer(10, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(64, ActivationFunctions.Sigmoid);
     neuralNetwork.addLayer(3, ActivationFunctions.SoftMax);
 
     let trainSet = prepareData();

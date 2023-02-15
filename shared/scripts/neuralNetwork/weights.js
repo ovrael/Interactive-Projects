@@ -10,7 +10,7 @@ class Weights {
             this.data[i] = new Array(this.current);
 
             for (let j = 0; j < this.current; j++) {
-                this.data[i][j] = random() * 2 - 1;
+                this.data[i][j] = (random() * 2 - 1) * 0.1;
             }
         }
     }
