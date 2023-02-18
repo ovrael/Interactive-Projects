@@ -8,17 +8,25 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    neuralNetwork = new NeuralNetwork(ErrorFunctions.MultiClassification.CategoricalCrossEntropy, 0.0005);
+    neuralNetwork = new NeuralNetwork(ErrorFunctions.MultiClassification.CategoricalCrossEntropy, 1);
     neuralNetwork.addLayer(4, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(10, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(64, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(3, ActivationFunctions.SoftMax);
+    neuralNetwork.addLayer(2, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(4, ActivationFunctions.SoftMax);
 
-    let trainSet = prepareData();
-    let targets = prepareTargets();
+    // let trainSet = prepareData();
+    // let targets = prepareTargets();
+    let trainSet = [
+        [0, 1, 2, 1],
+        [3, 2, 1, 4],
+        [2, 2, 4, 0],
+        [4, 2, 0, 1],
+        [1, 5, 3, 2],
+    ];
 
-    neuralNetwork.train(trainSet, targets);
+    let targets = [0, 2, 3, 1, 1];
+
+
+    neuralNetwork.train(trainSet, targets, 0.7, 5);
 }
 
 function draw() {
@@ -204,6 +212,27 @@ function prepareData() {
     data.push([6.5, 3.0, 5.2, 2.0]);
     data.push([6.2, 3.4, 5.4, 2.3]);
     data.push([5.9, 3.0, 5.1, 1.8]);
+
+
+    let dataMaxes = [];
+    for (let i = 0; i < data[0].length; i++) {
+        dataMaxes.push(data[0][i]);
+    }
+
+    for (let i = 1; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+            const element = data[i][j];
+            if (element > dataMaxes[j]) {
+                dataMaxes[j] = element;
+            }
+        }
+    }
+
+    for (let i = 1; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+            data[i][j] /= dataMaxes[j];
+        }
+    }
 
     return data;
 }

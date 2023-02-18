@@ -18,6 +18,10 @@ class Layer {
         let activations = this.activationFunction.func(this.neurons);
         for (let i = 0; i < activations.length; i++) {
             this.neurons[i].activation = activations[i];
+            if (isNaN(activations[i])) {
+                console.warn(this.neurons);
+                throw new Error(`Activation is nan`);
+            }
         }
     }
 
@@ -26,6 +30,10 @@ class Layer {
 
         for (let i = 0; i < derivatives.length; i++) {
             this.neurons[i].derivative = derivatives[i];
+            if (isNaN(derivatives[i])) {
+                console.warn(this.neurons);
+                throw new Error(`Derivative is nan`);
+            }
         }
     }
 
@@ -35,7 +43,7 @@ class Layer {
 
     fillNeurons(dataRow) {
         if (dataRow.length != this.neurons.length) {
-            console.error("Data length is different than neurons length!");
+            console.error(`Data length (${dataRow.length}) is different than neurons length (${this.neurons.length})!`);
             return;
         }
 

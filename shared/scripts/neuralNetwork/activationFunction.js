@@ -54,7 +54,7 @@ const ActivationFunctions = {
             const sum = exponents.reduce((a, b) => a + b);
             return exponents.map((e) => e / sum);
         },
-        (neurons2) => {
+        neurons2 => {
 
             let derVal = new Array(neurons2.length);
             for (let i = 0; i < neurons2.length; i++) {
@@ -81,7 +81,7 @@ const ActivationFunctions = {
                 }
             }
         },
-        (neurons3) => {
+        neurons3 => {
 
             let max = Number.MIN_VALUE;
             for (let i = 0; i < neurons3.length; i++) {
