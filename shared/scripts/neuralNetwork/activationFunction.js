@@ -9,43 +9,43 @@ class ActivationFunction {
 const ActivationFunctions = {
     Sigmoid: new ActivationFunction(
         neurons => neurons.map((n) => 1 / (1 + Math.exp(-n.sum))),
-        neurons2 => neurons2.map((n) => n.activation * (1 - n.activation)),
-        neurons3 => {
-            for (let i = 0; i < neurons3.length; i++) {
-                neurons3[i].activation = 1 / (1 + Math.exp(-neurons3[i].sum));
-                neurons3[i].derivative = n.activation * (1 - neurons3[i].activation);
+        neurons => neurons.map((n) => n.activation * (1 - n.activation)),
+        neurons => {
+            for (let i = 0; i < neurons.length; i++) {
+                neurons[i].activation = 1 / (1 + Math.exp(-neurons[i].sum));
+                neurons[i].derivative = n.activation * (1 - neurons[i].activation);
             }
-            return neurons3;
+            return neurons;
         }
     ),
 
     Tanh: new ActivationFunction(
         neurons => neurons.map((n) => Math.tanh(n.sum)),
-        neurons2 => neurons2.map((n) => 1 - (n.activation * n.activation)),
-        neurons3 => {
-            for (let i = 0; i < neurons3.length; i++) {
-                neurons3[i].activation = Math.tanh(neurons3[i].sum);
-                neurons3[i].derivative = 1 - (neurons3[i].activation * neurons3[i].activation);
+        neurons => neurons.map((n) => 1 - (n.activation * n.activation)),
+        neurons => {
+            for (let i = 0; i < neurons.length; i++) {
+                neurons[i].activation = Math.tanh(neurons[i].sum);
+                neurons[i].derivative = 1 - (neurons[i].activation * neurons[i].activation);
             }
-            return neurons3;
+            return neurons;
         }
     ),
 
     ReLU: new ActivationFunction(
         neurons => neurons.map((n) => Math.max(n.sum, 0)),
-        neurons2 => neurons2.map((n) => n.activation > 0 ? 1 : 0),
-        neurons3 => {
-            for (let i = 0; i < neurons3.length; i++) {
-                neurons3[i].activation = Math.max(neurons3[i].sum, 0);
-                neurons3[i].derivative = neurons3[i].activation > 0 ? 1 : 0;
+        neurons => neurons.map((n) => n.activation > 0 ? 1 : 0),
+        neurons => {
+            for (let i = 0; i < neurons.length; i++) {
+                neurons[i].activation = Math.max(neurons[i].sum, 0);
+                neurons[i].derivative = neurons[i].activation > 0 ? 1 : 0;
             }
-            return neurons3;
+            return neurons;
         }
     ),
 
     SoftMax: new ActivationFunction(
         neurons => {
-            let max = -10000000;
+            let max = Number.MIN_VALUE;
             for (let i = 0; i < neurons.length; i++) {
                 if (neurons[i].sum > max)
                     max = neurons[i].sum;
@@ -54,48 +54,66 @@ const ActivationFunctions = {
             const sum = exponents.reduce((a, b) => a + b);
             return exponents.map((e) => e / sum);
         },
-        neurons2 => {
+        neurons => {
 
-            let derVal = new Array(neurons2.length);
-            for (let i = 0; i < neurons2.length; i++) {
-                derVal[i] = neurons2[i].activation * (1 - neurons2[i].activation);
+            const derivatives = [];
+
+            for (let i = 0; i < neurons.length; i++) {
+                let sum = 0;
+
+                for (let j = 0; j < neurons.length; j++) {
+                    if (i === j) {
+                        sum += neurons[i].activation * (1 - neurons[i].activation);
+                    } else {
+                        sum += -neurons[i].activation * neurons[j].activation;
+                    }
+                }
+
+                derivatives.push(sum);
             }
-            return derVal;
+
+            return derivatives;
+
+            // let derVal = new Array(neurons.length);
+            // for (let i = 0; i < neurons.length; i++) {
+            //     derVal[i] = neurons[i].activation * (1 - neurons[i].activation);
+            // }
+            // return derVal;
 
             let max = -1;
             let maxIndex = -1;
 
-            for (let i = 0; i < neurons2.length; i++) {
-                if (neurons2[i].activation > max) {
-                    max = neurons2[i].activation;
+            for (let i = 0; i < neurons.length; i++) {
+                if (neurons[i].activation > max) {
+                    max = neurons[i].activation;
                     maxIndex = i;
                 }
             }
 
-            for (let i = 0; i < neurons2.length; i++) {
+            for (let i = 0; i < neurons.length; i++) {
                 if (i == maxIndex) {
-                    derVal[i] = neurons2[i].activation * (1 - neurons2[i].activation);
+                    derVal[i] = neurons[i].activation * (1 - neurons[i].activation);
                 }
                 else {
-                    derVal[i] = -neurons2[maxIndex].activation * neurons2[i].activation;
+                    derVal[i] = -neurons[maxIndex].activation * neurons[i].activation;
                 }
             }
         },
-        neurons3 => {
+        neurons => {
 
             let max = Number.MIN_VALUE;
-            for (let i = 0; i < neurons3.length; i++) {
-                if (neurons3[i].sum > max)
-                    max = neurons3[i].sum;
+            for (let i = 0; i < neurons.length; i++) {
+                if (neurons[i].sum > max)
+                    max = neurons[i].sum;
             }
-            const exponents = neurons3.map((n) => Math.exp(n.sum - max));
+            const exponents = neurons.map((n) => Math.exp(n.sum - max));
             const sum = exponents.reduce((a, b) => a + b);
             const activations = exponents.map((e) => e / sum);
-            for (let i = 0; i < neurons3.length; i++) {
-                neurons3[i].activation = activations[i];
-                neurons3[i].derivative = neurons3[i].activation * (1 - neurons3[i].activation);
+            for (let i = 0; i < neurons.length; i++) {
+                neurons[i].activation = activations[i];
+                neurons[i].derivative = neurons[i].activation * (1 - neurons[i].activation);
             }
-            return neurons3;
+            return neurons;
         }
     ),
 }

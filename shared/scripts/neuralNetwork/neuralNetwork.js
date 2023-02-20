@@ -2,7 +2,7 @@ class NeuralNetwork {
 
     constructor(errorFunction, learningRate = 0.05) {
         // /** @type {ErrorFunction} */
-        this.errorFunction = errorFunction;
+        this.lossFunction = errorFunction;
         this.learningRate = learningRate;
 
         /** @type {Array<Layer>} */
@@ -15,7 +15,7 @@ class NeuralNetwork {
     }
 
     compile(errorFunction, learningRate = 0.05) {
-        this.errorFunction = errorFunction;
+        this.lossFunction = errorFunction;
         this.learningRate = learningRate;
     }
 
@@ -54,57 +54,41 @@ class NeuralNetwork {
         const splitData = this.#splitData(data, targets, trainTestRatio);
 
         for (let e = 0; e < epochs; e++) {
-            let errorSum = 0;
+            let trainLoss = 0;
             for (let i = 0; i < splitData.trainX.length; i++) {
-                this.#feedForward(splitData.trainX[i][0]);
-                errorSum += this.#backpropError(splitData.trainY[i][0]);
+                this.#feedForward(splitData.trainX[i]);
+                trainLoss += this.#backpropError(splitData.trainY[i]);
                 this.#tweakWeights();
                 // console.warn(this);
             }
-            console.log("Train error: " + errorSum);
 
+            let testResult = this.#validate(splitData.testX, splitData.testY);
 
-            errorSum = 0;
-            let good = 0;
-
-            for (let i = 0; i < splitData.testX.length; i++) {
-                this.#feedForward(splitData.testX[i][0]);
-                errorSum += this.#backpropError(splitData.testY[i][0]);
-
-                let maxIndex = -1;
-                let maxValue = Number.MIN_VALUE;
-                for (let i = 0; i < this.layers[this.layersCount - 1].neurons.length; i++) {
-                    if (this.layers[this.layersCount - 1].neurons[i].activation > maxValue) {
-                        maxIndex = i;
-                        maxValue = this.layers[this.layersCount - 1].neurons[i].activation;
-                    }
-                }
-                if (maxIndex == splitData.testY[i][0]) {
-                    good++;
-                }
+            const results = {
+                "Epoch": e,
+                "Train Loss": trainLoss,
+                "Test Loss": testResult[0],
+                "Good Test": testResult[1],
+                "All length": splitData.testX.length,
             }
-            console.log("Test error: " + errorSum);
-            console.log("Test good/test: " + `${good}/${splitData.testX.length}`);
+            console.table(results);
         }
 
         console.info("Training finished");
+        console.table(this);
     }
 
     #splitData(data, targets, ratio) {
-        let splitData = {
-            trainX: [],
-            trainY: [],
-            testX: [],
-            testY: [],
-        };
+        const splitData = { trainX: [], trainY: [], testX: [], testY: [] };
 
         const testMax = data.length * (1 - ratio);
 
         while (data.length > 0) {
 
             const i = Math.floor(Math.random() * data.length);
-            const x = data.splice(i, 1);
-            const y = targets.splice(i, 1);
+            const x = data.splice(i, 1)[0];
+            const y = targets.splice(i, 1)[0];
+
             if (splitData.testX.length < testMax) {
                 if (Math.random() > 0.5) {
                     splitData.trainX.push(x);
@@ -127,43 +111,19 @@ class NeuralNetwork {
     // Fills neural network neurons from beggining to the end
     #feedForward(rowData) {
         this.layers[0].fillNeurons(rowData);
-        for (let layer = 1; layer < this.layers.length; layer++) {
-            this.#computeNextLayer(layer);
+        for (let i = 1; i < this.layers.length; i++) {
+            this.layers[i].sumNeurons(this.layers[i - 1].neurons);
+            this.layers[i].activateNeurons();
         }
-    }
-
-    #computeNextLayer(layerIndex) {
-
-        const prevLayer = this.layers[layerIndex - 1];
-
-        for (let i = 0; i < this.layers[layerIndex].neurons.length; i++) {
-
-            for (let j = 0; j < prevLayer.neurons.length; j++) {
-
-                this.layers[layerIndex].neurons[i].sum +=
-                    prevLayer.neurons[j].activation * this.layers[layerIndex].weights.data[j][i];
-            }
-            this.layers[layerIndex].neurons[i].sum += this.layers[layerIndex].neurons[i].bias;
-            if (isNaN(this.layers[layerIndex].neurons[i].sum)) {
-                console.warn(this);
-                console.warn(`(computeNextLayer): Layer: ${layerIndex}, neuron: ${i} is NAN`);
-                throw new Error("NAN");
-            }
-        }
-        this.layers[layerIndex].activateNeurons();
     }
 
     #backpropError(target) {
-        let outputErrors = this.errorFunction(this.layers[this.layers.length - 1].neurons, target);
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].neurons, target);
         let errorSum = 0;
 
         for (let i = 0; i < this.layers[this.layers.length - 1].neurons.length; i++) {
             this.layers[this.layers.length - 1].neurons[i].error = outputErrors[i];
             errorSum += outputErrors[i];
-            if (isNaN(outputErrors[i])) {
-                console.warn(`(backpropError): output error index: ${i} is NAN`);
-                throw new Error("NAN");
-            }
         }
 
         for (let l = this.layers.length - 2; l > 0; l--) {
@@ -172,10 +132,6 @@ class NeuralNetwork {
                 for (let e = 0; e < this.layers[l + 1].neurons.length; e++) {
                     this.layers[l].neurons[n].error +=
                         this.layers[l + 1].neurons[e].error * this.layers[l + 1].weights.data[n][e];
-                }
-                if (isNaN(this.layers[l].neurons[n].error)) {
-                    console.warn(`(backpropError2): layer: ${l} neuron: ${n} is NAN`);
-                    throw new Error("NAN");
                 }
             }
         }
@@ -186,16 +142,44 @@ class NeuralNetwork {
     #tweakWeights() {
         for (let i = 1; i < this.layersCount; i++) {
             this.layers[i].computeDerivatives();
-            for (let p = 0; p < this.layers[i].weights.previous; p++) {
-                for (let c = 0; c < this.layers[i].weights.current; c++) {
-                    const product = this.learningRate *
-                        this.layers[i].neurons[c].error *
-                        this.layers[i].neurons[c].derivative *
-                        this.layers[i - 1].neurons[p].activation;
 
-                    this.layers[i].weights.data[p][c] += product;
+            for (let c = 0; c < this.layers[i].weights.current; c++) {
+                const change = this.learningRate *
+                    this.layers[i].neurons[c].error *
+                    this.layers[i].neurons[c].derivative;
+
+                this.layers[i].neurons[c].bias -= change;
+                for (let p = 0; p < this.layers[i].weights.previous; p++) {
+                    this.layers[i].weights.data[p][c] -= change * this.layers[i - 1].neurons[p].activation;
                 }
             }
         }
+    }
+
+    #validate(testX, testY) {
+        let testLoss = 0;
+        let goodTest = 0;
+
+        for (let i = 0; i < testX.length; i++) {
+            this.#feedForward(testX[i]);
+            let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].neurons, testY[i]);
+            for (let j = 0; j < outputErrors.length; j++) {
+                testLoss += outputErrors[j];
+            }
+
+            let maxIndex = -1;
+            let maxValue = Number.MIN_VALUE;
+            for (let i = 0; i < this.layers[this.layersCount - 1].neurons.length; i++) {
+                if (this.layers[this.layersCount - 1].neurons[i].activation > maxValue) {
+                    maxIndex = i;
+                    maxValue = this.layers[this.layersCount - 1].neurons[i].activation;
+                }
+            }
+            if (maxIndex == testY[i]) {
+                goodTest++;
+            }
+        }
+
+        return [testLoss, goodTest];
     }
 }

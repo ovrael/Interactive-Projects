@@ -10,6 +10,7 @@ class Layer {
 
         /** @type {Weights} */
         this.weights = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
+
         /** @type {ActivationFunction} */
         this.activationFunction = activationFunction;
     }
@@ -18,10 +19,6 @@ class Layer {
         let activations = this.activationFunction.func(this.neurons);
         for (let i = 0; i < activations.length; i++) {
             this.neurons[i].activation = activations[i];
-            if (isNaN(activations[i])) {
-                console.warn(this.neurons);
-                throw new Error(`Activation is nan`);
-            }
         }
     }
 
@@ -30,10 +27,6 @@ class Layer {
 
         for (let i = 0; i < derivatives.length; i++) {
             this.neurons[i].derivative = derivatives[i];
-            if (isNaN(derivatives[i])) {
-                console.warn(this.neurons);
-                throw new Error(`Derivative is nan`);
-            }
         }
     }
 
@@ -52,4 +45,16 @@ class Layer {
         }
     }
 
+    sumNeurons(previousNeurons) {
+        for (let i = 0; i < this.neurons.length; i++) {
+
+            this.neurons[i].sum = 0;
+            for (let j = 0; j < previousNeurons.length; j++) {
+
+                this.neurons[i].sum += previousNeurons[j].activation * this.weights.data[j][i];
+
+            }
+            this.neurons[i].sum += this.neurons[i].bias;
+        }
+    }
 }
