@@ -9,24 +9,24 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.00005);
-    neuralNetwork.addLayer(4, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(8, ActivationFunctions.Sigmoid);
+    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction3, 0.5);
+    neuralNetwork.addLayer(4, ActivationFunctions.Tanh);
+    neuralNetwork.addLayer(8, ActivationFunctions.Tanh);
+    neuralNetwork.addLayer(6, ActivationFunctions.Tanh);
     neuralNetwork.addLayer(3, ActivationFunctions.SoftMax);
 
     let trainSet = prepareData();
     let targets = prepareTargets();
     // let trainSet = [
-    //     [0, 1, 2, 1],
-    //     [3, 2, 1, 4],
-    //     [2, 2, 4, 0],
-    //     [4, 2, 0, 1],
-    //     [1, 5, 3, 2],
+    //     [0, 1],
+    //     [1, 0],
+    //     [1, 1],
+    //     [0, 0],
     // ];
 
-    // let targets = [0, 2, 3, 1, 1];
+    // let targets = [1, 1, 0, 0];
 
-    neuralNetwork.train(trainSet, targets, 0.7, 10);
+    neuralNetwork.train(trainSet, targets, 0.8, 50);
     nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
     background(90);
     nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
@@ -217,25 +217,25 @@ function prepareData() {
     data.push([5.9, 3.0, 5.1, 1.8]);
 
 
-    // let dataMaxes = [];
-    // for (let i = 0; i < data[0].length; i++) {
-    //     dataMaxes.push(data[0][i]);
-    // }
+    let dataMaxes = [];
+    for (let i = 0; i < data[0].length; i++) {
+        dataMaxes.push(data[0][i]);
+    }
 
-    // for (let i = 1; i < data.length; i++) {
-    //     for (let j = 0; j < data[i].length; j++) {
-    //         const element = data[i][j];
-    //         if (element > dataMaxes[j]) {
-    //             dataMaxes[j] = element;
-    //         }
-    //     }
-    // }
+    for (let i = 1; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+            const element = data[i][j];
+            if (element > dataMaxes[j]) {
+                dataMaxes[j] = element;
+            }
+        }
+    }
 
-    // for (let i = 1; i < data.length; i++) {
-    //     for (let j = 0; j < data[i].length; j++) {
-    //         data[i][j] /= dataMaxes[j];
-    //     }
-    // }
+    for (let i = 1; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+            data[i][j] /= dataMaxes[j];
+        }
+    }
 
     return data;
 }
