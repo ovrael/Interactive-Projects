@@ -20,7 +20,7 @@ class ErrorFunction {
     }
 }
 
-const epsilon = 0.000000001;
+const epsilon = Number.EPSILON;
 
 const LossFunctions =
 {
@@ -53,11 +53,11 @@ const LossFunctions =
     BinaryClassification:
     {
         BinaryCrossEntropy: function (predicted, targets) {
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
+            // targets = ErrorFunction.checkTargets(targets, predicted.length);
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
                 errors.push(
-                    -(Math.log(epsilon + predicted[i]) + (1 - targets[i]) * Math.log(1 - predicted[i] + epsilon))
+                    (Math.log(epsilon + predicted[i]) + (1 - targets[i]) * Math.log(1 - predicted[i] + epsilon))
                 );
             }
             return errors;
@@ -71,37 +71,19 @@ const LossFunctions =
 
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
-                if (targets[i] == 1) {
-                    errors.push(-Math.log(predicted[i] + epsilon));
-                } else {
-                    errors.push(-Math.log(1 - predicted[i] + epsilon));
-                }
-            }
-            return errors;
-        },
-
-        CrossEntropy: function (predicted, targets) {
-
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
-
-            const errors = [];
-            for (let i = 0; i < predicted.length; i++) {
-                errors.push(-targets[i] * Math.log(predicted[i] + epsilon));
+                errors.push(targets[i] * Math.log(predicted[i] + epsilon) - (1 - targets[i]) * Math.log(1 - predicted[i] + epsilon));
             }
             return errors;
         },
 
         SimpleSubtraction: function (predicted, targets) {
+
             targets = ErrorFunction.checkTargets(targets, predicted.length);
 
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
-                if (targets[i] == 0) {
-                    errors.push(-predicted[i]);
-                } else {
-                    errors.push(1 - predicted[i]);
-                }
-                // errors.push(targets[i] - predicted[i]);
+
+                errors.push(predicted[i] - targets[i]);
             }
             return errors;
         },
@@ -117,40 +99,5 @@ const LossFunctions =
             }
             return errors;
         },
-        SimpleSubtraction3: function (predicted, targets) {
-
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
-
-            const errors = [];
-            for (let i = 0; i < predicted.length; i++) {
-
-                errors.push(predicted[i] - targets[i]);
-            }
-            return errors;
-        },
-
-        Binary: function (predicted, targets) {
-
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
-
-
-            const errors = LossFunctions.BinaryClassification.BinaryCrossEntropy(predicted, targets);
-            return errors;
-        },
-
-
-
-        // if (i != target)
-        //     errors[i] = 0;
-        // else {
-        //     errors[i] = -Math.log(predicted[target].activation + epsilon);
-        // }
-        // TestCategory: function (predicted, target) {
-        //     let errors = new Array(predicted.length);
-        //     for (let i = 0; i < errors.length; i++) {
-        //         errors[i] = 1 - predicted[i];
-        //     }
-        //     return errors;
-        // }
     }
 }

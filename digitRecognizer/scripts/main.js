@@ -9,24 +9,27 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction3, 0.5);
-    neuralNetwork.addLayer(4, ActivationFunctions.Tanh);
-    neuralNetwork.addLayer(8, ActivationFunctions.Tanh);
-    neuralNetwork.addLayer(6, ActivationFunctions.Tanh);
-    neuralNetwork.addLayer(3, ActivationFunctions.SoftMax);
 
-    let trainSet = prepareData();
-    let targets = prepareTargets();
-    // let trainSet = [
-    //     [0, 1],
-    //     [1, 0],
-    //     [1, 1],
-    //     [0, 0],
-    // ];
+    // let dataX = prepareData();
+    // let dataY = prepareTargets();
+    let dataX = [];
+    let dataY = [];
 
-    // let targets = [1, 1, 0, 0];
+    for (let i = 0; i < 1000; i++) {
+        const x1 = Math.floor(Math.random() * 2);
+        const x2 = Math.floor(Math.random() * 2);
+        const y = (x1 + x2) % 2;
+        dataX.push([x1, x2]);
+        dataY.push([y]);
+    }
 
-    neuralNetwork.train(trainSet, targets, 0.8, 50);
+    const inputLenght = dataX[0].length;
+    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction, 0.005);
+    neuralNetwork.addLayer(inputLenght, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(2, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
+
+    neuralNetwork.train(dataX, dataY, 0.7, 1000);
     nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
     background(90);
     nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);

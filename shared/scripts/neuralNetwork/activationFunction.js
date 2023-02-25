@@ -8,7 +8,7 @@ class ActivationFunction {
 
 const ActivationFunctions = {
     Sigmoid: new ActivationFunction(
-        neurons => neurons.map((n) => 1 / (1 + Math.exp(-n))),
+        neurons => neurons.map((n) => 1.0 / (1.0 + Math.exp(-n))),
         activations => activations.map((a) => a * (1 - a)),
         neurons => {
             for (let i = 0; i < neurons.length; i++) {

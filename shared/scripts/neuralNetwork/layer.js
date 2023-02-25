@@ -29,24 +29,6 @@ class Layer {
         this.activationFunction = activationFunction;
     }
 
-    activateNeurons() {
-        this.activations = this.activationFunction.func(this.sums);
-        // for (let i = 0; i < activations.length; i++) {
-        //     this.neurons[i].activation = activations[i];
-        // }
-    }
-
-    computeDerivatives() {
-        this.derivatives = this.activationFunction.dfunc(this.activations);
-
-        // for (let i = 0; i < derivatives.length; i++) {
-        //     this.neurons[i].derivative = derivatives[i];
-        // }
-    }
-
-    // computeActivationsAndDerivatives() {
-    //     this.neurons = this.activationFunction.bothFunc(this.neurons);
-    // }
 
     fillNeurons(dataRow) {
         if (dataRow.length != this.neuronsCount) {
@@ -61,20 +43,47 @@ class Layer {
 
     sumNeurons(previousLayer) {
         for (let i = 0; i < this.neuronsCount; i++) {
-
             this.sums[i] = 0;
             for (let j = 0; j < previousLayer.activations.length; j++) {
-
                 this.sums[i] += previousLayer.activations[j] * this.weights.data[j][i];
-
             }
             this.sums[i] += this.biases[i];
         }
     }
 
+    activateNeurons() {
+        this.activations = this.activationFunction.func(this.sums);
+    }
+
+    computeDerivatives() {
+        this.derivatives = this.activationFunction.dfunc(this.activations);
+    }
+
+    computeGamma(nextLayer) {
+
+        for (let i = 0; i < this.neuronsCount; i++) {
+            this.gamma[i] = 0;
+            for (let j = 0; j < nextLayer.neuronsCount; j++) {
+                this.gamma[i] += nextLayer.gamma[j] * nextLayer.weights.data[i][j];
+            }
+            this.gamma[i] *= this.derivatives[i];
+        }
+    }
+
+    computeWeightsDeltas(previousLayer) {
+        for (let p = 0; p < this.weightsDeltas.previous; p++) {
+            for (let c = 0; c < this.weightsDeltas.current; c++) {
+                this.weightsDeltas.data[p][c] =
+                    this.gamma[c] * previousLayer.activations[p];
+            }
+        }
+    }
+
     updateWeights(learningRate = 0.005) {
-        for (let p = 0; p < this.weights.previous; p++) {
-            for (let c = 0; c < this.weights.current; c++) {
+        for (let c = 0; c < this.weights.current; c++) {
+
+            this.biases[c] -= this.gamma[c] * learningRate;
+            for (let p = 0; p < this.weights.previous; p++) {
                 this.weights.data[p][c] -= this.weightsDeltas.data[p][c] * learningRate;
             }
         }
