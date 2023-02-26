@@ -29,7 +29,7 @@ function setup() {
     neuralNetwork.addLayer(2, ActivationFunctions.Sigmoid);
     neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
 
-    neuralNetwork.train(dataX, dataY, 0.7, 1000);
+    neuralNetwork.trainBatch(dataX, dataY, 16, 0.7, 5000);
     nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
     background(90);
     nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);

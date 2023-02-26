@@ -9,28 +9,52 @@ class NeuralNetwork {
         this.layersCount = -1;
 
         this.lastTarget = null;
+        this.singleOutput = false;
     }
 
+    // PUBLIC
+
+    /**
+        Compiles the neural network with the given error function and learning rate.
+        @param {Function} errorFunction - The error function to be used for the neural network.
+        @param {number} [learningRate=0.05] - The learning rate to be used for the neural network.
+        @returns {undefined} This function does not return anything.
+    */
     compile(errorFunction, learningRate = 0.05) {
         this.lossFunction = errorFunction;
         this.learningRate = learningRate;
-        this.layersCount = this.layers.length;
+        this.#updateNeuralNetworkData();
     }
 
+    /**
+        Adds a new layer to the neural network with the given number of neurons and activation function.
+        @param {number} numberOfNeurons - The number of neurons in the new layer.
+        @param {Function} activationFunction - The activation function to be used for the new layer.
+        @returns {undefined} This function does not return anything.
+    */
     addLayer(numberOfNeurons, activationFunction) {
         let numberOfPreviousNeurons = ((this.layers.length > 0) ? this.layers[this.layers.length - 1].neuronsCount : 0);
+
         this.layers.push(
             new Layer(numberOfNeurons, numberOfPreviousNeurons, activationFunction)
         );
     }
 
-    train(data, targets, trainTestRatio = 0.7, epochs = 1) {
+    /**
+        Trains the neural network using the given data and targets with the given parameters.
+        @param {Array<Array<number>>} data - The data to be used for training.
+        @param {Array<Array<number>>} targets - The target outputs to be used for training.
+        @param {number} [trainTestRatio=0.7] - The ratio of data to be used for training, the rest will be used for testing.
+        @param {number} [epochs=100] - The number of epochs to be used for training.
+        @returns {undefined} This function does not return anything.
+    */
+    train(data, targets, trainTestRatio = 0.7, epochs = 100) {
 
         if (!this.#checkConditions(data, targets)) {
             return;
         }
 
-        this.layersCount = this.layers.length;
+        this.#updateNeuralNetworkData();
 
         const splitData = DataManage.split(data, targets, trainTestRatio);
         const showResultStep = Math.floor(epochs / 10);
@@ -67,6 +91,120 @@ class NeuralNetwork {
         console.table(this);
     }
 
+    /**
+        Trains the neural network using mini-batch gradient descent with the given data and targets with the given parameters.
+        @param {Array<Array<number>>} data - The data to be used for training.
+        @param {Array<Array<number>>} targets - The target outputs to be used for training.
+        @param {number} [batchSize=16] - The batch size to be used for training.
+        @param {number} [trainTestRatio=0.7] - The ratio of data to be used for training, the rest will be used for testing.
+        @param {number} [epochs=100] - The number of epochs to be used for training.
+        @returns {undefined} This function does not return anything.
+    */
+    trainBatch(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100) {
+
+        if (!this.#checkConditions(data, targets)) {
+            return;
+        }
+
+        this.#updateNeuralNetworkData();
+
+        const splitData = DataManage.split(data, targets, trainTestRatio);
+        const showResultStep = Math.floor(epochs / 10);
+
+        for (let e = 0; e < epochs; e++) {
+            let trainLoss = 0;
+
+            let batchTrainX = [];
+            let batchTrainY = [];
+
+
+            for (let i = 0; i < splitData.trainX.length; i++) {
+
+                batchTrainX.push(splitData.trainX[i]);
+                batchTrainY.push(splitData.trainY[i]);
+
+                if (batchTrainX.length == batchSize || i == splitData.trainX.length - 1) {
+
+                    for (let layer = 1; layer < this.layers.length; layer++) {
+                        this.layers[layer].resetWeightsDeltas();
+                    }
+
+                    for (let j = 0; j < batchTrainX.length; j++) {
+                        this.#feedForward(batchTrainX[j]);
+                        trainLoss -= this.#backpropErrorBatch(batchTrainY[j]);
+                    }
+
+                    this.#tweakWeights();
+                    batchTrainX = [];
+                    batchTrainY = [];
+                }
+
+                // Used for neural network drawer
+                this.lastTarget = splitData.trainY[i];
+            }
+            trainLoss /= splitData.trainX.length;
+
+            let testResult = this.#validate(splitData.testX, splitData.testY);
+
+            if (e % showResultStep == 0 || e == epochs - 1) {
+
+                const results = {
+                    "Epoch": e,
+                    "Train Loss": trainLoss,
+                    "Test Loss": testResult[0],
+                    "Good Test": testResult[1],
+                    "Test length": splitData.testX.length,
+                }
+                console.table(results);
+            }
+        }
+
+        console.info("Training finished");
+        console.table(this);
+    }
+
+    /**
+        Given input data, predict the output of the neural network.
+        @param {Array} data - The input data for the neural network.
+                            If only one data point is provided, it should be a one-dimensional array.
+                            If multiple data points are provided, they should be provided as a two-dimensional array,
+                            where each row represents a single data point.
+        
+        @returns {Array} The predicted outputs of the neural network.
+                        The output will be a one-dimensional array if only one data point is provided,
+                        or a two-dimensional array if multiple data points are provided,
+                        here each row represents the predicted output for a single data point.
+    */
+    predict(data) {
+        if (!Array.isArray(data)) {
+            data = [data];
+        }
+
+        if (data.length != this.layers[0].neuronsCount)
+            return;
+
+        this.#feedForward(data);
+
+        return this.layers[this.layersCount - 1].activations;
+    }
+
+
+    // PRIVATE
+
+    /**
+        Updates the neural network layers count and whether the output is a single value.
+    */
+    #updateNeuralNetworkData() {
+        this.layersCount = this.layers.length;
+        this.singleOutput = this.layers[this.layersCount - 1].neuronsCount == 1;
+    }
+
+    /**
+        Checks whether the neural network meets certain conditions for training.
+        @param {Array} data - the training data to be checked.
+        @param {Array} targets - the target outputs for the training data to be checked.
+        @returns {boolean} true if the neural network meets the conditions, false otherwise.
+    */
     #checkConditions(data, targets) {
         if (this.layers.length < 3) {
             console.error("Neural network is too small. It should have at least 3 layers!");
@@ -91,7 +229,10 @@ class NeuralNetwork {
         return true;
     }
 
-    // Fills neural network neurons from beggining to the end
+    /**
+        Feeds the input data forward through the neural network.
+        @param {Array} rowData - the input data to be fed forward through the network.
+    */
     #feedForward(rowData) {
         this.layers[0].fillNeurons(rowData);
         for (let i = 1; i < this.layers.length; i++) {
@@ -100,6 +241,11 @@ class NeuralNetwork {
         }
     }
 
+    /**
+        Computes the error for the last layer of the neural network.
+        @param {Array} target - the target output for the training data.
+        @returns {number} the sum of errors for the output layer.
+    */
     #backpropLastLayer(target) {
         let errorSum = 0;
         let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
@@ -116,6 +262,11 @@ class NeuralNetwork {
         return errorSum;
     }
 
+    /**
+        Computes the error for each layer of the neural network.
+        @param {Array} target - the target output for the training data.
+        @returns {number} the sum of errors for the neural network.
+    */
     #backpropError(target) {
 
         const errorSum = this.#backpropLastLayer(target);
@@ -129,17 +280,65 @@ class NeuralNetwork {
         return errorSum;
     }
 
+    /**
+        Computes the BATCH error for the last layer of the neural network.
+        @param {Array} target - the target output for the training data.
+        @returns {number} the sum of errors for the output layer.
+    */
+    #backpropLastLayerBatch(target) {
+        let errorSum = 0;
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+
+        this.layers[this.layersCount - 1].computeDerivatives();
+        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
+            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
+            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
+            errorSum += outputErrors[i];
+        }
+
+        this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
+
+        return errorSum;
+    }
+
+    /**
+        Computes the BATCH error for each layer of the neural network.
+        @param {Array} target - the target output for the training data.
+        @returns {number} the sum of errors for the neural network.
+    */
+    #backpropErrorBatch(target) {
+
+        const errorSum = this.#backpropLastLayerBatch(target);
+
+        for (let layer = this.layers.length - 2; layer > 0; layer--) {
+            this.layers[layer].computeDerivatives();
+            this.layers[layer].computeGamma(this.layers[layer + 1]);
+            this.layers[layer].computeWeightsDeltasBatch(this.layers[layer - 1]);
+        }
+
+        return errorSum;
+    }
+
+    /**
+        Adjusts the weights of the network using backpropagation and the learning rate
+    */
     #tweakWeights() {
         for (let i = 1; i < this.layersCount; i++) {
             this.layers[i].updateWeights(this.learningRate);
         }
     }
 
+    /**
+        Validates the network on a test dataset and returns the average loss and number of correct predictions
+        @param {number[][]} testX - the test input data
+        @param {number[]} testY - the test target values
+        @returns {number[]} - an array containing the average loss and number of correct predictions
+    */
     #validate(testX, testY) {
         let testLoss = 0;
         let goodTest = 0;
 
-        if (this.layers[this.layersCount - 1].neuronsCount == 1) {
+        if (this.singleOutput) {
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
                 let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
@@ -173,6 +372,10 @@ class NeuralNetwork {
         return [testLoss, goodTest];
     }
 
+    /**
+        Gets the index of the neuron with the maximum activation value in the last layer of the network
+        @returns {number} - the index of the neuron with the maximum activation value
+    */
     #getMaxNeuronIndex() {
         let maxIndex = -1;
         let maxValue = Number.MIN_VALUE;

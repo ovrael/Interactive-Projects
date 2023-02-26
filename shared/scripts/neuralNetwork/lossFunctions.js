@@ -1,27 +1,4 @@
-class ErrorFunction {
-    constructor(func) {
-        this.func = func;
-    }
-
-    static checkTargets(target, predictedLength) {
-
-        if (Array.isArray(target))
-            return target;
-
-        const targetsIndex = target;
-        const targets = [];
-        for (let i = 0; i < predictedLength; i++) {
-            targets.push(
-                (i == targetsIndex) ? 1 : 0
-            );
-        }
-
-        return targets;
-    }
-}
-
 const epsilon = Number.EPSILON;
-
 const LossFunctions =
 {
     Regression:
@@ -53,7 +30,6 @@ const LossFunctions =
     BinaryClassification:
     {
         BinaryCrossEntropy: function (predicted, targets) {
-            // targets = ErrorFunction.checkTargets(targets, predicted.length);
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
                 errors.push(
@@ -67,7 +43,7 @@ const LossFunctions =
     {
         CategoricalCrossEntropy: function (predicted, targets) {
 
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
+            targets = LossFunction.onehotIndexTarget(targets, predicted.length);
 
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
@@ -78,7 +54,7 @@ const LossFunctions =
 
         SimpleSubtraction: function (predicted, targets) {
 
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
+            targets = LossFunction.onehotIndexTarget(targets, predicted.length);
 
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
@@ -90,7 +66,7 @@ const LossFunctions =
 
         SimpleSubtraction2: function (predicted, targets) {
 
-            targets = ErrorFunction.checkTargets(targets, predicted.length);
+            targets = LossFunction.onehotIndexTarget(targets, predicted.length);
 
             const errors = [];
             for (let i = 0; i < predicted.length; i++) {
