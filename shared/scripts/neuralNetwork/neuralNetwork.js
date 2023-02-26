@@ -165,6 +165,66 @@ class NeuralNetwork {
         console.table(this);
     }
 
+
+    trainAdam(data, targets, learningRate = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+        if (!this.#checkConditions(data, targets)) {
+            return;
+        }
+
+        this.#updateNeuralNetworkData();
+
+
+        const m = new Array(this.layers.length);
+        const v = new Array(this.layers.length);
+
+        for (let i = 1; i < this.layers.length; i++) {
+            m[i] = new Weights(this.layers[i].weights.previous, this.layers[i].weights.current);
+            v[i] = new Weights(this.layers[i].weights.previous, this.layers[i].weights.current);
+        }
+
+        const splitData = DataManage.split(data, targets, 1);
+        const dataSize = splitData.trainX.length;
+        const showResultStep = Math.floor(dataSize / 10);
+
+        for (let i = 0; i < dataSize; i++) {
+            this.#feedForward(splitData.trainX[i]);
+            this.#backpropErrorBatch(splitData.trainY[i]);
+
+            for (let layer = 1; layer < this.layers.length; layer++) {
+                const dw = this.layers[layer].weightsDelta;
+                m[layer] = Matrix.scalarMultiply(beta1, m[layer]).add(Matrix.scalarMultiply(1 - beta1, dw));
+                v[layer] = Matrix.scalarMultiply(beta2, v[layer]).add(Matrix.scalarMultiply(1 - beta2, Matrix.elementMultiply(dw, dw)));
+
+                const mCorrected = Matrix.scalarDivide(m[layer], 1 - Math.pow(beta1, i + 1));
+                const vCorrected = Matrix.scalarDivide(v[layer], 1 - Math.pow(beta2, i + 1));
+
+                const weightAdjustment = Matrix.scalarDivide(Matrix.elementMultiply(mCorrected, Matrix.elementPower(vCorrected, 0.5).add(epsilon)), learningRate);
+                this.layers[layer].weights = this.layers[layer].weights.subtract(weightAdjustment);
+            }
+
+            if (i % showResultStep == 0 || i == dataSize - 1) {
+                const trainLoss = -this.layers[this.layers.length - 1].output.subtract(splitData.trainY[i]).elementPower(2).sum() / (2 * dataSize);
+                const testResult = this.#validate(splitData.testX, splitData.testY);
+
+                const results = {
+                    "Data Point": i,
+                    "Train Loss": trainLoss,
+                    "Test Loss": testResult[0],
+                    "Good Test": testResult[1],
+                    "Test length": splitData.testX.length,
+                    "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
+                }
+
+                console.table(results);
+            }
+        }
+
+        console.info("Training finished");
+        console.table(this);
+    }
+
+
+
     /**
         Given input data, predict the output of the neural network.
         @param {Array} data - The input data for the neural network.
