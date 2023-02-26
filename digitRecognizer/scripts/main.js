@@ -3,9 +3,47 @@ let canvas;
 let neuralNetwork;
 let projectDataBackUp = Object.entries(ProjectData);
 let nnDrawer;
+let data;
+let images;
+let rawData;
+let trainImage;
+let imageElement;
 
+function preload() {
+    readTextFile('./digits10k.bin');
+    prepareDigitImages(rawData);
+}
+
+function readTextFile(file) {
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function () {
+        if (rawFile.readyState === 4) {
+            if (rawFile.status === 200 || rawFile.status == 0) {
+                rawData = rawFile.responseText;
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+function prepareDigitImages(rawData) {
+
+    data = { X: [], Y: [] };
+    images = [];
+
+    const rows = rawData.split("\n");
+    for (let i = 0; i < rows.length / 10; i++) {
+        let pixels = rows[i * 10].split(" ");
+        data.Y.push(pixels[0]);
+        data.X.push(pixels.slice(1, 785).map(p => p / 255));
+        images.push(pixels.slice(1, 785).map(p => p / 255));
+    }
+}
 
 function setup() {
+    imageElement = createImage(28, 28);
+
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     frameRate(60);
     centerCanvas();
@@ -13,31 +51,53 @@ function setup() {
 
     // let dataX = prepareData();
     // let dataY = prepareTargets();
-    let dataX = [];
-    let dataY = [];
+    // let dataX = [];
+    // let dataY = [];
 
-    for (let i = 0; i < 1000; i++) {
-        const x1 = Math.floor(Math.random() * 2);
-        const x2 = Math.floor(Math.random() * 2);
-        const y = (x1 + x2) % 2;
-        dataX.push([x1, x2]);
-        dataY.push([y]);
-    }
+    // for (let i = 0; i < 1000; i++) {
+    //     const x1 = Math.floor(Math.random() * 2);
+    //     const x2 = Math.floor(Math.random() * 2);
+    //     const y = (x1 + x2) % 2;
+    //     dataX.push([x1, x2]);
+    //     dataY.push([y]);
+    // }
 
-    const inputLenght = dataX[0].length;
-    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction, 0.005);
-    neuralNetwork.addLayer(inputLenght, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(2, ActivationFunctions.Sigmoid);
-    neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
+    const inputLenght = data.X[0].length;
+    // const inputLenght = dataX[0].length;
+    neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction, 0.000005);
+    neuralNetwork.addLayer(inputLenght, ActivationFunctions.Tanh);
+    neuralNetwork.addLayer(64, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(64, ActivationFunctions.Sigmoid);
+    neuralNetwork.addLayer(10, ActivationFunctions.SoftMax);
 
-    neuralNetwork.trainBatch(dataX, dataY, 16, 0.7, 1000);
-    nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
-    background(90);
-    nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
+    // neuralNetwork.trainBatch(dataX, dataY, 32, 0.7, 100);
+    console.warn("STARTED TRAINING");
+    neuralNetwork.trainBatch(data.X, data.Y, 32, 0.7, 500);
+
+    // neuralNetwork.trainImage(data.X, data.Y, 0.7, 5);
+    // nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
+    // background(90);
+    // nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
+    frameRate(24);
 }
 
 function draw() {
-    // background(90);
+    background(90);
+    const imageIndex = Math.floor(Math.random() * images.length);
+    const imageData = images[imageIndex];
+
+    const testImage = createImage(28, 28);
+    testImage.loadPixels();
+    for (let i = 0; i < imageData.length; i++) {
+        let bright = imageData[i];
+        let index = i * 4;
+        testImage.pixels[index + 0] = 255 - bright * 255;
+        testImage.pixels[index + 1] = 255 - bright * 255;
+        testImage.pixels[index + 2] = 255 - bright * 255;
+        testImage.pixels[index + 3] = 255;
+    }
+    testImage.updatePixels();
+    image(testImage, ProjectData.CanvasWidth / 2 - 100, ProjectData.CanvasHeight / 2 - 100, 200, 200);
 }
 
 function windowResized() {
@@ -53,7 +113,7 @@ function centerCanvas() {
 function resetCanvas() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     centerCanvas();
-    neuralNetwork = new neuralNetwork();
+    // neuralNetwork = new neuralNetwork();
 }
 
 function prepareTargets() {

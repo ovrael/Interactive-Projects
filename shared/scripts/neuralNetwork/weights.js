@@ -5,7 +5,7 @@ class Weights {
         this.current = current;
         this.data = new Array(this.previous);
 
-        // Fill weights with nubmers between -1 and 1.
+        // Fill weights with nubmers between -0.5 and 0.5.
         for (let i = 0; i < this.previous; i++) {
             this.data[i] = new Array(this.current);
 

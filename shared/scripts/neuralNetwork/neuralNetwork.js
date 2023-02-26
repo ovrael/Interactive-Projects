@@ -82,6 +82,7 @@ class NeuralNetwork {
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
                     "Test length": splitData.testX.length,
+                    "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
                 console.table(results);
             }
@@ -154,6 +155,7 @@ class NeuralNetwork {
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
                     "Test length": splitData.testX.length,
+                    "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
                 console.table(results);
             }
