@@ -4,6 +4,7 @@ let neuralNetwork;
 let projectDataBackUp = Object.entries(ProjectData);
 let nnDrawer;
 
+
 function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     frameRate(60);
@@ -29,7 +30,7 @@ function setup() {
     neuralNetwork.addLayer(2, ActivationFunctions.Sigmoid);
     neuralNetwork.addLayer(1, ActivationFunctions.Sigmoid);
 
-    neuralNetwork.trainBatch(dataX, dataY, 16, 0.7, 5000);
+    neuralNetwork.trainBatch(dataX, dataY, 16, 0.7, 1000);
     nnDrawer = new NeuralNetworkDrawer(neuralNetwork);
     background(90);
     nnDrawer.draw(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
