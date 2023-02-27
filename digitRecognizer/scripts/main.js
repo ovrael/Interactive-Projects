@@ -160,6 +160,10 @@ function keyPressed() {
         emptyImage = true;
         userDigit.background(0);
     }
+    else if (key === 'r') {
+        model.resetWeights();
+        console.warn("Model weights has been reset");
+    }
 }
 
 function guessUserDigit() {

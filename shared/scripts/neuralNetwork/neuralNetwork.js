@@ -30,6 +30,17 @@ class NeuralNetwork {
         this.#updateNeuralNetworkData();
     }
 
+    resetWeights() {
+
+        if (this.layers.length == 0)
+            return;
+
+        this.layers[0] = new Layer(this.layers[0].neuronsCount, 0, this.layers[0].activationFunction);
+        for (let i = 1; i < this.layers.length; i++) {
+            this.layers[i] = new Layer(this.layers[i].neuronsCount, this.layers[i - 1].neuronsCount, this.layers[i].activationFunction);
+        }
+    }
+
     /**
         Adds a new layer to the neural network with the given number of neurons and activation function.
         @param {number} numberOfNeurons - The number of neurons in the new layer.
