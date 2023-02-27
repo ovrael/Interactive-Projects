@@ -1,5 +1,7 @@
 /** @type {HTMLCanvasElement} */
 let canvas;
+
+/** @type {NeuralNetwork} */
 let model;
 let projectDataBackUp = Object.entries(ProjectData);
 let nnDrawer;
@@ -10,6 +12,10 @@ let trainImage;
 let imageElement;
 let epoch;
 let train;
+let userDigit;
+let userIsDrawing;
+let emptyImage;
+let userPrediction;
 
 function preload() {
     readTextFile('./digits10k.bin');
@@ -58,29 +64,83 @@ function setup() {
     epoch = 0;
     training = false;
 
+    userDigit = createGraphics(200, 200);
+    userDigit.pixelDensity(1);
+    userDigit.background(0);
+
+    userIsDrawing = false;
+    emptyImage = true;
+    userPrediction = { index: -1, activation: 0 };
+
     // nnDrawer = new NeuralNetworkDrawer(model, 100);
     // nnDrawer.drawOutput(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
 }
 
 function draw() {
-    background(21, 21, 21);
+    background(71, 71, 71);
 
-    if (training) {
+    const xOffset = ProjectData.CanvasWidth / 2 - 100;
+    const yOffset = ProjectData.CanvasHeight / 2 - 100;
+
+    image(userDigit, xOffset, yOffset);
+    if (mouseIsPressed) {
+        userIsDrawing = true;
+        emptyImage = false;
+        userDigit.stroke(255);
+        userDigit.strokeWeight(6);
+        userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
+    }
+    else {
+        userIsDrawing = false;
+    }
+
+    if (training && !userIsDrawing) {
+        fill(250, 160, 50);
+        text("Training", ProjectData.CanvasWidth / 2 - 70, 140);
         epoch++;
         console.warn("TRAINING");
         model.trainAdam(data.X, data.Y, 128, 0.7, 1);
     }
 
+    if (!userIsDrawing)
+        guessUserDigit();
+
     // model.trainAdam(data.X, data.Y, 128, 0.7, 160);
     strokeWeight(5);
     fill(250, 50, 50);
-    textSize(60);
-    text("Epoch: " + epoch, 250, 250);
+    textSize(40);
+    text("Epoch: " + epoch, ProjectData.CanvasWidth - 200, ProjectData.CanvasHeight - 20);
+
+    fill(30, 170, 50);
+    text("Prediction: " + userPrediction.index, 20, ProjectData.CanvasHeight - 60);
+    text("Chance: " + userPrediction.activation.toFixed(2), 20, ProjectData.CanvasHeight - 20);
 }
 
-function mousePressed() {
-    training = !training;
-    console.warn("Change training to: " + training);
+function keyPressed() {
+    if (keyCode === 32) {
+        training = !training;
+        console.warn("Change training to: " + training);
+    }
+    else if (keyCode === ESCAPE) {
+        userIsDrawing = false;
+        emptyImage = true;
+        userDigit.background(0);
+    }
+}
+
+function guessUserDigit() {
+    let img = userDigit.get();
+    if (emptyImage) {
+        return;
+    }
+
+    let inputs = [];
+    img.resize(28, 28);
+    img.loadPixels();
+    for (let i = 0; i < 784; i++) {
+        inputs[i] = img.pixels[i * 4] / 255;
+    }
+    userPrediction = model.predictSingleWithActivation(inputs);
 }
 
 function windowResized() {

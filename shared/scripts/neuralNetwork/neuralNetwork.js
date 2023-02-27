@@ -46,6 +46,8 @@ class NeuralNetwork {
         this.dropoutLayers.push(
             new DropoutLayer(0, 0)
         );
+
+        this.layersCount = this.layers.length;
     }
 
     addDropoutLayer(chance) {
@@ -182,7 +184,6 @@ class NeuralNetwork {
         console.table(this);
     }
 
-
     trainAdam(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
         if (!this.#checkConditions(data, targets)) {
             return;
@@ -271,22 +272,14 @@ class NeuralNetwork {
                     "Test length": splitData.testX.length,
                     "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
-                // console.table(results);
+                console.table(results);
             }
         }
         this.isLearning = false;
-        // console.info("Training finished");
+        console.info("Training finished");
         // console.table(this);
     }
 
-    fakeTrain(epochs) {
-        for (let e = 0; e < epochs; e++) {
-            text("Epochs: " + e, 20, 20);
-            console.log("Epoch: " + e);
-
-        }
-
-    }
 
 
     /**
@@ -314,6 +307,37 @@ class NeuralNetwork {
         return this.layers[this.layersCount - 1].activations;
     }
 
+    predictSingle(data) {
+        if (!Array.isArray(data)) {
+            data = [data];
+        }
+
+        if (data.length != this.layers[0].neuronsCount)
+            return;
+
+        this.#feedForward(data);
+
+        return this.#getMaxOutputNeuronIndex();
+    }
+
+    predictSingleWithActivation(data) {
+        if (!Array.isArray(data)) {
+            data = [data];
+        }
+
+        if (data.length != this.layers[0].neuronsCount)
+            return;
+
+        this.#feedForward(data);
+
+        const outputIndex = this.#getMaxOutputNeuronIndex();
+        const result = {
+            index: outputIndex,
+            activation: this.layers[this.layersCount - 1].activations[outputIndex]
+        };
+
+        return result;
+    }
 
     // PRIVATE
 
@@ -513,7 +537,7 @@ class NeuralNetwork {
                 let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
-                let maxIndex = this.#getMaxNeuronIndex();
+                let maxIndex = this.#getMaxOutputNeuronIndex();
 
                 // console.log(`${maxIndex} == ${testY[i]}`)
                 if (maxIndex == testY[i]) {
@@ -528,11 +552,12 @@ class NeuralNetwork {
         return [testLoss, goodTest];
     }
 
+
     /**
         Gets the index of the neuron with the maximum activation value in the last layer of the network
         @returns {number} - the index of the neuron with the maximum activation value
     */
-    #getMaxNeuronIndex() {
+    #getMaxOutputNeuronIndex() {
         let maxIndex = -1;
         let maxValue = Number.MIN_VALUE;
         const lastLayer = this.layers[this.layersCount - 1];
