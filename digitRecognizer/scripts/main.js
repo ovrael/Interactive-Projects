@@ -62,13 +62,13 @@ function setup() {
     // nnDrawer.drawOutput(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
 }
 
-async function draw() {
+function draw() {
     background(21, 21, 21);
 
     if (training) {
         epoch++;
         console.warn("TRAINING");
-        await model.trainAdam(data.X, data.Y, 128, 0.7, 1);
+        model.trainAdam(data.X, data.Y, 128, 0.7, 1);
     }
 
     // model.trainAdam(data.X, data.Y, 128, 0.7, 160);
