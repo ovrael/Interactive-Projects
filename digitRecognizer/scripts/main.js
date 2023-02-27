@@ -18,8 +18,12 @@ let emptyImage;
 let userPrediction;
 
 function preload() {
-    readTextFile('./digits10k.bin');
-    prepareDigitImages(rawData);
+    // readTextFile('./digits10k.bin');
+    // prepareDigitImages(rawData);
+
+    readTextFile('./digits_4kEach_zeroCounter.bin');
+    prepareDigitImagesWithZeroCounter(rawData);
+    console.log(data);
 }
 
 function readTextFile(file) {
@@ -40,7 +44,7 @@ function prepareDigitImages(rawData) {
     data = { X: [], Y: [] };
     images = [];
 
-    const inputsCount = 5;
+    const inputsCount = 1;
 
     const rows = rawData.split("\n");
     for (let i = 0; i < rows.length / inputsCount; i++) {
@@ -48,6 +52,36 @@ function prepareDigitImages(rawData) {
         data.Y.push(pixels[0]);
         data.X.push(pixels.slice(1, 785).map(p => p / 255));
         images.push(pixels.slice(1, 785).map(p => p / 255));
+    }
+}
+
+function prepareDigitImagesWithZeroCounter(rawData) {
+
+    data = { X: [], Y: [] };
+    images = [];
+
+    const inputsCount = 1;
+
+    const rows = rawData.split("\n");
+    for (let i = 0; i < rows.length / inputsCount; i++) {
+        let pixels = rows[i * inputsCount].split(" ");
+
+        data.Y.push(pixels[0]);
+
+        let dataRow = [];
+        for (let j = 1; j < pixels.length - 1; j++) {
+            if (pixels[j].includes("x")) {
+                let zeroCounts = pixels[j].split("x")[0];
+                for (let k = 0; k < Number(zeroCounts); k++) {
+                    dataRow.push(0);
+                }
+            }
+            else {
+                dataRow.push(pixels[j] / 255);
+            }
+        }
+        data.X.push(dataRow);
+        images.push(dataRow);
     }
 }
 
