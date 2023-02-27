@@ -6,10 +6,14 @@ class NeuralNetwork {
 
         /** @type {Array<Layer>} */
         this.layers = [];
+        /** @type {Array<DropoutLayer>} */
+        this.dropoutLayers = [];
+
         this.layersCount = -1;
 
         this.lastTarget = null;
         this.singleOutput = false;
+        this.isLearning = false;
     }
 
     // PUBLIC
@@ -38,6 +42,19 @@ class NeuralNetwork {
         this.layers.push(
             new Layer(numberOfNeurons, numberOfPreviousNeurons, activationFunction)
         );
+
+        this.dropoutLayers.push(
+            new DropoutLayer(0, 0)
+        );
+    }
+
+    addDropoutLayer(chance) {
+
+        if (chance <= 0)
+            return;
+
+        const numberOfNeurons = this.layers[this.layers.length - 1].neuronsCount;
+        this.dropoutLayers[this.dropoutLayers.length - 1] = new DropoutLayer(chance, numberOfNeurons);
     }
 
     /**
@@ -166,63 +183,110 @@ class NeuralNetwork {
     }
 
 
-    trainAdam(data, targets, learningRate = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+    trainAdam(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
         if (!this.#checkConditions(data, targets)) {
             return;
         }
 
+        if (this.isLearning)
+            return;
+
+        this.isLearning = true;
+
         this.#updateNeuralNetworkData();
 
+        const splitData = DataManage.split(data, targets, trainTestRatio);
+        const showResultStep = Math.floor(epochs / 10);
 
-        const m = new Array(this.layers.length);
-        const v = new Array(this.layers.length);
+        let m = [];
+        let v = [];
 
         for (let i = 1; i < this.layers.length; i++) {
-            m[i] = new Weights(this.layers[i].weights.previous, this.layers[i].weights.current);
-            v[i] = new Weights(this.layers[i].weights.previous, this.layers[i].weights.current);
+            m[i] = Weights.createZero(this.layers[i].weights);
+            v[i] = Weights.createZero(this.layers[i].weights);
         }
 
-        const splitData = DataManage.split(data, targets, 1);
-        const dataSize = splitData.trainX.length;
-        const showResultStep = Math.floor(dataSize / 10);
+        strokeWeight(5);
+        fill(250, 50, 50);
+        textSize(20);
+        for (let e = 0; e < epochs; e++) {
 
-        for (let i = 0; i < dataSize; i++) {
-            this.#feedForward(splitData.trainX[i]);
-            this.#backpropErrorBatch(splitData.trainY[i]);
+            let trainLoss = 0;
 
-            for (let layer = 1; layer < this.layers.length; layer++) {
-                const dw = this.layers[layer].weightsDelta;
-                m[layer] = Matrix.scalarMultiply(beta1, m[layer]).add(Matrix.scalarMultiply(1 - beta1, dw));
-                v[layer] = Matrix.scalarMultiply(beta2, v[layer]).add(Matrix.scalarMultiply(1 - beta2, Matrix.elementMultiply(dw, dw)));
+            let batchTrainX = [];
+            let batchTrainY = [];
 
-                const mCorrected = Matrix.scalarDivide(m[layer], 1 - Math.pow(beta1, i + 1));
-                const vCorrected = Matrix.scalarDivide(v[layer], 1 - Math.pow(beta2, i + 1));
+            const shuffledTrainData = DataManage.shuffle(splitData.trainX, splitData.trainY);
 
-                const weightAdjustment = Matrix.scalarDivide(Matrix.elementMultiply(mCorrected, Matrix.elementPower(vCorrected, 0.5).add(epsilon)), learningRate);
-                this.layers[layer].weights = this.layers[layer].weights.subtract(weightAdjustment);
+            for (let i = 0; i < shuffledTrainData.data.length; i++) {
+
+                batchTrainX.push(shuffledTrainData.data[i]);
+                batchTrainY.push(shuffledTrainData.targets[i]);
+
+                if (batchTrainX.length == batchSize || i == shuffledTrainData.data.length - 1) {
+                    for (let layer = 1; layer < this.layers.length; layer++) {
+                        this.layers[layer].resetWeightsDeltas();
+                    }
+
+                    for (let j = 0; j < batchTrainX.length; j++) {
+                        this.#feedForward(batchTrainX[j]);
+                        trainLoss -= this.#backpropErrorBatch(batchTrainY[j]);
+                    }
+
+                    for (let layer = 1; layer < this.layers.length; layer++) {
+                        const dw = this.layers[layer].weightsDeltas.copy();
+
+                        m[layer] = Weights.scalarMultiply(m[layer], beta1);
+                        m[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - beta1));
+
+                        v[layer] = Weights.scalarMultiply(v[layer], beta2);
+                        v[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - beta2));
+
+                        const mHat = Weights.scalarDivide(m[layer], 1 - Math.pow(beta1, e + 1));
+                        const vHat = Weights.scalarDivide(v[layer], 1 - Math.pow(beta2, e + 1));
+                        const vHatSquared = Weights.sqrt(vHat);
+
+                        const delta = Weights.scalarMultiply(Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, epsilon)), alpha);
+                        this.layers[layer].weights.weightsSubtract(delta);
+                    }
+
+                    batchTrainX = [];
+                    batchTrainY = [];
+                }
+
+                this.lastTarget = shuffledTrainData.targets[i];
             }
 
-            if (i % showResultStep == 0 || i == dataSize - 1) {
-                const trainLoss = -this.layers[this.layers.length - 1].output.subtract(splitData.trainY[i]).elementPower(2).sum() / (2 * dataSize);
-                const testResult = this.#validate(splitData.testX, splitData.testY);
+            trainLoss /= shuffledTrainData.data.length;
 
+            const shuffledTestData = DataManage.shuffle(splitData.testX, splitData.testY);
+            let testResult = this.#validate(shuffledTestData.data, shuffledTestData.targets);
+
+            if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
-                    "Data Point": i,
+                    "Epoch": e,
                     "Train Loss": trainLoss,
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
                     "Test length": splitData.testX.length,
                     "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
-
-                console.table(results);
+                // console.table(results);
             }
         }
-
-        console.info("Training finished");
-        console.table(this);
+        this.isLearning = false;
+        // console.info("Training finished");
+        // console.table(this);
     }
 
+    fakeTrain(epochs) {
+        for (let e = 0; e < epochs; e++) {
+            text("Epochs: " + e, 20, 20);
+            console.log("Epoch: " + e);
+
+        }
+
+    }
 
 
     /**
@@ -296,10 +360,21 @@ class NeuralNetwork {
         @param {Array} rowData - the input data to be fed forward through the network.
     */
     #feedForward(rowData) {
+
         this.layers[0].fillNeurons(rowData);
+        this.#dropoutLayer(0);
+
+
         for (let i = 1; i < this.layers.length; i++) {
             this.layers[i].sumNeurons(this.layers[i - 1]);
             this.layers[i].activateNeurons();
+            this.#dropoutLayer(i);
+        }
+    }
+
+    #dropoutLayer(layerIndex) {
+        if (this.dropoutLayers[layerIndex].dropouts.length > 0) {
+            this.layers[layerIndex].activations = this.dropoutLayers[layerIndex].applyDropout(this.layers[layerIndex].activations);
         }
     }
 
@@ -381,6 +456,22 @@ class NeuralNetwork {
         return errorSum;
     }
 
+    // #adamOptimizer(epoch, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+    //     for (let layer = 1; layer < this.layers.length; layer++) {
+    //         const dw = this.layers[layer].weightsDeltas.copy();
+
+    //         m[layer] = Weights.scalarMultiply(m[layer], beta1).weightsAdd(Weights.scalarMultiply(1 - beta1, dw));
+    //         v[layer] = Weights.scalarMultiply(v[layer], beta2).weightsAdd(Weights.scalarMultiply(1 - beta2, Weights.hadamardMultiply(dw, dw)));
+
+    //         const mHat = Weights.scalarDivide(m[layer], 1 - Math.pow(beta1, epoch + 1));
+    //         const vHat = Weights.scalarDivide(v[layer], 1 - Math.pow(beta2, epoch + 1));
+    //         const vHatSquared = Weights.scalarPower(vHat, 0.5);
+
+    //         const delta = Weights.scalarMultiply(alpha, Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, epsilon)));
+    //         this.layers[layer].weights.scalarAdd(delta);
+    //     }
+    // }
+
     /**
         Adjusts the weights of the network using backpropagation and the learning rate
     */
@@ -401,6 +492,7 @@ class NeuralNetwork {
         let goodTest = 0;
 
         if (this.singleOutput) {
+            console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
                 let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
@@ -422,6 +514,8 @@ class NeuralNetwork {
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 let maxIndex = this.#getMaxNeuronIndex();
+
+                // console.log(`${maxIndex} == ${testY[i]}`)
                 if (maxIndex == testY[i]) {
                     goodTest++;
                 }

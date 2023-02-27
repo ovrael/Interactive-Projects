@@ -15,6 +15,22 @@ class Weights {
         }
     }
 
+    fillData(otherWeights) {
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                this.data[i][j] = otherWeights.data[i][j];
+            }
+        }
+    }
+
+    scalarFillData(scalar) {
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                this.data[i][j] = scalar;
+            }
+        }
+    }
+
     map(func) {
         // Apply a function to every element of matrix
         for (let i = 0; i < this.previous; i++) {
@@ -26,18 +42,120 @@ class Weights {
         return this;
     }
 
-    multiply(other) {
-        if (other instanceof Weights) {
-            if (this.previous !== other.previous || this.current !== other.current) {
-                console.log('Columns and Rows of A must match Columns and Rows of B.');
-                return;
-            }
+    copy() {
+        const newWeights = new Weights(this.previous, this.current);
+        newWeights.fillData(this);
+        return newWeights;
+    }
 
-            // hadamard product
-            return this.map((e, i, j) => e * other.data[i][j]);
-        } else {
-            // Scalar product
-            return this.map(e => e * other);
-        }
+    scalarAdd(scalar) {
+        this.map((e, i, j) => e + scalar);
+    }
+
+    scalarSubtruct(scalar) {
+        this.scalarAdd(-scalar);
+    }
+
+    scalarMultiply(scalar) {
+        this.map((e, i, j) => e * scalar);
+    }
+
+    scalarDivide(scalar) {
+        this.scalarMultiply(1 / scalar);
+    }
+
+    scalarPower(scalar) {
+        this.map((e, i, j) => Math.pow(e, scalar));
+    }
+
+    sqrt() {
+        this.map((e, i, j) => Math.sqrt(e));
+    }
+
+    weightsAdd(otherWeights) {
+        this.map((e, i, j) => e + otherWeights.data[i][j]);
+    }
+
+    weightsSubtract(otherWeights) {
+        this.map((e, i, j) => e - otherWeights.data[i][j]);
+    }
+
+    hadamardMultiply(otherWeights) {
+        this.map((e, i, j) => e * otherWeights.data[i][j]);
+    }
+
+    weightsDivide(otherWeights) {
+        this.map((e, i, j) => e / otherWeights.data[i][j]);
+    }
+
+    static copy(other) {
+        return other.copy();
+    }
+
+    static createZero(weights) {
+        const newWeights = weights.copy();
+        newWeights.scalarFillData(0);
+        return newWeights;
+    }
+
+    static scalarAdd(weights, scalar) {
+        const newWeights = Weights.copy(weights);
+        newWeights.scalarAdd(scalar);
+        return newWeights;
+    }
+
+    static scalarSubtract(weights, scalar) {
+        const newWeights = Weights.copy(weights);
+        newWeights.scalarSubtract(scalar);
+        return newWeights;
+    }
+
+    static scalarMultiply(weights, scalar) {
+        const newWeights = Weights.copy(weights);
+        newWeights.scalarMultiply(scalar);
+        return newWeights;
+    }
+
+    static scalarDivide(weights, scalar) {
+        const newWeights = Weights.copy(weights);
+        newWeights.scalarDivide(scalar);
+        return newWeights;
+    }
+
+
+    static scalarPower(weights, scalar) {
+        const newWeights = Weights.copy(weights);
+        newWeights.scalarPower(scalar);
+        return newWeights;
+    }
+
+    static sqrt(weights) {
+        const newWeights = Weights.copy(weights);
+        newWeights.sqrt();
+        return newWeights;
+    }
+
+    static weightsAdd(weights, otherWeights) {
+        const newWeights = Weights.copy(weights);
+        newWeights.weightsAdd(otherWeights);
+        return newWeights;
+    }
+
+    static weightsSubtract(weights, otherWeights) {
+        const newWeights = Weights.copy(weights);
+        newWeights.weightsSubtract(otherWeights);
+        return newWeights;
+    }
+
+    static weightsDivide(weights, otherWeights) {
+        const newWeights = Weights.copy(weights);
+        newWeights.weightsDivide(otherWeights);
+        return newWeights;
+    }
+
+    static hadamardMultiply(weights, otherWeights) {
+        const newWeights = Weights.copy(weights);
+        newWeights.hadamardMultiply(otherWeights);
+        return newWeights;
     }
 }

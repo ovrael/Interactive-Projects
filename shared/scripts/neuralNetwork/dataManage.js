@@ -2,14 +2,17 @@ class DataManage {
 
     static split(data, targets, ratio) {
         const splitData = { trainX: [], trainY: [], testX: [], testY: [] };
-
         const testMax = data.length * (1 - ratio);
 
-        while (data.length > 0) {
+        const dataCopy = [...data];
+        const targetsCopy = [...targets];
 
-            const i = Math.floor(Math.random() * data.length);
-            const x = data.splice(i, 1)[0];
-            const y = targets.splice(i, 1)[0];
+
+        while (dataCopy.length > 0) {
+
+            const i = Math.floor(Math.random() * dataCopy.length);
+            const x = dataCopy.splice(i, 1)[0];
+            const y = targetsCopy.splice(i, 1)[0];
 
             if (splitData.testX.length < testMax) {
                 if (Math.random() > 0.5) {
@@ -28,5 +31,32 @@ class DataManage {
         }
 
         return splitData;
+    }
+
+    static shuffle(data, targets) {
+        const shuffledData = { data: [], targets: [] };
+        const dataCopy = [...data];
+        const targetsCopy = [...targets];
+
+        while (dataCopy.length > 0) {
+
+            const i = Math.floor(Math.random() * dataCopy.length);
+            const x = dataCopy.splice(i, 1)[0];
+            const y = targetsCopy.splice(i, 1)[0];
+
+            shuffledData.data.push(x);
+            shuffledData.targets.push(y);
+        }
+
+        return shuffledData;
+    }
+
+    static #deepCopy(data, targets) {
+        const deepCopy = { data: [], targets: [] };
+
+        for (let i = 0; i < data.length; i++) {
+            deepCopy.data.push(data[i]);
+            deepCopy.targets.push(targets[i]);
+        }
     }
 }

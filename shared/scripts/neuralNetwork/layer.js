@@ -1,3 +1,8 @@
+const LayerType = {
+    Dense: 'Dense',
+    Dropout: 'Dropout'
+};
+
 class Layer {
 
     constructor(numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction) {
@@ -29,7 +34,6 @@ class Layer {
         /** @type {ActivationFunction} */
         this.activationFunction = activationFunction;
     }
-
 
     fillNeurons(dataRow) {
         if (dataRow.length != this.neuronsCount) {
@@ -89,11 +93,7 @@ class Layer {
     }
 
     resetWeightsDeltas() {
-        for (let p = 0; p < this.weightsDeltas.previous; p++) {
-            for (let c = 0; c < this.weightsDeltas.current; c++) {
-                this.weightsDeltas.data[p][c] = 0;
-            }
-        }
+        this.weightsDeltas.scalarFillData(0);
     }
 
     updateWeights(learningRate = 0.005) {
@@ -106,3 +106,4 @@ class Layer {
         }
     }
 }
+

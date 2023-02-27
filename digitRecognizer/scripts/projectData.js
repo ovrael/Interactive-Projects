@@ -12,6 +12,7 @@ const scripts = [
     "dataManage",
     "weights",
     "layer",
+    "dropoutLayer",
     "neuralNetwork",
     "neuralNetworkDrawer",
 ];
