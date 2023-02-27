@@ -22,8 +22,7 @@ function preload() {
     // prepareDigitImages(rawData);
 
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    prepareDigitImagesWithZeroCounter(rawData);
-    console.log(data);
+    prepareDigitImagesWithZeroCounter(rawData, 4);
 }
 
 function readTextFile(file) {
@@ -40,7 +39,6 @@ function readTextFile(file) {
 }
 
 function prepareDigitImages(rawData) {
-
     data = { X: [], Y: [] };
     images = [];
 
@@ -55,18 +53,16 @@ function prepareDigitImages(rawData) {
     }
 }
 
-function prepareDigitImagesWithZeroCounter(rawData) {
+function prepareDigitImagesWithZeroCounter(rawData, noiseSamples) {
 
     data = { X: [], Y: [] };
     images = [];
 
-    const inputsCount = 1;
+    const inputsCount = 4000;
 
     const rows = rawData.split("\n");
     for (let i = 0; i < rows.length / inputsCount; i++) {
         let pixels = rows[i * inputsCount].split(" ");
-
-        data.Y.push(pixels[0]);
 
         let dataRow = [];
         for (let j = 1; j < pixels.length - 1; j++) {
@@ -80,9 +76,62 @@ function prepareDigitImagesWithZeroCounter(rawData) {
                 dataRow.push(pixels[j] / 255);
             }
         }
-        data.X.push(dataRow);
-        images.push(dataRow);
+
+
+        // data.Y.push(pixels[0]);
+        // data.X.push(dataRow);
+        // images.push(dataRow);
+
+        for (let j = 0; j < noiseSamples; j++) {
+            const noiseRow = noiseData(dataRow);
+            data.Y.push(pixels[0]);
+            data.X.push(noiseRow);
+            images.push(noiseRow);
+        }
     }
+}
+
+function noiseData(dataRow) {
+    let noiseRow = [];
+    for (let i = 0; i < dataRow.length; i++) {
+        if (Math.random() < 0.01) {
+            noiseRow.push(Math.random());
+        }
+        else {
+            noiseRow.push(dataRow[i]);
+        }
+    }
+
+    noiseRow = rotateImage(noiseRow, Math.floor(Math.random() * 4));
+
+    if (Math.random() < 0.1) {
+        noiseRow = flipImage(noiseRow, "xAxis");
+    }
+    if (Math.random() < 0.1) {
+        noiseRow = flipImage(noiseRow, "yAxis");
+    }
+
+    return noiseRow;
+}
+
+function get1DArrayElement(array, width, x, y) {
+    return array[y * width + x];
+}
+
+function rotatePixelArray(pixelArray, w, h) {
+    var rotatedArray = [];
+
+    for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+            index = (x + y * w) * 4;
+            rotatedArray.push(pixelArray[index]);
+            rotatedArray.push(pixelArray[index + 1]);
+            rotatedArray.push(pixelArray[index + 2]);
+            rotatedArray.push(pixelArray[index + 3]);
+        }
+    }
+
+    return rotatedArray;
 }
 
 function setup() {
@@ -108,10 +157,12 @@ function setup() {
 
     // nnDrawer = new NeuralNetworkDrawer(model, 100);
     // nnDrawer.drawOutput(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
+    frameRate(5);
 }
 
 function draw() {
     background(71, 71, 71);
+    showImage();
 
     const xOffset = ProjectData.CanvasWidth / 2 - 100;
     const yOffset = ProjectData.CanvasHeight / 2 - 100;
@@ -198,21 +249,86 @@ function resetCanvas() {
 }
 
 function showImage() {
-    // model.fakeTrain(100);
-    // background(90);
-    // const imageIndex = Math.floor(Math.random() * images.length);
-    // const imageData = images[imageIndex];
+    const imageIndex = Math.floor(Math.random() * images.length);
+    const imageData = images[imageIndex];
 
-    // const testImage = createImage(28, 28);
-    // testImage.loadPixels();
-    // for (let i = 0; i < imageData.length; i++) {
-    //     let bright = imageData[i];
-    //     let index = i * 4;
-    //     testImage.pixels[index + 0] = 255 - bright * 255;
-    //     testImage.pixels[index + 1] = 255 - bright * 255;
-    //     testImage.pixels[index + 2] = 255 - bright * 255;
-    //     testImage.pixels[index + 3] = 255;
-    // }
-    // testImage.updatePixels();
-    // image(testImage, ProjectData.CanvasWidth / 2 - 100, ProjectData.CanvasHeight / 2 - 100, 200, 200);
+    const testImage = createImage(28, 28);
+    testImage.loadPixels();
+    for (let i = 0; i < imageData.length; i++) {
+        let bright = imageData[i];
+        let index = i * 4;
+        testImage.pixels[index + 0] = bright * 255;
+        testImage.pixels[index + 1] = bright * 255;
+        testImage.pixels[index + 2] = bright * 255;
+        testImage.pixels[index + 3] = 255;
+    }
+    testImage.updatePixels();
+    image(testImage, 0, 0, 200, 200);
+}
+
+function rotateImage(pixels, rotateCount) {
+    const size = 28;
+    const rotations = rotateCount % 4;
+    const newPixels = new Uint8ClampedArray(size * size);
+    switch (rotations) {
+        case 0:
+            return pixels;
+        case 1:
+            for (let x = 0; x < size; x++) {
+                for (let y = 0; y < size; y++) {
+                    let i = x * size + y;
+                    j = (size - y - 1) * size + x;
+                    newPixels[j] = pixels[i];
+                }
+            }
+            break;
+        case 2:
+            for (let x = 0; x < size; x++) {
+                for (let y = 0; y < size; y++) {
+                    let i = x * size + y;
+                    j = (size - x - 1) * size + (size - y - 1);
+                    newPixels[j] = pixels[i];
+                }
+            }
+            break;
+        case 3:
+            for (let x = 0; x < size; x++) {
+                for (let y = 0; y < size; y++) {
+                    let i = x * size + y;
+                    j = y * size + (size - x - 1);
+                    newPixels[j] = pixels[i];
+                }
+            }
+            break;
+        default:
+            throw new Error('Invalid rotateCount');
+    }
+    return newPixels;
+}
+
+function flipImage(pixels, reflection) {
+    const size = 28;
+    const newPixels = new Uint8ClampedArray(size * size);
+
+    if (reflection === "xAxis") {
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                const i = x * size + y;
+                let j = (size - x - 1) * size + y;
+                newPixels[j] = pixels[i];
+            }
+        }
+    } else if (reflection === "yAxis") {
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                const i = x * size + y;
+                let j = x * size + (size - y - 1);
+                newPixels[j] = pixels[i];
+            }
+        }
+    } else {
+        throw new Error("Invalid reflection type");
+    }
+
+    return newPixels;
 }
