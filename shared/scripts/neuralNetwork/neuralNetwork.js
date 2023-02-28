@@ -14,6 +14,8 @@ class NeuralNetwork {
         this.lastTarget = null;
         this.singleOutput = false;
         this.isLearning = false;
+
+        this.learningStatistics = {};
     }
 
     // PUBLIC
@@ -114,7 +116,8 @@ class NeuralNetwork {
                     "Test length": splitData.testX.length,
                     "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
-                console.table(results);
+                this.learningStatistics = results;
+                console.log(results["Test %"]);
             }
         }
 
@@ -283,6 +286,8 @@ class NeuralNetwork {
                     "Test length": splitData.testX.length,
                     "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
+                this.learningStatistics = results;
+
                 console.table(results);
             }
         }

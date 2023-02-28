@@ -16,15 +16,19 @@ let userDigit;
 let userIsDrawing;
 let emptyImage;
 let userPrediction;
+let trainingTextShowed;
+const xOffset = ProjectData.CanvasWidth / 2 - 100;
+const yOffset = ProjectData.CanvasHeight / 2 - 100;
+let networkWasTrained;
 
 function preload() {
-    // readTextFile('./digits10k.bin');
-    // prepareDigitImages(rawData);
-
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    prepareDigitImagesWithZeroCounter(rawData, 4);
+    const preparedData = DataManage.prepareDigitImages(rawData, 200, 1);
+    data = preparedData[0];
+    images = preparedData[1];
 
-    console.log(data);
+    console.log(data)
+    console.log("Loaded data!");
 }
 
 function readTextFile(file) {
@@ -38,60 +42,6 @@ function readTextFile(file) {
         }
     }
     rawFile.send(null);
-}
-
-// function prepareDigitImages(rawData) {
-//     data = { X: [], Y: [] };
-//     images = [];
-
-//     const inputsCount = 1;
-
-//     const rows = rawData.split("\n");
-//     for (let i = 0; i < rows.length / inputsCount; i++) {
-//         let pixels = rows[i * inputsCount].split(" ");
-//         data.Y.push(pixels[0]);
-//         data.X.push(pixels.slice(1, 785).map(p => p / 255));
-//         images.push(pixels.slice(1, 785).map(p => p / 255));
-//     }
-// }
-
-function prepareDigitImagesWithZeroCounter(rawData, noiseSamples) {
-
-    data = { X: [], Y: [] };
-    images = [];
-
-    const allRows = 40000;
-    const digitCount = 1000; // all clear rows + noiseSamples* noise rows
-    const inputsCount = allRows / digitCount;
-
-    const rows = rawData.split("\n");
-    for (let i = 0; i < rows.length / inputsCount; i++) {
-        let pixels = rows[i * inputsCount].split(" ");
-
-        let dataRow = [];
-        for (let j = 1; j < pixels.length - 1; j++) {
-            if (pixels[j].includes("x")) {
-                let zeroCounts = pixels[j].split("x")[0];
-                for (let k = 0; k < Number(zeroCounts); k++) {
-                    dataRow.push(0);
-                }
-            }
-            else {
-                dataRow.push(pixels[j] / 255);
-            }
-        }
-
-        data.Y.push(pixels[0]);
-        data.X.push(dataRow);
-        images.push(dataRow);
-
-        for (let j = 0; j < noiseSamples; j++) {
-            const noiseRow = DataManage.noiseSingleRow(dataRow);
-            data.Y.push(pixels[0]);
-            data.X.push(noiseRow);
-            images.push(noiseRow);
-        }
-    }
 }
 
 function setup() {
@@ -113,61 +63,120 @@ function setup() {
 
     userIsDrawing = false;
     emptyImage = true;
-    userPrediction = { index: -1, activation: 0 };
+    userPrediction = null;
+    trainingTextShowed = false;
+    networkWasTrained = false;
 
-    // nnDrawer = new NeuralNetworkDrawer(model, 100);
-    // nnDrawer.drawOutput(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
+    textSize(22);
+    strokeWeight(5);
 }
 
 function draw() {
     background(71, 71, 71);
     showImage();
 
-    const xOffset = ProjectData.CanvasWidth / 2 - 100;
-    const yOffset = ProjectData.CanvasHeight / 2 - 100;
-
     image(userDigit, xOffset, yOffset);
     if (mouseIsPressed) {
-        userIsDrawing = true;
-        emptyImage = false;
-        userDigit.stroke(255);
-        userDigit.strokeWeight(6);
-        userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
+        drawDigit();
     }
     else {
         userIsDrawing = false;
     }
 
+    if (networkWasTrained) {
+        writeTrainingText(epoch);
+    }
+
     if (training && !userIsDrawing) {
-        fill(250, 160, 50);
-        text("Training", ProjectData.CanvasWidth / 2 - 70, 140);
         epoch++;
-        console.warn("TRAINING");
-        model.trainAdam(data.X, data.Y, 128, 0.7, 1);
+
+        if (trainingTextShowed) {
+            console.warn("Training started!");
+            model.trainAdam(data.X, data.Y, 128, 0.7, 1);
+        }
+
+        networkWasTrained = true;
     }
 
     if (!userIsDrawing)
         guessUserDigit();
 
-    // model.trainAdam(data.X, data.Y, 128, 0.7, 160);
-    strokeWeight(5);
-    fill(250, 50, 50);
-    textSize(40);
-    text("Epoch: " + epoch, ProjectData.CanvasWidth - 200, ProjectData.CanvasHeight - 20);
+    if (userPrediction != null) {
+        writeNetworkOutputs();
+    }
+}
 
-    fill(30, 170, 50);
-    text("Prediction: " + userPrediction.index, 20, ProjectData.CanvasHeight - 60);
-    text("Chance: " + userPrediction.activation.toFixed(2), 20, ProjectData.CanvasHeight - 20);
+function writeTrainingText(epoch) {
+    fill(250, 160, 50);
+    text("Training", ProjectData.CanvasWidth / 2 - 80, 60);
+    text("Epoch: " + epoch, ProjectData.CanvasWidth / 2 - 80, 90);
+    let acc = model.learningStatistics["Test %"];
+    if (acc == undefined)
+        acc = 0.00;
+
+    text("Accuracy: " + toPercent(Number(acc)), ProjectData.CanvasWidth / 2 - 80, 120);
+    trainingTextShowed = true;
+}
+
+function writeNetworkOutputs() {
+    fill(30, 140, 180);
+    text("Prediction", ProjectData.CanvasWidth - 160, 40);
+
+    const sortedIndices = sortedPredictionIndices();
+
+    for (let i = 0; i < sortedIndices.length; i++) {
+        const element = userPrediction[sortedIndices[i]];
+        if (i == 0)
+            fill(60, 180, 40);
+        else
+            fill(210 + 4 * i, 140 - 14 * i, 30 - 3 * i);
+        text(`${sortedIndices[i]} = ${toPercent(element)}`, ProjectData.CanvasWidth - 160, 80 + 40 * i);
+    }
+}
+
+function toPercent(value) {
+    value *= 100;
+    value = value.toFixed(2).toString();
+
+    valueParts = value.split(".");
+
+    if (valueParts[0].length == 1)
+        valueParts[0] = "0" + valueParts[0][0];
+
+    return valueParts[0] + "." + valueParts[1][0] + valueParts[1][1] + "%";
+}
+
+function sortedPredictionIndices() {
+    return Array.from(Array(userPrediction.length).keys())
+        .sort((a, b) => userPrediction[a] > userPrediction[b] ? -1 : (userPrediction[b] > userPrediction[a]) | 0)
+}
+
+function drawDigit() {
+
+    if (
+        mouseX < ProjectData.CanvasWidth / 2 - 100
+        || mouseX > ProjectData.CanvasWidth / 2 + 100
+        || mouseY < ProjectData.CanvasHeight / 2 - 100
+        || mouseY > ProjectData.CanvasHeight / 2 + 100
+    )
+        return;
+
+    userIsDrawing = true;
+    emptyImage = false;
+    userDigit.stroke(255);
+    userDigit.strokeWeight(6);
+    userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
 }
 
 function keyPressed() {
     if (keyCode === 32) {
         training = !training;
-        console.warn("Change training to: " + training);
     }
     else if (keyCode === ESCAPE) {
         userIsDrawing = false;
         emptyImage = true;
+        userPrediction = null;
+        trainingTextShowed = false;
         userDigit.background(0);
     }
     else if (key === 'r') {
@@ -188,7 +197,7 @@ function guessUserDigit() {
     for (let i = 0; i < 784; i++) {
         inputs[i] = img.pixels[i * 4] / 255;
     }
-    userPrediction = model.predictSingleWithActivation(inputs);
+    userPrediction = model.predict(inputs);
 }
 
 function windowResized() {
@@ -204,7 +213,6 @@ function centerCanvas() {
 function resetCanvas() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     centerCanvas();
-    // neuralNetwork = new neuralNetwork();
 }
 
 function showImage() {
@@ -216,9 +224,9 @@ function showImage() {
     for (let i = 0; i < imageData.length; i++) {
         let bright = imageData[i];
         let index = i * 4;
-        testImage.pixels[index + 0] = bright * 255;
-        testImage.pixels[index + 1] = bright * 255;
-        testImage.pixels[index + 2] = bright * 255;
+        testImage.pixels[index + 0] = Math.floor(bright * 255);
+        testImage.pixels[index + 1] = Math.floor(bright * 255);
+        testImage.pixels[index + 2] = Math.floor(bright * 255);
         testImage.pixels[index + 3] = 255;
     }
     testImage.updatePixels();

@@ -1,4 +1,10 @@
 class LossFunction {
+
+    constructor(func, derivative) {
+        this.func = func;
+        this.derivative = derivative;
+    }
+
     static onehotIndexTarget(target, predictedLength) {
 
         if (Array.isArray(target))
