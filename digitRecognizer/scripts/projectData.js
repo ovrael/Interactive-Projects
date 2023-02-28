@@ -6,8 +6,7 @@ class ProjectData {
 
 const scripts = [
     "activationFunction",
-    "activationFunctions",
-    "lossFunction",
+    "costFunction",
     "lossFunctions",
     "dataManage",
     "weights",

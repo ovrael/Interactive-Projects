@@ -5,7 +5,7 @@ let canvas;
 let model;
 let projectDataBackUp = Object.entries(ProjectData);
 let nnDrawer;
-let data;
+let datapoints;
 let images;
 let rawData;
 let trainImage;
@@ -24,10 +24,10 @@ let networkWasTrained;
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
     const preparedData = DataManage.prepareDigitImages(rawData, 200, 1);
-    data = preparedData[0];
+    datapoints = preparedData[0];
     images = preparedData[1];
 
-    console.log(data)
+    console.log(datapoints)
     console.log("Loaded data!");
 }
 
@@ -49,11 +49,11 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    const inputLenght = data.X[0].length;
-    model = new NeuralNetwork(LossFunctions.MultiClassification.SimpleSubtraction, 0.000005);
-    model.addLayer(inputLenght, ActivationFunctions.Tanh);
-    model.addLayer(256, ActivationFunctions.Sigmoid);
-    model.addLayer(10, ActivationFunctions.SoftMax);
+    const inputLenght = datapoints.X[0].length;
+    model = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
+    model.addLayer(inputLenght, ActivationFunction.tanh());
+    model.addLayer(256, ActivationFunction.sigmoid());
+    model.addLayer(10, ActivationFunction.softmax());
     epoch = 0;
     training = false;
 
@@ -92,7 +92,7 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            model.trainAdam(data.X, data.Y, 128, 0.7, 1);
+            model.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1);
         }
 
         networkWasTrained = true;

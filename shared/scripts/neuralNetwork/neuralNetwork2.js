@@ -1,7 +1,7 @@
-class NeuralNetwork {
+class NeuralNetwork2 {
 
-    constructor(errorFunction, learningRate = 0.05) {
-        this.lossFunction = errorFunction;
+    constructor(costFunction, learningRate = 0.05) {
+        this.costFunction = costFunction;
         this.learningRate = learningRate;
 
         /** @type {Array<Layer>} */
@@ -27,7 +27,7 @@ class NeuralNetwork {
         @returns {undefined} This function does not return anything.
     */
     compile(errorFunction, learningRate = 0.05) {
-        this.lossFunction = errorFunction;
+        this.costFunction = errorFunction;
         this.learningRate = learningRate;
         this.#updateNeuralNetworkData();
     }
@@ -424,7 +424,7 @@ class NeuralNetwork {
     */
     #backpropLastLayer(target) {
         let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -463,7 +463,7 @@ class NeuralNetwork {
     */
     #backpropLastLayerBatch(target) {
         let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -479,7 +479,7 @@ class NeuralNetwork {
 
     #backpropLastLayerBatch2(target) {
         let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -550,7 +550,7 @@ class NeuralNetwork {
             console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testY[i]);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
@@ -565,7 +565,7 @@ class NeuralNetwork {
 
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testY[i]);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
