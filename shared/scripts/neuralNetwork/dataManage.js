@@ -81,7 +81,8 @@ class DataManage {
                     }
                 }
                 else {
-                    dataRow.push(pixels[j] / 255);
+                    dataRow.push(pixels[j] > 0.5 ? 1 : 0);
+                    // dataRow.push(pixels[j] / 255);
                 }
             }
 
@@ -101,19 +102,19 @@ class DataManage {
     }
 
     static noiseSingleRow(dataRow) {
-        let noiseRow = this.noiseImage(dataRow, 0.03);
+        let noiseRow = this.noiseImage(dataRow, 0.02);
 
-        if (Math.random() < 0.05) {
+        if (Math.random() < 0.00) {
             noiseRow = this.rotateImage(noiseRow, Math.floor(Math.random() * 4));
         }
-        if (Math.random() < 0.01) {
+        if (Math.random() < 0.00) {
             noiseRow = this.flipImage(noiseRow, "xAxis");
         }
-        if (Math.random() < 0.01) {
+        if (Math.random() < 0.00) {
             noiseRow = this.flipImage(noiseRow, "yAxis");
         }
 
-        if (Math.random() < 0.2) {
+        if (Math.random() < 0.5) {
             noiseRow = this.shiftImage(noiseRow);
         }
 
@@ -201,10 +202,11 @@ class DataManage {
     static shiftImage(pixels) {
         const newPixels = new Uint8ClampedArray(this.imageSize * this.imageSize);
         const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
-        const offset = Math.floor(Math.random() * 6) + 1; // random offset between 1 and 8 pixels
+        let offset = Math.floor(Math.random() * 6) + 1; // random offset between 1 and 8 pixels
 
         switch (direction) {
             case 0: // left
+                offset = Math.floor(Math.random() * 12) + 1; // random offset between 1 and 8 pixels
                 for (let x = 0; x < this.imageSize; x++) {
                     for (let y = 0; y < this.imageSize; y++) {
                         const i = x * this.imageSize + y;
@@ -215,6 +217,7 @@ class DataManage {
 
                 break;
             case 1: // top
+                offset = Math.floor(Math.random() * 12) + 1; // random offset between 1 and 8 pixels
                 for (let x = 0; x < this.imageSize; x++) {
                     for (let y = 0; y < this.imageSize; y++) {
                         const i = x * this.imageSize + y;

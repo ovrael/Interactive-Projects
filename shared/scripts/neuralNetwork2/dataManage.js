@@ -103,17 +103,17 @@ class DataManage {
     static noiseSingleRow(dataRow) {
         let noiseRow = this.noiseImage(dataRow, 0.03);
 
-        if (Math.random() < 0.05) {
+        if (Math.random() < 0.00) {
             noiseRow = this.rotateImage(noiseRow, Math.floor(Math.random() * 4));
         }
-        if (Math.random() < 0.01) {
+        if (Math.random() < 0.00) {
             noiseRow = this.flipImage(noiseRow, "xAxis");
         }
-        if (Math.random() < 0.01) {
+        if (Math.random() < 0.00) {
             noiseRow = this.flipImage(noiseRow, "yAxis");
         }
 
-        if (Math.random() < 0.2) {
+        if (Math.random() < 0.4) {
             noiseRow = this.shiftImage(noiseRow);
         }
 

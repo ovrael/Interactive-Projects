@@ -8,6 +8,7 @@ const scripts = [
     "activationFunction",
     "costFunction",
     "lossFunctions",
+    // "dataPoint",
     "dataManage",
     "weights",
     "layer",

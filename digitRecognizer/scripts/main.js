@@ -23,7 +23,7 @@ let networkWasTrained;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const preparedData = DataManage.prepareDigitImages(rawData, 200, 1);
+    const preparedData = DataManage.prepareDigitImages(rawData, 50, 2);
     datapoints = preparedData[0];
     images = preparedData[1];
 
@@ -50,9 +50,10 @@ function setup() {
     centerCanvas();
 
     const inputLenght = datapoints.X[0].length;
+    // model = new NeuralNetwork(CostFunction.crossEntropy(), 0.000005);
     model = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
     model.addLayer(inputLenght, ActivationFunction.tanh());
-    model.addLayer(256, ActivationFunction.sigmoid());
+    model.addLayer(512, ActivationFunction.sigmoid());
     model.addLayer(10, ActivationFunction.softmax());
     epoch = 0;
     training = false;
@@ -92,7 +93,7 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            model.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1);
+            model.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1, 0.001);
         }
 
         networkWasTrained = true;
@@ -164,7 +165,7 @@ function drawDigit() {
     userIsDrawing = true;
     emptyImage = false;
     userDigit.stroke(255);
-    userDigit.strokeWeight(6);
+    userDigit.strokeWeight(16);
     userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
 }
 
