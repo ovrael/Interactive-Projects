@@ -1,15 +1,18 @@
+const Optimizer = {
+    StochasticGradientDescent: "SGD",
+    BatchGradientDescent: "BGD",
+    Adam: "Adam"
+}
+
 class NeuralNetwork {
 
-    constructor(costFunction, learningRate = 0.05) {
-        /** @type {CostFunction} */
-        this.costFunction = costFunction;
+    constructor(errorFunction, optimizer) {
+        this.lossFunction = errorFunction;
         this.learningRate = learningRate;
 
         /** @type {Array<Layer>} */
         this.layers = [];
-        /** @type {Array<DropoutLayer>} */
-        this.dropoutLayers = [];
-
+        this.rememberedDropoutData = null;
         this.layersCount = -1;
 
         this.lastTarget = null;
@@ -17,20 +20,42 @@ class NeuralNetwork {
         this.isLearning = false;
 
         this.learningStatistics = {};
+
+        this.#assignTrainMethod(optimizer);
     }
 
     // PUBLIC
 
     /**
         Compiles the neural network with the given error function and learning rate.
-        @param {Function} costFunction - The error function to be used for the neural network.
+        @param {Function} errorFunction - The error function to be used for the neural network.
         @param {number} [learningRate=0.05] - The learning rate to be used for the neural network.
         @returns {undefined} This function does not return anything.
     */
-    compile(costFunction, learningRate = 0.05) {
-        getWeight = costFunction;
-        this.learningRate = learningRate;
+    compile(errorFunction, optimizer) {
+        this.lossFunction = errorFunction;
+        this.#assignTrainMethod(optimizer);
+
         this.#updateNeuralNetworkData();
+    }
+
+    #assignTrainMethod(optimizer) {
+        switch (optimizer) {
+            case Optimizer.StochasticGradientDescent:
+                this.train = this.trainSGD;
+                break;
+
+            case Optimizer.BatchGradientDescent:
+                this.train = this.trainBGD;
+                break;
+
+            case Optimizer.Adam:
+                this.train = this.trainAdam;
+                break;
+
+            default:
+                break;
+        }
     }
 
     resetWeights() {
@@ -45,32 +70,87 @@ class NeuralNetwork {
     }
 
     /**
-        Adds a new layer to the neural network with the given number of neurons and activation function.
-        @param {number} numberOfNeurons - The number of neurons in the new layer.
-        @param {Function} activationFunction - The activation function to be used for the new layer.
-        @returns {undefined} This function does not return anything.
+    Adds a new layer to the neural network with the given number of neurons and activation function.
+    @param {number} numberOfNeurons - The number of neurons in the new layer.
+    @param {Function} activationFunction - The activation function to be used for the new layer.
+    @returns {undefined} This function does not return anything.
     */
-    addLayer(numberOfNeurons, activationFunction) {
-        let numberOfPreviousNeurons = ((this.layers.length > 0) ? this.layers[this.layers.length - 1].neuronsCount : 0);
+    addLayer(layerData) {
 
-        this.layers.push(
-            new Layer(numberOfNeurons, numberOfPreviousNeurons, activationFunction)
-        );
+        if (!(layerData instanceof LayerData)) {
+            console.error("Layer data is not instance of LayerData class!");
+            return null;
+        }
 
-        this.dropoutLayers.push(
-            new DropoutLayer(0, 0)
-        );
+        switch (layerData.type) {
+            case LayerType.Input:
+                this.#addInputLayer(layerData);
+                break;
+            case LayerType.Dense:
+                this.#addDenseLayer(layerData);
+                break;
+
+            case LayerType.Dropout:
+                this.rememberedDropoutData = layerData;
+                break;
+            default:
+                break;
+        }
 
         this.layersCount = this.layers.length;
     }
 
-    addDropoutLayer(chance) {
+    // constructor(type, numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction, dropoutRate)
+    #addInputLayer(layerData) {
+        if (this.layers.length > 0) {
+            console.error("Input layer already exists in the neural network!");
+            return null;
+        }
 
-        if (chance <= 0)
-            return;
+        this.layers.push(
+            new Layer(LayerType.Input, layerData.neurons, 0, null, 0)
+        );
+    }
 
-        const numberOfNeurons = this.layers[this.layers.length - 1].neuronsCount;
-        this.dropoutLayers[this.dropoutLayers.length - 1] = new DropoutLayer(chance, numberOfNeurons);
+    #addDenseLayer(layerData) {
+        if (this.layers.length == 0) {
+            console.error("There is no input layer in the neural network!");
+            return null;
+        }
+
+        // Prevents from adding dropout to last layer.
+        // this.rememberedDropoutLayer changes to null after this operation.
+        if (this.rememberedDropoutData != null) {
+            this.#addDropoutLayer(this.rememberedDropoutData);
+        }
+
+        this.layers.push(
+            new Layer(
+                LayerType.Dense,
+                layerData.neurons,
+                this.layers[this.layers.length - 1].neuronsCount,
+                layerData.activationFunction,
+                0
+            )
+        );
+    }
+
+    #addDropoutLayer(layerData) {
+        if (this.layers.length == 0) {
+            console.error("There is no input layer in the neural network!");
+            return null;
+        }
+
+        this.layers[this.layers.length - 1].addDropout(layerData.dropoutRate);
+        this.rememberedDropoutData = null;
+    }
+
+    #changeLayersDropout(shouldDropout) {
+        for (let i = 0; i < this.layersCount - 1; i++) {
+            if (this.layers[i].type == LayerType.Dropout) {
+                this.layers[i].changeDropoutMode(shouldDropout);
+            }
+        }
     }
 
     /**
@@ -81,7 +161,7 @@ class NeuralNetwork {
         @param {number} [epochs=100] - The number of epochs to be used for training.
         @returns {undefined} This function does not return anything.
     */
-    train(data, targets, trainTestRatio = 0.7, epochs = 100) {
+    trainSGD(data, targets, trainTestRatio = 0.7, epochs = 100) {
 
         if (!this.#checkConditions(data, targets)) {
             return;
@@ -135,7 +215,7 @@ class NeuralNetwork {
         @param {number} [epochs=100] - The number of epochs to be used for training.
         @returns {undefined} This function does not return anything.
     */
-    trainBatch(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100) {
+    trainBGD(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100) {
 
         if (!this.#checkConditions(data, targets)) {
             return;
@@ -210,6 +290,7 @@ class NeuralNetwork {
         this.isLearning = true;
 
         this.#updateNeuralNetworkData();
+        this.#changeLayersDropout(this.isLearning);
 
         const splitData = DataManage.split(data, targets, trainTestRatio);
         const showResultStep = Math.floor(epochs / 10);
@@ -292,6 +373,8 @@ class NeuralNetwork {
             }
         }
         this.isLearning = false;
+        this.#changeLayersDropout(this.isLearning);
+
         console.info("Training finished");
         // console.table(this);
     }
@@ -402,19 +485,10 @@ class NeuralNetwork {
     #feedForward(rowData) {
 
         this.layers[0].fillNeurons(rowData);
-        this.#dropoutLayer(0);
-
 
         for (let i = 1; i < this.layers.length; i++) {
             this.layers[i].sumNeurons(this.layers[i - 1]);
             this.layers[i].activateNeurons();
-            this.#dropoutLayer(i);
-        }
-    }
-
-    #dropoutLayer(layerIndex) {
-        if (this.dropoutLayers[layerIndex].dropouts.length > 0) {
-            this.layers[layerIndex].activations = this.dropoutLayers[layerIndex].applyDropout(this.layers[layerIndex].activations);
         }
     }
 
@@ -425,7 +499,7 @@ class NeuralNetwork {
     */
     #backpropLastLayer(target) {
         let errorSum = 0;
-        let outputErrors = this.costFunction.func(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -463,22 +537,35 @@ class NeuralNetwork {
         @returns {number} the sum of errors for the output layer.
     */
     #backpropLastLayerBatch(target) {
-
-        /** @type {Layer} */
-        const lastLayer = this.layers[this.layers.length - 1];
-        const onehotTargets = DataPoint.createOneHot(target, 10);
-
-        const cost = this.costFunction.func(lastLayer.activations, onehotTargets);
+        let errorSum = 0;
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < lastLayer.activations; i++) {
-            const costDerivative = this.costFunction.derivative(lastLayer.activations[i], onehotTargets[i]);
-            this.layers[this.layers.length - 1].gamma[i] = costDerivative * lastLayer.derivatives[i];
+        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
+            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
+            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
+            errorSum += outputErrors[i];
         }
 
         this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
 
-        return cost;
+        return errorSum;
+    }
+
+    #backpropLastLayerBatch2(target) {
+        let errorSum = 0;
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+
+        this.layers[this.layersCount - 1].computeDerivatives();
+        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
+            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
+            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
+            errorSum += outputErrors[i];
+        }
+
+        this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
+
+        return errorSum;
     }
 
     /**
@@ -538,7 +625,8 @@ class NeuralNetwork {
             console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                testLoss = this.costFunction.func(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+                testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
 
@@ -552,7 +640,8 @@ class NeuralNetwork {
 
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                testLoss = this.costFunction.func(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+                testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
 

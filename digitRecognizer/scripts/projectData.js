@@ -17,9 +17,37 @@ const scripts = [
     "neuralNetworkDrawer",
 ];
 
+const scripts2 = [
+    "activationFunction",
+    "costFunction",
+    "dataPoint",
+    "dataManage",
+    "weights",
+    "layerData",
+    "layer",
+    "neuralNetwork",
+];
+
+const scriptsTest = [
+    "activationFunction",
+    "costFunction",
+    "lossFunctions",
+    "dataManage",
+    "weights",
+    "layerData",
+    "layer",
+    "dropoutLayer",
+    "neuralNetwork"
+];
+
 const head = document.getElementById("mainHead");
-for (let i = 0; i < scripts.length; i++) {
+
+const scriptsToLoad = scriptsTest;
+const folder = "neuralNetwork_test";
+const path = "../shared/scripts/" + folder + "/";
+
+for (let i = 0; i < scriptsToLoad.length; i++) {
     let scriptElement = document.createElement("script");
-    scriptElement.src = "../shared/scripts/neuralNetwork/" + scripts[i] + ".js";
+    scriptElement.src = path + scriptsToLoad[i] + ".js";
     head.append(scriptElement);
 }

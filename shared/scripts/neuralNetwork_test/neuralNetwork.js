@@ -1,17 +1,12 @@
 class NeuralNetwork {
 
-    constructor(costFunction, learningRate = 0.05) {
-
-
-        /** @type {CostFunction} */
-        this.costFunction = costFunction;
+    constructor(errorFunction, learningRate = 0.05) {
+        this.lossFunction = errorFunction;
         this.learningRate = learningRate;
 
         /** @type {Array<Layer>} */
         this.layers = [];
-        /** @type {Array<DropoutLayer>} */
-        this.dropoutLayers = [];
-
+        this.rememberedDropoutData = null;
         this.layersCount = -1;
 
         this.lastTarget = null;
@@ -25,12 +20,12 @@ class NeuralNetwork {
 
     /**
         Compiles the neural network with the given error function and learning rate.
-        @param {Function} costFunction - The error function to be used for the neural network.
+        @param {Function} errorFunction - The error function to be used for the neural network.
         @param {number} [learningRate=0.05] - The learning rate to be used for the neural network.
         @returns {undefined} This function does not return anything.
     */
-    compile(costFunction, learningRate = 0.05) {
-        this.costFunction = costFunction;
+    compile(errorFunction, learningRate = 0.05) {
+        this.lossFunction = errorFunction;
         this.learningRate = learningRate;
         this.#updateNeuralNetworkData();
     }
@@ -47,32 +42,88 @@ class NeuralNetwork {
     }
 
     /**
-        Adds a new layer to the neural network with the given number of neurons and activation function.
-        @param {number} numberOfNeurons - The number of neurons in the new layer.
-        @param {Function} activationFunction - The activation function to be used for the new layer.
-        @returns {undefined} This function does not return anything.
-    */
-    addLayer(numberOfNeurons, activationFunction) {
-        let numberOfPreviousNeurons = ((this.layers.length > 0) ? this.layers[this.layers.length - 1].neuronsCount : 0);
+    Adds a new layer to the neural network with the given number of neurons and activation function.
+    @param {number} numberOfNeurons - The number of neurons in the new layer.
+    @param {Function} activationFunction - The activation function to be used for the new layer.
+    @returns {undefined} This function does not return anything.
+*/
+    addLayer(layerData) {
 
-        this.layers.push(
-            new Layer(numberOfNeurons, numberOfPreviousNeurons, activationFunction)
-        );
+        if (!(layerData instanceof LayerData)) {
+            console.error("Layer data is not instance of LayerData class!");
+            return null;
+        }
 
-        this.dropoutLayers.push(
-            new DropoutLayer(0, 0)
-        );
+        switch (layerData.type) {
+            case LayerType.Input:
+                this.#addInputLayer(layerData);
+                break;
+            case LayerType.Dense:
+                this.#addDenseLayer(layerData);
+                break;
+
+            case LayerType.Dropout:
+                this.rememberedDropoutData = layerData;
+                break;
+            default:
+                break;
+        }
 
         this.layersCount = this.layers.length;
     }
 
-    addDropoutLayer(chance) {
+    // constructor(type, numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction, dropoutRate)
 
-        if (chance <= 0)
-            return;
+    #addInputLayer(layerData) {
+        if (this.layers.length > 0) {
+            console.error("Input layer already exists in the neural network!");
+            return null;
+        }
 
-        const numberOfNeurons = this.layers[this.layers.length - 1].neuronsCount;
-        this.dropoutLayers[this.dropoutLayers.length - 1] = new DropoutLayer(chance, numberOfNeurons);
+        this.layers.push(
+            new Layer(LayerType.Input, layerData.neurons, 0, null, 0)
+        );
+    }
+
+    #addDenseLayer(layerData) {
+        if (this.layers.length == 0) {
+            console.error("There is no input layer in the neural network!");
+            return null;
+        }
+
+        // Prevents from adding dropout to last layer.
+        // this.rememberedDropoutLayer changes to null after this operation.
+        if (this.rememberedDropoutData != null) {
+            this.#addDropoutLayer(this.rememberedDropoutData);
+        }
+
+        this.layers.push(
+            new Layer(
+                LayerType.Dense,
+                layerData.neurons,
+                this.layers[this.layers.length - 1].neuronsCount,
+                layerData.activationFunction,
+                0
+            )
+        );
+    }
+
+    #addDropoutLayer(layerData) {
+        if (this.layers.length == 0) {
+            console.error("There is no input layer in the neural network!");
+            return null;
+        }
+
+        this.layers[this.layers.length - 1].addDropout(layerData.dropoutRate);
+        this.rememberedDropoutData = null;
+    }
+
+    #changeLayersDropout(shouldDropout) {
+        for (let i = 0; i < this.layersCount - 1; i++) {
+            if (this.layers[i].type == LayerType.Dropout) {
+                this.layers[i].changeDropoutMode(shouldDropout);
+            }
+        }
     }
 
     /**
@@ -212,6 +263,7 @@ class NeuralNetwork {
         this.isLearning = true;
 
         this.#updateNeuralNetworkData();
+        this.#changeLayersDropout(this.isLearning);
 
         const splitData = DataManage.split(data, targets, trainTestRatio);
         const showResultStep = Math.floor(epochs / 10);
@@ -290,11 +342,12 @@ class NeuralNetwork {
                     "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
                 }
                 this.learningStatistics = results;
-
                 console.table(results);
             }
         }
         this.isLearning = false;
+        this.#changeLayersDropout(this.isLearning);
+
         console.info("Training finished");
         // console.table(this);
     }
@@ -405,19 +458,10 @@ class NeuralNetwork {
     #feedForward(rowData) {
 
         this.layers[0].fillNeurons(rowData);
-        this.#dropoutLayer(0);
-
 
         for (let i = 1; i < this.layers.length; i++) {
             this.layers[i].sumNeurons(this.layers[i - 1]);
             this.layers[i].activateNeurons();
-            this.#dropoutLayer(i);
-        }
-    }
-
-    #dropoutLayer(layerIndex) {
-        if (this.dropoutLayers[layerIndex].dropouts.length > 0) {
-            this.layers[layerIndex].activations = this.dropoutLayers[layerIndex].applyDropout(this.layers[layerIndex].activations);
         }
     }
 
@@ -428,7 +472,7 @@ class NeuralNetwork {
     */
     #backpropLastLayer(target) {
         let errorSum = 0;
-        let outputErrors = this.costFunction.main(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -466,21 +510,30 @@ class NeuralNetwork {
         @returns {number} the sum of errors for the output layer.
     */
     #backpropLastLayerBatch(target) {
-        /** @type {Layer} */
-        const lastLayer = this.layers[this.layers.length - 1];
-        const errorSum = this.costFunction.main(lastLayer.activations, target);
-        const onehotTargets = DataPoint.createOneHot(target, 10);
-
-        for (let i = 0; i < lastLayer.neuronsCount; i++) {
-            lastLayer.errors[i] = this.costFunction.derivative(lastLayer.activations[i], onehotTargets[i]);
-        }
-
-        let outputErrors = this.costFunction.main(this.layers[this.layers.length - 1].activations, target);
+        let errorSum = 0;
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
             this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
             this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
+            errorSum += outputErrors[i];
+        }
+
+        this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
+
+        return errorSum;
+    }
+
+    #backpropLastLayerBatch2(target) {
+        let errorSum = 0;
+        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+
+        this.layers[this.layersCount - 1].computeDerivatives();
+        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
+            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
+            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
+            errorSum += outputErrors[i];
         }
 
         this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
@@ -545,7 +598,7 @@ class NeuralNetwork {
             console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                let outputErrors = this.costFunction.main(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
@@ -560,7 +613,7 @@ class NeuralNetwork {
 
             for (let i = 0; i < testX.length; i++) {
                 this.#feedForward(testX[i]);
-                let outputErrors = this.costFunction.main(this.layers[this.layers.length - 1].activations, testY[i]);
+                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
