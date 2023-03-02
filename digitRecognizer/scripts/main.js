@@ -165,7 +165,7 @@ function drawDigit() {
     userIsDrawing = true;
     emptyImage = false;
     userDigit.stroke(255);
-    userDigit.strokeWeight(16);
+    userDigit.strokeWeight(12);
     userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
 }
 

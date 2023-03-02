@@ -102,17 +102,16 @@ class DataManage {
     }
 
     static noiseSingleRow(dataRow) {
-        let noiseRow = this.noiseImage(dataRow, 0.02);
-
-        if (Math.random() < 0.00) {
-            noiseRow = this.rotateImage(noiseRow, Math.floor(Math.random() * 4));
-        }
-        if (Math.random() < 0.00) {
-            noiseRow = this.flipImage(noiseRow, "xAxis");
-        }
-        if (Math.random() < 0.00) {
-            noiseRow = this.flipImage(noiseRow, "yAxis");
-        }
+        let noiseRow = this.noiseImage(dataRow, 0.025);
+        // if (Math.random() < 0.00) {
+        //     noiseRow = this.rotateImage(noiseRow, Math.floor(Math.random() * 4));
+        // }
+        // if (Math.random() < 0.00) {
+        //     noiseRow = this.flipImage(noiseRow, "xAxis");
+        // }
+        // if (Math.random() < 0.00) {
+        //     noiseRow = this.flipImage(noiseRow, "yAxis");
+        // }
 
         if (Math.random() < 0.5) {
             const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
@@ -204,14 +203,61 @@ class DataManage {
         return newPixels;
     }
 
+    static getMaxOffset(pixels, direction) {
+        let maxOffset = 0;
+        switch (direction) {
+            case 0: // left
+                for (let x = 0; x < this.imageSize / 2; x++) {
+                    for (let y = 2; y < this.imageSize - 2; y += 6) {
+                        if (pixels[28 * y + x] == 1) {
+                            return x;
+                        }
+                    }
+                }
+
+                break;
+            case 1: // top
+                for (let y = 0; y < this.imageSize / 2; y++) {
+                    for (let x = 2; x < this.imageSize - 2; x += 6) {
+                        if (pixels[28 * y + x] == 1) {
+                            return y;
+                        }
+                    }
+                }
+                break;
+            case 2: // right
+                for (let x = this.imageSize - 1; x > this.imageSize / 2; x--) {
+                    for (let y = 2; y < this.imageSize - 2; y += 6) {
+                        if (pixels[28 * y + x] == 1) {
+                            return this.imageSize - 1 - x;
+                        }
+                    }
+                }
+                break;
+            case 3: // bottom
+                for (let y = this.imageSize - 1; y > this.imageSize / 2; y--) {
+                    for (let x = 2; x < this.imageSize - 2; x += 6) {
+                        if (pixels[28 * y + x] == 1) {
+                            return this.imageSize - 1 - y;
+                        }
+                    }
+                }
+                break;
+            default:
+                throw new Error("Invalid direction");
+        }
+
+        return maxOffset;
+    }
+
     static shiftImage(pixels, direction) {
         const newPixels = new Uint8ClampedArray(this.imageSize * this.imageSize);
-        let offset = Math.floor(Math.random() * 6) + 1; // random offset between 1 and 8 pixels
         direction = direction % 4;
+        const maxOffset = this.getMaxOffset(pixels, direction);
+        const offset = Math.floor(Math.random() * maxOffset) + 1; // random offset between 1 and 8 pixels
 
         switch (direction) {
             case 0: // left
-                offset = Math.floor(Math.random() * 12) + 1; // random offset between 1 and 8 pixels
                 for (let x = 0; x < this.imageSize; x++) {
                     for (let y = 0; y < this.imageSize; y++) {
                         const i = x * this.imageSize + y;
@@ -222,7 +268,6 @@ class DataManage {
 
                 break;
             case 1: // top
-                offset = Math.floor(Math.random() * 12) + 1; // random offset between 1 and 8 pixels
                 for (let x = 0; x < this.imageSize; x++) {
                     for (let y = 0; y < this.imageSize; y++) {
                         const i = x * this.imageSize + y;
@@ -256,11 +301,43 @@ class DataManage {
         return newPixels;
     }
 
+    static rotatePixels(pixels, angle) {
+        // Determine the size of the square image
+        const size = Math.sqrt(pixels.length);
 
+        // Create a 2D array to hold the pixels
+        const matrix = [];
+        for (let i = 0; i < size; i++) {
+            matrix.push(pixels.slice(i * size, (i + 1) * size));
+        }
 
+        // Find the center pixel
+        const cx = size / 2;
+        const cy = size / 2;
 
+        // Convert the angle to radians
+        const radians = angle * Math.PI / 180;
 
+        // Rotate the pixels around the center
+        const rotated = [];
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const px = x - cx;
+                const py = y - cy;
+                const qx = Math.round(px * Math.cos(radians) - py * Math.sin(radians)) + cx;
+                const qy = Math.round(px * Math.sin(radians) + py * Math.cos(radians)) + cy;
 
+                // Skip if the pixel is out of bounds
+                if (qx < 0 || qx >= size || qy < 0 || qy >= size) continue;
+
+                // Add the pixel to the rotated array
+                rotated.push(matrix[qy][qx]);
+            }
+        }
+
+        // Return the rotated pixels as a 1D array
+        return rotated;
+    }
 
     // ONLY FOR CLASSIFICATION
     static splitDatapoints(data, ratio, shuffle = true) {

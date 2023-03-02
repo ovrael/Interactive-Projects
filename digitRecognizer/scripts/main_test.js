@@ -20,10 +20,11 @@ let trainingTextShowed;
 const xOffset = ProjectData.CanvasWidth / 2 - 100;
 const yOffset = ProjectData.CanvasHeight / 2 - 100;
 let networkWasTrained;
+let framerate = 60;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const preparedData = DataManage.prepareDigitImages(rawData, 100, 2);
+    const preparedData = DataManage.prepareDigitImages(rawData, 200, 2);
     datapoints = preparedData[0];
     images = preparedData[1];
 
@@ -53,9 +54,9 @@ function setup() {
     // model = new NeuralNetwork(CostFunction.crossEntropy(), 0.000005);
     model = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
     model.addLayer(Layer.Input(inputLenght));
-    model.addLayer(Layer.Dropout(0.35));
-    model.addLayer(Layer.Dense(512, ActivationFunction.sigmoid()));
     model.addLayer(Layer.Dropout(0.2));
+    model.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
+    model.addLayer(Layer.Dropout(0.1));
     model.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
     epoch = 0;
     training = false;
@@ -95,7 +96,7 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            model.trainAdam(datapoints.X, datapoints.Y, 256, 0.7, 1, 0.001);
+            model.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1, 0.0001);
         }
 
         networkWasTrained = true;
@@ -106,6 +107,15 @@ function draw() {
 
     if (userPrediction != null) {
         writeNetworkOutputs();
+    }
+
+    if (keyIsDown(188)) {
+        framerate = framerate <= 1 ? 1 : framerate - 1;
+        frameRate(framerate);
+    }
+    if (keyIsDown(190)) {
+        framerate = framerate >= 60 ? 60 : framerate + 1;
+        frameRate(framerate);
     }
 }
 
@@ -166,8 +176,14 @@ function drawDigit() {
 
     userIsDrawing = true;
     emptyImage = false;
-    userDigit.stroke(255);
-    userDigit.strokeWeight(16);
+    if (mouseButton === LEFT) {
+        userDigit.stroke(255);
+    }
+    if (mouseButton === RIGHT) {
+        userDigit.stroke(0);
+    }
+
+    userDigit.strokeWeight(14);
     userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
     guessUserDigit();
 }
@@ -184,9 +200,18 @@ function keyPressed() {
         userDigit.background(0);
     }
     else if (key === 'r') {
-        model.resetWeights();
+        model.reinitializeWeights();
         console.warn("Model weights has been reset");
     }
+    // else if (key === '.') {
+    //     framerate = framerate >= 60 ? 60 : framerate + 1;
+    //     frameRate(framerate);
+    //     console.warn("Framerate set to 60 fps");
+    // } else if (key === ',') {
+    //     framerate = framerate <= 1 ? 1 : framerate - 1;
+    //     frameRate(framerate);
+    //     console.warn("Framerate set to 5 fps");
+    // }
 }
 
 function guessUserDigit() {

@@ -30,14 +30,13 @@ class NeuralNetwork {
         this.#updateNeuralNetworkData();
     }
 
-    resetWeights() {
+    reinitializeWeights() {
 
         if (this.layers.length == 0)
             return;
 
-        this.layers[0] = new Layer(this.layers[0].neuronsCount, 0, this.layers[0].activationFunction);
         for (let i = 1; i < this.layers.length; i++) {
-            this.layers[i] = new Layer(this.layers[i].neuronsCount, this.layers[i - 1].neuronsCount, this.layers[i].activationFunction);
+            this.layers[i].reinitializeWeights();
         }
     }
 
@@ -214,7 +213,7 @@ class NeuralNetwork {
                 if (batchTrainX.length == batchSize || i == splitData.trainX.length - 1) {
 
                     for (let layer = 1; layer < this.layers.length; layer++) {
-                        this.layers[layer].resetWeightsDeltas();
+                        this.layers[layer].setWeihtsDeltasToZero();
                     }
 
                     for (let j = 0; j < batchTrainX.length; j++) {
@@ -263,7 +262,6 @@ class NeuralNetwork {
         this.isLearning = true;
 
         this.#updateNeuralNetworkData();
-        this.#changeLayersDropout(this.isLearning);
 
         const splitData = DataManage.split(data, targets, trainTestRatio);
         const showResultStep = Math.floor(epochs / 10);
@@ -287,6 +285,7 @@ class NeuralNetwork {
             let batchTrainY = [];
 
             const shuffledTrainData = DataManage.shuffle(splitData.trainX, splitData.trainY);
+            this.#changeLayersDropout(true);
 
             for (let i = 0; i < shuffledTrainData.data.length; i++) {
 
@@ -295,7 +294,7 @@ class NeuralNetwork {
 
                 if (batchTrainX.length == batchSize || i == shuffledTrainData.data.length - 1) {
                     for (let layer = 1; layer < this.layers.length; layer++) {
-                        this.layers[layer].resetWeightsDeltas();
+                        this.layers[layer].setWeihtsDeltasToZero();
                     }
 
                     for (let j = 0; j < batchTrainX.length; j++) {
@@ -329,6 +328,7 @@ class NeuralNetwork {
 
             trainLoss /= shuffledTrainData.data.length;
 
+            this.#changeLayersDropout(false);
             const shuffledTestData = DataManage.shuffle(splitData.testX, splitData.testY);
             let testResult = this.#validate(shuffledTestData.data, shuffledTestData.targets);
 
