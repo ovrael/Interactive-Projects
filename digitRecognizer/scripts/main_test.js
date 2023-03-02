@@ -21,10 +21,11 @@ const xOffset = ProjectData.CanvasWidth / 2 - 100;
 const yOffset = ProjectData.CanvasHeight / 2 - 100;
 let networkWasTrained;
 let framerate = 60;
+let drawIteration = 0;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const preparedData = DataManage.prepareDigitImages(rawData, 200, 2);
+    const preparedData = DataManage.prepareDigitImages(rawData, 100, 3);
     datapoints = preparedData[0];
     images = preparedData[1];
 
@@ -79,6 +80,9 @@ function draw() {
     background(71, 71, 71);
     showImage();
 
+    if (drawIteration % 60)
+        showBadResult();
+
     image(userDigit, xOffset, yOffset);
     if (mouseIsPressed) {
         drawDigit();
@@ -117,6 +121,8 @@ function draw() {
         framerate = framerate >= 60 ? 60 : framerate + 1;
         frameRate(framerate);
     }
+
+    drawIteration++;
 }
 
 function writeTrainingText(epoch) {
@@ -244,10 +250,28 @@ function resetCanvas() {
     centerCanvas();
 }
 
+// function showImage() {
+//     const imageIndex = Math.floor(Math.random() * images.length);
+//     const imageData = images[imageIndex];
+
+//     const testImage = createImage(28, 28);
+//     testImage.loadPixels();
+//     for (let i = 0; i < imageData.length; i++) {
+//         let bright = imageData[i];
+//         let index = i * 4;
+//         testImage.pixels[index + 0] = Math.floor(bright * 255);
+//         testImage.pixels[index + 1] = Math.floor(bright * 255);
+//         testImage.pixels[index + 2] = Math.floor(bright * 255);
+//         testImage.pixels[index + 3] = 255;
+//     }
+//     testImage.updatePixels();
+//     image(testImage, 0, 0, 200, 200);
+// }
+
+
 function showImage() {
     const imageIndex = Math.floor(Math.random() * images.length);
     const imageData = images[imageIndex];
-
     const testImage = createImage(28, 28);
     testImage.loadPixels();
     for (let i = 0; i < imageData.length; i++) {
@@ -260,4 +284,24 @@ function showImage() {
     }
     testImage.updatePixels();
     image(testImage, 0, 0, 200, 200);
+}
+
+function showBadResult() {
+    const imageIndex = Math.floor(Math.random() * model.badResults.length);
+    const imageData = model.badResults[imageIndex];
+    if (imageData == undefined)
+        return;
+
+    const testImage = createImage(28, 28);
+    testImage.loadPixels();
+    for (let i = 0; i < imageData.length; i++) {
+        let bright = imageData[i];
+        let index = i * 4;
+        testImage.pixels[index + 0] = Math.floor(bright * 255);
+        testImage.pixels[index + 1] = Math.floor(bright * 255);
+        testImage.pixels[index + 2] = Math.floor(bright * 255);
+        testImage.pixels[index + 3] = 255;
+    }
+    testImage.updatePixels();
+    image(testImage, 0, 200, 200, 200);
 }

@@ -14,6 +14,7 @@ class NeuralNetwork {
         this.isLearning = false;
 
         this.learningStatistics = {};
+        this.badResults = [];
     }
 
     // PUBLIC
@@ -330,6 +331,8 @@ class NeuralNetwork {
 
             this.#changeLayersDropout(false);
             const shuffledTestData = DataManage.shuffle(splitData.testX, splitData.testY);
+
+            this.badResults = [];
             let testResult = this.#validate(shuffledTestData.data, shuffledTestData.targets);
 
             if (e % showResultStep == 0 || e == epochs - 1) {
@@ -606,6 +609,7 @@ class NeuralNetwork {
                 if (res == testY[i]) {
                     goodTest++;
                 }
+
                 this.lastTarget = testY[i];
             }
         }
@@ -621,6 +625,8 @@ class NeuralNetwork {
                 // console.log(`${maxIndex} == ${testY[i]}`)
                 if (maxIndex == testY[i]) {
                     goodTest++;
+                } else {
+                    this.badResults.push(testX[i]);
                 }
                 this.lastTarget = testY[i];
             }
