@@ -56,7 +56,7 @@ class DataManage {
         return shuffledData;
     }
 
-    static prepareDigitImages(rawData, singleDigitCount, noiseSamples) {
+    static prepareDigitImages(rawData, singleDigitCount, noiseSamples, shouldAddOriginal = true) {
 
         datapoints = { X: [], Y: [] };
         images = [];
@@ -86,9 +86,11 @@ class DataManage {
                 }
             }
 
-            datapoints.Y.push(pixels[0]);
-            datapoints.X.push(dataRow);
-            images.push(dataRow);
+            if (shouldAddOriginal) {
+                datapoints.Y.push(pixels[0]);
+                datapoints.X.push(dataRow);
+                images.push(dataRow);
+            }
 
             for (let j = 0; j < noiseSamples; j++) {
                 const noiseRow = DataManage.noiseSingleRow(dataRow);

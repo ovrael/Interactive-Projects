@@ -342,7 +342,7 @@ class NeuralNetwork {
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
                     "Test length": splitData.testX.length,
-                    "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
+                    "Test %": Math.round((testResult[1] / splitData.testX.length) * 10000) / 100,
                 }
                 this.learningStatistics = results;
                 console.table(results);
@@ -528,21 +528,6 @@ class NeuralNetwork {
         return errorSum;
     }
 
-    #backpropLastLayerBatch2(target) {
-        let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
-
-        this.layers[this.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
-            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
-            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
-            errorSum += outputErrors[i];
-        }
-
-        this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
-
-        return errorSum;
-    }
 
     /**
         Computes the BATCH error for each layer of the neural network.
@@ -561,22 +546,6 @@ class NeuralNetwork {
 
         return errorSum;
     }
-
-    // #adamOptimizer(epoch, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
-    //     for (let layer = 1; layer < this.layers.length; layer++) {
-    //         const dw = this.layers[layer].weightsDeltas.copy();
-
-    //         m[layer] = Weights.scalarMultiply(m[layer], beta1).weightsAdd(Weights.scalarMultiply(1 - beta1, dw));
-    //         v[layer] = Weights.scalarMultiply(v[layer], beta2).weightsAdd(Weights.scalarMultiply(1 - beta2, Weights.hadamardMultiply(dw, dw)));
-
-    //         const mHat = Weights.scalarDivide(m[layer], 1 - Math.pow(beta1, epoch + 1));
-    //         const vHat = Weights.scalarDivide(v[layer], 1 - Math.pow(beta2, epoch + 1));
-    //         const vHatSquared = Weights.scalarPower(vHat, 0.5);
-
-    //         const delta = Weights.scalarMultiply(alpha, Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, epsilon)));
-    //         this.layers[layer].weights.scalarAdd(delta);
-    //     }
-    // }
 
     /**
         Adjusts the weights of the network using backpropagation and the learning rate

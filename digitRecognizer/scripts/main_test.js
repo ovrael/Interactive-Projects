@@ -2,7 +2,7 @@
 let canvas;
 
 /** @type {NeuralNetwork} */
-let model;
+let neuralNetwork;
 let projectDataBackUp = Object.entries(ProjectData);
 let nnDrawer;
 let datapoints;
@@ -20,17 +20,24 @@ let trainingTextShowed;
 const xOffset = ProjectData.CanvasWidth / 2 - 100;
 const yOffset = ProjectData.CanvasHeight / 2 - 100;
 let networkWasTrained;
-let framerate = 60;
 let drawIteration = 0;
+let dataFramerate = 5;
+let wrongFramerate = 30;
+let canControl = true;
+let badImageIndex = -1;
+let badResultImageData = undefined;
+
+let dataImageIndex = 0;
+let dataImageData = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const preparedData = DataManage.prepareDigitImages(rawData, 100, 3);
+    const preparedData = DataManage.prepareDigitImages(rawData, 2, 2, true);
     datapoints = preparedData[0];
     images = preparedData[1];
 
-    console.log(datapoints)
     console.log("Loaded data!");
+    console.log(datapoints)
 }
 
 function readTextFile(file) {
@@ -51,14 +58,7 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    const inputLenght = datapoints.X[0].length;
-    // model = new NeuralNetwork(CostFunction.crossEntropy(), 0.000005);
-    model = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
-    model.addLayer(Layer.Input(inputLenght));
-    model.addLayer(Layer.Dropout(0.2));
-    model.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
-    model.addLayer(Layer.Dropout(0.1));
-    model.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
+    neuralNetwork = createModel();
     epoch = 0;
     training = false;
 
@@ -77,11 +77,12 @@ function setup() {
 }
 
 function draw() {
-    background(71, 71, 71);
-    showImage();
 
-    if (drawIteration % 60)
-        showBadResult();
+    background(71, 71, 71);
+
+    showDataImage();
+    showWrongImage();
+
 
     image(userDigit, xOffset, yOffset);
     if (mouseIsPressed) {
@@ -100,7 +101,7 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            model.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1, 0.0001);
+            neuralNetwork.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1, 0.0001);
         }
 
         networkWasTrained = true;
@@ -113,27 +114,37 @@ function draw() {
         writeNetworkOutputs();
     }
 
-    if (keyIsDown(188)) {
-        framerate = framerate <= 1 ? 1 : framerate - 1;
-        frameRate(framerate);
-    }
-    if (keyIsDown(190)) {
-        framerate = framerate >= 60 ? 60 : framerate + 1;
-        frameRate(framerate);
+    if (keyIsPressed && canControl) {
+        controlImages();
+        canControl = false;
+        setTimeout(() => canControl = true, 100);
     }
 
     drawIteration++;
+}
+
+function createModel() {
+    const inputLenght = datapoints.X[0].length;
+    // model = new NeuralNetwork(CostFunction.crossEntropy(), 0.000005);
+    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
+    neuralNetwork.addLayer(Layer.Input(inputLenght));
+    neuralNetwork.addLayer(Layer.Dropout(0.4));
+    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
+    neuralNetwork.addLayer(Layer.Dropout(0.2));
+    neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
+
+    return neuralNetwork;
 }
 
 function writeTrainingText(epoch) {
     fill(250, 160, 50);
     text("Training", ProjectData.CanvasWidth / 2 - 80, 60);
     text("Epoch: " + epoch, ProjectData.CanvasWidth / 2 - 80, 90);
-    let acc = model.learningStatistics["Test %"];
+    let acc = neuralNetwork.learningStatistics["Test %"];
     if (acc == undefined)
         acc = 0.00;
 
-    text("Accuracy: " + toPercent(Number(acc)), ProjectData.CanvasWidth / 2 - 80, 120);
+    text("Accuracy: " + acc + "%", ProjectData.CanvasWidth / 2 - 80, 120);
     trainingTextShowed = true;
 }
 
@@ -153,16 +164,19 @@ function writeNetworkOutputs() {
     }
 }
 
-function toPercent(value) {
-    value *= 100;
-    value = value.toFixed(2).toString();
-
-    valueParts = value.split(".");
-
-    if (valueParts[0].length == 1)
-        valueParts[0] = "0" + valueParts[0][0];
-
-    return valueParts[0] + "." + valueParts[1][0] + valueParts[1][1] + "%";
+function controlImages() {
+    if (keyIsDown(188)) { // Pressed ',' or '<' ---> decrease speed of showing test data
+        dataFramerate = dataFramerate >= 60 ? 60 : dataFramerate + 1;
+    }
+    else if (keyIsDown(190)) { // Pressed '.' or '>' ---> increase speed of showing test data
+        dataFramerate = dataFramerate <= 1 ? 1 : dataFramerate - 1;
+    }
+    else if (keyIsDown(189)) { // Pressed '-' or '_' ---> decrease speed of showing wrong labeled data
+        wrongFramerate = wrongFramerate >= 60 ? 60 : wrongFramerate + 1;
+    }
+    else if (keyIsDown(187)) { // Pressed '+' or '=' ---> increase speed of showing wrong labeled data
+        wrongFramerate = wrongFramerate <= 1 ? 1 : wrongFramerate - 1;
+    }
 }
 
 function sortedPredictionIndices() {
@@ -195,6 +209,7 @@ function drawDigit() {
 }
 
 function keyPressed() {
+
     if (keyCode === 32) {
         training = !training;
     }
@@ -206,18 +221,9 @@ function keyPressed() {
         userDigit.background(0);
     }
     else if (key === 'r') {
-        model.reinitializeWeights();
+        neuralNetwork.reinitializeWeights();
         console.warn("Model weights has been reset");
     }
-    // else if (key === '.') {
-    //     framerate = framerate >= 60 ? 60 : framerate + 1;
-    //     frameRate(framerate);
-    //     console.warn("Framerate set to 60 fps");
-    // } else if (key === ',') {
-    //     framerate = framerate <= 1 ? 1 : framerate - 1;
-    //     frameRate(framerate);
-    //     console.warn("Framerate set to 5 fps");
-    // }
 }
 
 function guessUserDigit() {
@@ -232,7 +238,7 @@ function guessUserDigit() {
     for (let i = 0; i < 784; i++) {
         inputs[i] = img.pixels[i * 4] / 255;
     }
-    userPrediction = model.predict(inputs);
+    userPrediction = neuralNetwork.predict(inputs);
 }
 
 function windowResized() {
@@ -250,46 +256,33 @@ function resetCanvas() {
     centerCanvas();
 }
 
-// function showImage() {
-//     const imageIndex = Math.floor(Math.random() * images.length);
-//     const imageData = images[imageIndex];
-
-//     const testImage = createImage(28, 28);
-//     testImage.loadPixels();
-//     for (let i = 0; i < imageData.length; i++) {
-//         let bright = imageData[i];
-//         let index = i * 4;
-//         testImage.pixels[index + 0] = Math.floor(bright * 255);
-//         testImage.pixels[index + 1] = Math.floor(bright * 255);
-//         testImage.pixels[index + 2] = Math.floor(bright * 255);
-//         testImage.pixels[index + 3] = 255;
-//     }
-//     testImage.updatePixels();
-//     image(testImage, 0, 0, 200, 200);
-// }
-
-
-function showImage() {
-    const imageIndex = Math.floor(Math.random() * images.length);
-    const imageData = images[imageIndex];
-    const testImage = createImage(28, 28);
-    testImage.loadPixels();
-    for (let i = 0; i < imageData.length; i++) {
-        let bright = imageData[i];
-        let index = i * 4;
-        testImage.pixels[index + 0] = Math.floor(bright * 255);
-        testImage.pixels[index + 1] = Math.floor(bright * 255);
-        testImage.pixels[index + 2] = Math.floor(bright * 255);
-        testImage.pixels[index + 3] = 255;
+function showDataImage() {
+    if (drawIteration % dataFramerate == 0) {
+        dataImageIndex = Math.floor(Math.random() * images.length);
+        dataImageData = images[dataImageIndex];
     }
-    testImage.updatePixels();
-    image(testImage, 0, 0, 200, 200);
+
+    if (dataImageData) {
+        showImage(dataImageData, 0, 0);
+        drawImageFrame(0, 0, 250, 170, 40, 100);
+    }
 }
 
-function showBadResult() {
-    const imageIndex = Math.floor(Math.random() * model.badResults.length);
-    const imageData = model.badResults[imageIndex];
-    if (imageData == undefined)
+function showWrongImage() {
+
+    if (drawIteration % wrongFramerate == 0 && neuralNetwork.badResults.length > 0) {
+        badImageIndex = Math.floor(Math.random() * neuralNetwork.badResults.length);
+        badResultImageData = neuralNetwork.badResults[badImageIndex];
+    }
+
+    if (badResultImageData) {
+        showImage(badResultImageData, 0, 200);
+        drawImageFrame(0, 200, 255, 20, 20, 100);
+    }
+}
+
+function showImage(imageData, xPosOffset, yPosOffset) {
+    if (!imageData)
         return;
 
     const testImage = createImage(28, 28);
@@ -303,5 +296,15 @@ function showBadResult() {
         testImage.pixels[index + 3] = 255;
     }
     testImage.updatePixels();
-    image(testImage, 0, 200, 200, 200);
+    image(testImage, xPosOffset, yPosOffset, 200, 200);
+}
+
+function drawImageFrame(x, y, r, g, b, a) {
+    let strokeW = 4;
+    push();
+    stroke(r, g, b, a);
+    strokeWeight(strokeW);
+    noFill();
+    rect(x + strokeW / 2, y + strokeW / 2, 200 - strokeW, 200 - strokeW);
+    pop();
 }
