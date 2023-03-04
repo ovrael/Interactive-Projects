@@ -32,6 +32,7 @@ const scriptsTest = [
     "activationFunction",
     "costFunction",
     "lossFunctions",
+    "dataPoint",
     "dataManage",
     "weights",
     "layerData",

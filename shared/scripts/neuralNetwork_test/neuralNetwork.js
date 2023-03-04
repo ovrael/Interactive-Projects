@@ -1,7 +1,7 @@
 class NeuralNetwork {
 
     constructor(errorFunction, learningRate = 0.05) {
-        this.lossFunction = errorFunction;
+        this.costFunction = errorFunction;
         this.learningRate = learningRate;
 
         /** @type {Array<Layer>} */
@@ -26,7 +26,7 @@ class NeuralNetwork {
         @returns {undefined} This function does not return anything.
     */
     compile(errorFunction, learningRate = 0.05) {
-        this.lossFunction = errorFunction;
+        this.costFunction = errorFunction;
         this.learningRate = learningRate;
         this.#updateNeuralNetworkData();
     }
@@ -252,8 +252,8 @@ class NeuralNetwork {
         console.table(this);
     }
 
-    trainAdam(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
-        if (!this.#checkConditions(data, targets)) {
+    trainAdam(dataPoints, batchSize = 16, trainTestRatio = 0.7, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+        if (!this.#checkConditions(dataPoints)) {
             return;
         }
 
@@ -264,7 +264,7 @@ class NeuralNetwork {
 
         this.#updateNeuralNetworkData();
 
-        const splitData = DataManage.split(data, targets, trainTestRatio);
+        const splitData = DataManage.split(dataPoints, trainTestRatio, true);
         const showResultStep = Math.floor(epochs / 10);
 
         let m = [];
@@ -275,32 +275,29 @@ class NeuralNetwork {
             v[i] = Weights.createZero(this.layers[i].weights);
         }
 
-        strokeWeight(5);
-        fill(250, 50, 50);
-        textSize(20);
         for (let e = 0; e < epochs; e++) {
 
             let trainLoss = 0;
 
-            let batchTrainX = [];
-            let batchTrainY = [];
+            /** @type {Array<DataPoint>} */
+            let batchTrain = [];
 
-            const shuffledTrainData = DataManage.shuffle(splitData.trainX, splitData.trainY);
+            /** @type {Array<DataPoint>} */
+            const shuffledTrainData = DataManage.shuffle(splitData.train);
             this.#changeLayersDropout(true);
 
-            for (let i = 0; i < shuffledTrainData.data.length; i++) {
+            for (let i = 0; i < shuffledTrainData.length; i++) {
 
-                batchTrainX.push(shuffledTrainData.data[i]);
-                batchTrainY.push(shuffledTrainData.targets[i]);
+                batchTrain.push(shuffledTrainData[i]);
 
-                if (batchTrainX.length == batchSize || i == shuffledTrainData.data.length - 1) {
+                if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
                     for (let layer = 1; layer < this.layers.length; layer++) {
                         this.layers[layer].setWeihtsDeltasToZero();
                     }
 
-                    for (let j = 0; j < batchTrainX.length; j++) {
-                        this.#feedForward(batchTrainX[j]);
-                        trainLoss -= this.#backpropErrorBatch(batchTrainY[j]);
+                    for (let j = 0; j < batchTrain.length; j++) {
+                        this.#feedForward(batchTrain[j].inputs);
+                        trainLoss -= this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
                     }
 
                     for (let layer = 1; layer < this.layers.length; layer++) {
@@ -320,20 +317,19 @@ class NeuralNetwork {
                         this.layers[layer].weights.weightsSubtract(delta);
                     }
 
-                    batchTrainX = [];
-                    batchTrainY = [];
+                    batchTrain = [];
                 }
 
-                this.lastTarget = shuffledTrainData.targets[i];
+                this.lastTarget = shuffledTrainData[i].label;
             }
 
-            trainLoss /= shuffledTrainData.data.length;
+            trainLoss /= shuffledTrainData.length;
 
             this.#changeLayersDropout(false);
-            const shuffledTestData = DataManage.shuffle(splitData.testX, splitData.testY);
+            const shuffledTestData = DataManage.shuffle(splitData.test);
 
             this.badResults = [];
-            let testResult = this.#validate(shuffledTestData.data, shuffledTestData.targets);
+            let testResult = this.#validate(shuffledTestData);
 
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
@@ -341,8 +337,8 @@ class NeuralNetwork {
                     "Train Loss": trainLoss,
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
-                    "Test length": splitData.testX.length,
-                    "Test %": Math.round((testResult[1] / splitData.testX.length) * 10000) / 100,
+                    "Test length": splitData.test.length,
+                    "Test %": testResult[1] / splitData.test.length,
                 }
                 this.learningStatistics = results;
                 console.table(results);
@@ -430,23 +426,18 @@ class NeuralNetwork {
         @param {Array} targets - the target outputs for the training data to be checked.
         @returns {boolean} true if the neural network meets the conditions, false otherwise.
     */
-    #checkConditions(data, targets) {
+    #checkConditions(dataPoints) {
         if (this.layers.length < 3) {
             console.error("Neural network is too small. It should have at least 3 layers!");
             return false;
         }
 
-        if (data.length == 0) {
+        if (dataPoints.length == 0) {
             console.error("No data to train!");
             return false;
         }
 
-        if (data.length != targets.length) {
-            console.error("Data is different size than targets! " + data.length + " != " + targets.length);
-            return false;
-        }
-
-        if (data[0].length != this.layers[0].neuronsCount) {
+        if (dataPoints[0].inputs.length != this.layers[0].neuronsCount) {
             console.error("Data is different size than first layer of neural network!");
             return false;
         }
@@ -475,7 +466,7 @@ class NeuralNetwork {
     */
     #backpropLastLayer(target) {
         let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -514,7 +505,7 @@ class NeuralNetwork {
     */
     #backpropLastLayerBatch(target) {
         let errorSum = 0;
-        let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, target);
+        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
         this.layers[this.layersCount - 1].computeDerivatives();
         for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
@@ -558,50 +549,47 @@ class NeuralNetwork {
 
     /**
         Validates the network on a test dataset and returns the average loss and number of correct predictions
-        @param {number[][]} testX - the test input data
-        @param {number[]} testY - the test target values
+        @param {Array<DataPoint>} testData - the test input data
         @returns {number[]} - an array containing the average loss and number of correct predictions
     */
-    #validate(testX, testY) {
+    #validate(testData) {
         let testLoss = 0;
         let goodTest = 0;
 
         if (this.singleOutput) {
             console.warn("SINGLE OUTPUT")
-            for (let i = 0; i < testX.length; i++) {
-                this.#feedForward(testX[i]);
-                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+            for (let i = 0; i < testData.length; i++) {
+                this.#feedForward(testData[i].inputs);
+                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
 
-                if (res == testY[i]) {
+                if (res == testData[i].label) {
                     goodTest++;
                 }
-
-                this.lastTarget = testY[i];
+                this.lastTarget = testData[i].label;
             }
         }
         else {
 
-            for (let i = 0; i < testX.length; i++) {
-                this.#feedForward(testX[i]);
-                let outputErrors = this.lossFunction(this.layers[this.layers.length - 1].activations, testY[i]);
+            for (let i = 0; i < testData.length; i++) {
+                this.#feedForward(testData[i].inputs);
+                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
 
                 // console.log(`${maxIndex} == ${testY[i]}`)
-                if (maxIndex == testY[i]) {
+                if (maxIndex == testData[i].label) {
                     goodTest++;
                 } else {
-                    this.badResults.push(testX[i]);
+                    this.badResults.push(testData[i].inputs);
                 }
-                this.lastTarget = testY[i];
+                this.lastTarget = testData[i].label;
             }
         }
-
-        testLoss /= testX.length;
+        testLoss /= testData.length;
 
         return [testLoss, goodTest];
     }

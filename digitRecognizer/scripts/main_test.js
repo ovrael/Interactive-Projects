@@ -28,9 +28,11 @@ let dataImageData = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const preparedData = DataManage.prepareDigitImages(rawData, 2, 2, true);
-    datapoints = preparedData[0];
-    images = preparedData[1];
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 150, 1, true);
+    images = [];
+    for (let i = 0; i < datapoints.length; i++) {
+        images.push([...datapoints[i].inputs]);
+    }
 
     console.log("Loaded data!");
     console.log(datapoints)
@@ -97,7 +99,7 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            neuralNetwork.trainAdam(datapoints.X, datapoints.Y, 128, 0.7, 1, 0.0001);
+            neuralNetwork.trainAdam(datapoints, 128, 0.7, 1, 0.0001);
         }
 
         networkWasTrained = true;
@@ -120,7 +122,7 @@ function draw() {
 }
 
 function createModel() {
-    const inputLenght = datapoints.X[0].length;
+    const inputLenght = datapoints[0].inputs.length;
     const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.4));
@@ -139,7 +141,7 @@ function writeTrainingText(epoch) {
     if (acc == undefined)
         acc = 0.00;
 
-    text("Accuracy: " + acc + "%", ProjectData.CanvasWidth / 2 - 80, 120);
+    text("Accuracy: " + Mathematics.toPercent(acc) + "%", ProjectData.CanvasWidth / 2 - 80, 120);
     trainingTextShowed = true;
 }
 
@@ -155,7 +157,8 @@ function writeNetworkOutputs() {
             fill(60, 180, 40);
         else
             fill(210 + 4 * i, 140 - 14 * i, 30 - 3 * i);
-        text(`${sortedIndices[i]} = ${toPercent(element)}`, ProjectData.CanvasWidth - 160, 80 + 40 * i);
+
+        text(`${sortedIndices[i]} = ${Mathematics.toPercent(element)}%`, ProjectData.CanvasWidth - 160, 80 + 40 * i);
     }
 }
 

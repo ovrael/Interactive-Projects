@@ -1,6 +1,7 @@
 class Mathematics {
 
     static DEG_TO_RAD = Math.PI / 180.0;
+    static Epsilon = 1e-12;
 
     static randIntMinMax(min, max) {
         return Math.floor(Mathematics.randFloatMinMax(min, max));
@@ -40,5 +41,13 @@ class Mathematics {
 
     static distanceSquared(x1, y1, x2, y2) {
         return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+    }
+
+    static round(number, decimalPlaces = 2) {
+        throw new Error("IMPROVE");
+        return Math.round(number * 10000) / 100;
+    }
+    static toPercent(number) {
+        return Math.round(number * 10000) / 100;
     }
 }

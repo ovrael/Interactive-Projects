@@ -2,107 +2,6 @@ class DataManage {
 
     static imageSize = 28;
 
-    static split(data, targets, ratio) {
-        const splitData = { trainX: [], trainY: [], testX: [], testY: [] };
-
-        if (ratio > 1) ratio = 1;
-        if (ratio < 0) ratio = 0;
-        const testMax = data.length * (1 - ratio);
-
-        const dataCopy = [...data];
-        const targetsCopy = [...targets];
-
-
-        while (dataCopy.length > 0) {
-
-            const i = Math.floor(Math.random() * dataCopy.length);
-            const x = dataCopy.splice(i, 1)[0];
-            const y = targetsCopy.splice(i, 1)[0];
-
-            if (splitData.testX.length < testMax) {
-                if (Math.random() > 0.5) {
-                    splitData.trainX.push(x);
-                    splitData.trainY.push(y);
-                }
-                else {
-                    splitData.testX.push(x);
-                    splitData.testY.push(y);
-                }
-            }
-            else {
-                splitData.trainX.push(x);
-                splitData.trainY.push(y);
-            }
-        }
-
-        return splitData;
-    }
-
-    static shuffle(data, targets) {
-        const shuffledData = { data: [], targets: [] };
-        const dataCopy = [...data];
-        const targetsCopy = [...targets];
-
-        while (dataCopy.length > 0) {
-
-            const i = Math.floor(Math.random() * dataCopy.length);
-            const x = dataCopy.splice(i, 1)[0];
-            const y = targetsCopy.splice(i, 1)[0];
-
-            shuffledData.data.push(x);
-            shuffledData.targets.push(y);
-        }
-
-        return shuffledData;
-    }
-
-    static prepareDigitImages(rawData, singleDigitCount, noiseSamples, shouldAddOriginal = true) {
-
-        datapoints = { X: [], Y: [] };
-        images = [];
-
-        const allRows = 40000;
-        const digitCount = singleDigitCount * 10; // all clear rows + noiseSamples* noise rows
-        let inputsCount = Math.floor(allRows / digitCount);
-
-        if (inputsCount < 1)
-            inputsCount = 1;
-
-        const rows = rawData.split("\n");
-        for (let i = 0; i < rows.length / inputsCount; i++) {
-            let pixels = rows[i * inputsCount].split(" ");
-
-            let dataRow = [];
-            for (let j = 1; j < pixels.length - 1; j++) {
-                if (pixels[j].includes("x")) {
-                    let zeroCounts = pixels[j].split("x")[0];
-                    for (let k = 0; k < Number(zeroCounts); k++) {
-                        dataRow.push(0);
-                    }
-                }
-                else {
-                    dataRow.push(pixels[j] > 0.5 ? 1 : 0);
-                    // dataRow.push(pixels[j] / 255);
-                }
-            }
-
-            if (shouldAddOriginal) {
-                datapoints.Y.push(pixels[0]);
-                datapoints.X.push(dataRow);
-                images.push(dataRow);
-            }
-
-            for (let j = 0; j < noiseSamples; j++) {
-                const noiseRow = DataManage.noiseSingleRow(dataRow);
-                datapoints.Y.push(pixels[0]);
-                datapoints.X.push(noiseRow);
-                images.push(noiseRow);
-            }
-        }
-
-        return [datapoints, images];
-    }
-
     static noiseSingleRow(dataRow) {
 
         const rotateAngle = Math.random() * 40 - 20;
@@ -370,7 +269,7 @@ class DataManage {
     }
 
     // ONLY FOR CLASSIFICATION
-    static splitDatapoints(data, ratio, shuffle = true) {
+    static split(data, ratio, shuffle = true) {
         const splitData = { train: [], test: [] };
 
         if (ratio > 1) ratio = 1;
@@ -379,42 +278,44 @@ class DataManage {
         const testMax = data.length - trainMax;
 
         if (shuffle)
-            data = DataManage.shuffleDatapoints(data);
+            data = DataManage.shuffle(data);
 
         for (let i = 0; i < trainMax; i++) {
-            splitData.train.push(allData[i]);
+            splitData.train.push(data[i]);
         }
         for (let i = 0; i < testMax; i++) {
-            splitData.test.push(allData[trainMax + i]);
+            splitData.test.push(data[trainMax + i]);
         }
 
         return splitData;
     }
 
-    static shuffleDatapoints(data) {
-        let elementsRemainingToShuffle = data.length;
+    static shuffle(data) {
+        let shuffledData = [...data];
+        let elementsRemainingToShuffle = shuffledData.length;
         let randomIndex = 0;
 
         while (elementsRemainingToShuffle > 1) {
             // Choose a random element from array
             randomIndex = Math.floor(Math.random() * elementsRemainingToShuffle);
-            const chosenElement = data[randomIndex];
+            const chosenElement = shuffledData[randomIndex];
 
             // Swap the randomly chosen element with the last unshuffled element in the array
             elementsRemainingToShuffle--;
-            data[randomIndex] = data[elementsRemainingToShuffle];
-            data[elementsRemainingToShuffle] = chosenElement;
+            shuffledData[randomIndex] = shuffledData[elementsRemainingToShuffle];
+            shuffledData[elementsRemainingToShuffle] = chosenElement;
         }
+
+        return shuffledData;
     }
 
-    static prepareDatapoints(rawData, labelsCount, singleDigitCount, noiseSamples, shouldAddOriginal = true) {
+    static preprocess(rawData, labelsCount = 10, singleDigitCount = 100, noiseSamples = 2, shouldAddOriginal = true) {
 
-        datapoints = [];
-        images = [];
+        let datapoints = [];
 
         const allRows = 40000;
         const digitCount = singleDigitCount * 10; // all clear rows + noiseSamples* noise rows
-        let inputsCount = allRows / digitCount;
+        let inputsCount = Math.floor(allRows / digitCount);
 
         if (inputsCount < 1)
             inputsCount = 1;
@@ -442,17 +343,62 @@ class DataManage {
                 );
             }
 
-            images.push(dataRow);
 
             for (let j = 0; j < noiseSamples; j++) {
                 const noiseRow = DataManage.noiseSingleRow(dataRow);
                 datapoints.push(
                     new DataPoint(noiseRow, pixels[0], labelsCount)
                 );
-                images.push(noiseRow);
             }
         }
 
-        return [datapoints, images];
+        return datapoints;
+    }
+
+    static preprocessMNIST(rawData, labelsCount = 10, singleDigitCount = 100, noiseSamples = 2, shouldAddOriginal = true) {
+
+        let datapoints = [];
+
+        const rows = rawData.split("\n");
+        const labelLength = Math.floor(rows.length / labelsCount);
+        const digitStep = Math.floor(labelLength / singleDigitCount);
+
+        for (let i = 0; i < labelsCount; i++) {
+
+            for (let j = 0; j < singleDigitCount; j++) {
+
+                let pixels = rows[i * labelLength + j * digitStep].split(" ");
+                let dataRow = [];
+
+                for (let k = 1; k < pixels.length - 1; k++) {
+                    if (pixels[k].includes("x")) {
+                        let zeroCounts = pixels[k].split("x")[0];
+                        for (let k = 0; k < Number(zeroCounts); k++) {
+                            dataRow.push(0);
+                        }
+                    }
+                    else {
+                        dataRow.push(pixels[k] / 255);
+                    }
+                }
+
+                if (shouldAddOriginal) {
+                    datapoints.push(
+                        new DataPoint(dataRow, pixels[0], labelsCount)
+                    );
+                }
+
+
+                for (let k = 0; k < noiseSamples; k++) {
+                    const noiseRow = DataManage.noiseSingleRow(dataRow);
+                    datapoints.push(
+                        new DataPoint(noiseRow, pixels[0], labelsCount)
+                    );
+                }
+            }
+
+        }
+
+        return datapoints;
     }
 }
