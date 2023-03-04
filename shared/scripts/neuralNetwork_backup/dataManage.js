@@ -109,6 +109,10 @@ class DataManage {
         let noiseRow = [...dataRow];
         noiseRow = this.rotatePixels(noiseRow, rotateAngle);
 
+        // return dataRow;
+        // const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
+        // noiseRow = this.shiftPixels(noiseRow, direction);
+
         if (Math.random() < 0.8) {
             const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
             noiseRow = this.shiftPixels(noiseRow, direction);
@@ -125,6 +129,26 @@ class DataManage {
                 noiseRow[i] = 0;
             }
         }
+
+        return noiseRow;
+        // if (Math.random() < 0.00) {
+        //     noiseRow = this.flipPixels(noiseRow, "xAxis");
+        // }
+        // if (Math.random() < 0.00) {
+        //     noiseRow = this.flipPixels(noiseRow, "yAxis");
+        // }
+
+        // if (Math.random() < 1) {
+        //     const direction = Math.floor(0); // randomly choose left, top, right, or bottom
+        //     // const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
+        //     noiseRow = this.shiftPixels(noiseRow, direction);
+
+        //     // if (Math.random() < 0.5) {
+        //     //     const changeDirection = Math.random() < 0.5 ? 2 : 0;
+        //     //     noiseRow = this.shiftPixels(noiseRow, direction + 1 + changeDirection);
+        //     // }
+        // }
+
 
         return noiseRow;
     }
@@ -322,7 +346,7 @@ class DataManage {
         const newPixels = new Array(this.imageSize * this.imageSize);
         direction = direction % 4;
         const maxOffset = this.getMaxOffset(pixels, direction);
-        const offset = Math.floor(Math.random() * maxOffset / 2 + 1);
+        const offset = Math.floor(Math.random() * maxOffset + 2); // random offset between 1 and 8 pixels
 
         switch (direction) {
             case 0: // left
@@ -407,7 +431,7 @@ class DataManage {
         }
     }
 
-    static prepareDatapoints(rawData, labelsCount, singleDigitCount, noiseSamples, shouldAddOriginal = true) {
+    static prepareDatapoints(rawData, labelsCount, singleDigitCount, noiseSamples) {
 
         datapoints = [];
         images = [];
@@ -436,18 +460,16 @@ class DataManage {
                 }
             }
 
-            if (shouldAddOriginal) {
-                datapoints.push(
-                    new DataPoint(dataRow, pixels[0], labelsCount)
-                );
-            }
+            datapoints.push(
+                new DataPoint(dataRow, pixels[0], labelsCount)
+            );
 
             images.push(dataRow);
 
             for (let j = 0; j < noiseSamples; j++) {
                 const noiseRow = DataManage.noiseSingleRow(dataRow);
                 datapoints.push(
-                    new DataPoint(noiseRow, pixels[0], labelsCount)
+                    new DataPoint(dataRow, pixels[0], labelsCount)
                 );
                 images.push(noiseRow);
             }

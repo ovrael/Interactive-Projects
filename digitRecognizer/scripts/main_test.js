@@ -4,12 +4,9 @@ let canvas;
 /** @type {NeuralNetwork} */
 let neuralNetwork;
 let projectDataBackUp = Object.entries(ProjectData);
-let nnDrawer;
 let datapoints;
 let images;
 let rawData;
-let trainImage;
-let imageElement;
 let epoch;
 let train;
 let userDigit;
@@ -26,7 +23,6 @@ let wrongFramerate = 30;
 let canControl = true;
 let badImageIndex = -1;
 let badResultImageData = undefined;
-
 let dataImageIndex = 0;
 let dataImageData = undefined;
 
@@ -125,7 +121,6 @@ function draw() {
 
 function createModel() {
     const inputLenght = datapoints.X[0].length;
-    // model = new NeuralNetwork(CostFunction.crossEntropy(), 0.000005);
     const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.4));

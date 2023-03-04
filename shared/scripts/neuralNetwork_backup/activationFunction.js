@@ -22,6 +22,15 @@ class ActivationFunction {
             activations => activations.map((a) => a > 0 ? 1 : 0),
         );
     }
+
+
+    static leakyRelu() {
+        return new ActivationFunction(
+            neurons => neurons.map((n) => n > 0 ? n : 0.001 * n),
+            activations => activations.map((a) => a > 0 ? 1 : 0.001),
+        );
+    }
+
     static softmax() {
         return new ActivationFunction(
             neurons => {

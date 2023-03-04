@@ -39,14 +39,13 @@ class Layer {
             this.activationFunction = activationFunction;
             this.activateNeurons = this.activateNeuronsWithoutDropout;
         }
-
     }
 
     #checkDropout(rate) {
-        if (rate > 1)
-            return 1 - 1e-8;
-        if (rate < 0)
-            return 0;
+        if (rate >= 1)
+            return 1 - 1e-10;
+        if (rate <= 0)
+            return 1e-10;
 
         return rate;
     }
@@ -55,6 +54,8 @@ class Layer {
         this.type = LayerType.Dropout;
         this.dropoutRate = this.#checkDropout(dropoutRate);
         this.dropoutScale = 1 / (1 - dropoutRate);
+        // this.dropoutScale = (1 - dropoutRate);
+        // this.dropoutScale = 1 / dropoutRate;
     }
 
     changeDropoutMode(shouldDropout) {
@@ -150,8 +151,12 @@ class Layer {
         }
     }
 
-    resetWeightsDeltas() {
+    setWeihtsDeltasToZero() {
         this.weightsDeltas.scalarFillData(0);
+    }
+
+    reinitializeWeights() {
+        this.weights.initializeRandomWeights();
     }
 
     updateWeights(learningRate = 0.005) {
@@ -191,3 +196,4 @@ class Layer {
         );
     }
 }
+
