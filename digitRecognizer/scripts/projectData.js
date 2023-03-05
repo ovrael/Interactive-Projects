@@ -34,11 +34,12 @@ const scriptsTest = [
     "lossFunctions",
     "dataPoint",
     "dataManage",
+    "optimizer",
     "weights",
     "layerData",
     "layer",
     "dropoutLayer",
-    "neuralNetwork"
+    "neuralNetwork",
 ];
 
 const head = document.getElementById("mainHead");

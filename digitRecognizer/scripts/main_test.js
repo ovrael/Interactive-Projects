@@ -3,8 +3,9 @@ let canvas;
 
 /** @type {NeuralNetwork} */
 let neuralNetwork;
+let splitData;
+
 let projectDataBackUp = Object.entries(ProjectData);
-let datapoints;
 let images;
 let rawData;
 let epoch;
@@ -28,11 +29,14 @@ let dataImageData = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 150, 1, true);
+    const datapoints = DataManage.preprocessMNIST(rawData, 10, 15, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
     }
+
+    splitData = DataManage.split(datapoints, 0.7, true);
+
 
     console.log("Loaded data!");
     console.log(datapoints)
@@ -99,7 +103,8 @@ function draw() {
 
         if (trainingTextShowed) {
             console.warn("Training started!");
-            neuralNetwork.trainAdam(datapoints, 128, 0.7, 1, 0.0001);
+            // neuralNetwork.trainAdam(datapoints, 128, 0.7, 1, 0.0001);
+            neuralNetwork.train(splitData.train, 1, 128, splitData.test);
         }
 
         networkWasTrained = true;
@@ -122,8 +127,8 @@ function draw() {
 }
 
 function createModel() {
-    const inputLenght = datapoints[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, 0.000005);
+    const inputLenght = splitData.train[0].inputs.length;
+    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.4));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
