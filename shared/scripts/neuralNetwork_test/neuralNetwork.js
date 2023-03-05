@@ -5,7 +5,6 @@ class NeuralNetwork {
         this.costFunction = errorFunction;
         /** @type {Optimizer} */
         this.optimzer = optimzer;
-        this.optimzer.setNeuralNetwork(this);
 
         /** @type {Array<Layer>} */
         this.layers = [];
@@ -18,6 +17,7 @@ class NeuralNetwork {
 
         this.learningStatistics = {};
         this.badResults = [];
+        this.learningEpoch = 0;
     }
 
     // PUBLIC
@@ -149,7 +149,7 @@ class NeuralNetwork {
         this.isLearning = true;
         this.#updateNeuralNetworkData();
 
-        this.optimzer.train(trainData, epochs, batchSize, validationData);
+
 
 
         // for (let e = 0; e < epochs; e++) {
@@ -183,8 +183,108 @@ class NeuralNetwork {
         // }
 
         console.info("Training finished");
-        console.table(this);
         this.isLearning = false;
+    }
+
+    /**
+        Trains the neural network using the given data and targets with the given parameters.
+        @param {Array<Array<number>>} trainData - The data to be used for training.
+        @param {Array<Array<number>>} targets - The target outputs to be used for training.
+        @param {number} [trainTestRatio=0.7] - The ratio of data to be used for training, the rest will be used for testing.
+        @param {number} [epochs=100] - The number of epochs to be used for training.
+        @returns {undefined} This function does not return anything.
+    */
+    train2(trainData, epochs = 10, batchSize = 1, validationData = null, continous = false) {
+
+        if (!continous) {
+            this.learningEpoch = 0;
+        }
+
+        if (this.learningEpoch == 0) {
+            this.optimzer.setNeuralNetworkData(this);
+        }
+
+        if (!this.#checkConditions(trainData)) {
+            return;
+        }
+
+        if (this.isLearning)
+            return;
+
+        this.isLearning = true;
+        this.#updateNeuralNetworkData();
+
+        // this.optimzer.train(trainData, epochs, batchSize, validationData);
+
+        const showResultStep = Math.floor(epochs / 10);
+
+        for (let e = 0; e < epochs; e++) {
+
+            let trainLoss = 0;
+
+            /** @type {Array<DataPoint>} */
+            let batchTrain = [];
+
+            /** @type {Array<DataPoint>} */
+            const shuffledTrainData = DataManage.shuffle(trainData);
+            this.changeLayersDropout(true);
+
+            for (let i = 0; i < shuffledTrainData.length; i++) {
+
+                batchTrain.push(shuffledTrainData[i]);
+
+                if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
+                    for (let layer = 1; layer < this.layers.length; layer++) {
+                        this.layers[layer].setWeihtsDeltasToZero();
+                    }
+
+                    for (let j = 0; j < batchTrain.length; j++) {
+                        this.feedForward(batchTrain[j].inputs);
+                        trainLoss -= this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
+                    }
+
+                    this.layers = this.optimzer.updateWeights(
+                        {
+                            "layers": this.layers,
+                            "epoch": this.learningEpoch
+                        }
+                    );
+
+
+                    batchTrain = [];
+                }
+
+                this.lastTarget = shuffledTrainData[i].label;
+            }
+
+            trainLoss /= shuffledTrainData.length;
+
+            this.changeLayersDropout(false);
+            const shuffledTestData = DataManage.shuffle(validationData);
+
+            this.badResults = [];
+            let testResult = this.validate(shuffledTestData);
+
+            if (e % showResultStep == 0 || e == epochs - 1) {
+                const results = {
+                    "Epoch": this.learningEpoch,
+                    "Train Loss": trainLoss,
+                    "Test Loss": testResult[0],
+                    "Good Test": testResult[1],
+                    "Test length": validationData.length,
+                    "Test %": testResult[1] / validationData.length,
+                }
+                this.learningStatistics = results;
+                console.table(results);
+            }
+
+            this.learningEpoch++;
+        }
+        this.isLearning = false;
+        this.changeLayersDropout(this.isLearning);
+
+        console.info("Training finished");
+        // console.table(this);
     }
 
     train_old() {

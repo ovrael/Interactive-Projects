@@ -8,7 +8,6 @@ let splitData;
 let projectDataBackUp = Object.entries(ProjectData);
 let images;
 let rawData;
-let epoch;
 let train;
 let userDigit;
 let userIsDrawing;
@@ -29,7 +28,7 @@ let dataImageData = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const datapoints = DataManage.preprocessMNIST(rawData, 10, 15, 1, true);
+    const datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -61,7 +60,6 @@ function setup() {
     centerCanvas();
 
     neuralNetwork = createModel();
-    epoch = 0;
     training = false;
 
     userDigit = createGraphics(200, 200);
@@ -95,16 +93,15 @@ function draw() {
     }
 
     if (networkWasTrained) {
-        writeTrainingText(epoch);
+        writeTrainingText();
     }
 
     if (training && !userIsDrawing) {
-        epoch++;
-
         if (trainingTextShowed) {
             console.warn("Training started!");
-            // neuralNetwork.trainAdam(datapoints, 128, 0.7, 1, 0.0001);
-            neuralNetwork.train(splitData.train, 1, 128, splitData.test);
+            // neuralNetwork.trainAdam(splitData.train, 128, 0.7, 1, 0.0001);
+            neuralNetwork.train2(splitData.train, 1, 128, splitData.test, true);
+            // neuralNetwork.train(splitData.train, 1, 128, splitData.test);
         }
 
         networkWasTrained = true;
@@ -128,20 +125,20 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
+    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.005));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
-    neuralNetwork.addLayer(Layer.Dropout(0.4));
-    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
     neuralNetwork.addLayer(Layer.Dropout(0.2));
+    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
+    neuralNetwork.addLayer(Layer.Dropout(0.1));
     neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
 
     return neuralNetwork;
 }
 
-function writeTrainingText(epoch) {
+function writeTrainingText() {
     fill(250, 160, 50);
     text("Training", ProjectData.CanvasWidth / 2 - 80, 60);
-    text("Epoch: " + epoch, ProjectData.CanvasWidth / 2 - 80, 90);
+    text("Epoch: " + neuralNetwork.learningEpoch, ProjectData.CanvasWidth / 2 - 80, 90);
     let acc = neuralNetwork.learningStatistics["Test %"];
     if (acc == undefined)
         acc = 0.00;
