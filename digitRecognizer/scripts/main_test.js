@@ -23,12 +23,16 @@ let wrongFramerate = 30;
 let canControl = true;
 let badImageIndex = -1;
 let badResultImageData = undefined;
+let badLabelsData = undefined;
 let dataImageIndex = 0;
 let dataImageData = undefined;
+let datapoints;
+let historyPoints = [];
+let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const datapoints = DataManage.preprocessMNIST(rawData, 10, 20, 1, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 50, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -38,7 +42,7 @@ function preload() {
 
 
     console.log("Loaded data!");
-    console.log(datapoints)
+    console.log(splitData)
 }
 
 function readTextFile(file) {
@@ -94,14 +98,20 @@ function draw() {
 
     if (networkWasTrained) {
         writeTrainingText();
-        drowStatsHistory();
     }
+
+    if (historyGraphics)
+        image(historyGraphics, 200, 400);
+
 
     if (training && !userIsDrawing) {
         if (trainingTextShowed) {
             console.warn("Training started!");
-            // neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
-            neuralNetwork.train(splitData.train, 1, 128, splitData.test, true);
+            splitData = DataManage.split(datapoints, 0.7, true);
+            neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
+            // neuralNetwork.train(splitData.train, 1, 128, splitData.test, true);
+            computeHistoryPoints();
+            updateHistoryGraphics();
         }
 
         networkWasTrained = true;
@@ -127,9 +137,9 @@ function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
     const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
-    neuralNetwork.addLayer(Layer.Dropout(0.2));
+    neuralNetwork.addLayer(Layer.Dropout(0.4));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
-    neuralNetwork.addLayer(Layer.Dropout(0.1));
+    neuralNetwork.addLayer(Layer.Dropout(0.2));
     neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
 
     return neuralNetwork;
@@ -235,9 +245,10 @@ function guessUserDigit() {
     let inputs = [];
     img.resize(28, 28);
     img.loadPixels();
-    for (let i = 0; i < 784; i++) {
-        inputs[i] = img.pixels[i * 4] > 100 ? 1 : 0;
+    for (let i = 0; i < 28 * 28; i++) {
+        // inputs[i] = img.pixels[i * 4] > 100 ? 1 : 0;
         // inputs[i] = img.pixels[i * 4] / 255;
+        inputs[i] = img.pixels[i * 4] > 0 ? 1 : 0;
     }
     userPrediction = neuralNetwork.predict(inputs);
 }
@@ -274,6 +285,7 @@ function showWrongImage() {
     if (drawIteration % wrongFramerate == 0 && neuralNetwork.badResults.length > 0) {
         badImageIndex = Math.floor(Math.random() * neuralNetwork.badResults.length);
         badResultImageData = neuralNetwork.badResults[badImageIndex];
+        badLabelsData = neuralNetwork.badLabels[badImageIndex];
     }
 
     if (badResultImageData) {
@@ -282,7 +294,9 @@ function showWrongImage() {
 
         push();
         fill(230, 40, 40);
-        text("Guessed: " + neuralNetwork.badLabels[badImageIndex], 20, 420);
+        text("Guessed: " + badLabelsData[1], 20, 420);
+        fill(30, 220, 40);
+        text("Label: " + badLabelsData[0], 20, 450);
         pop();
     }
 }
@@ -315,41 +329,68 @@ function drawImageFrame(x, y, r, g, b, a) {
     pop();
 }
 
-function drowStatsHistory() {
+function updateHistoryGraphics() {
+
+    if (!historyPoints || historyPoints.length < 2)
+        return;
+
+    if (historyGraphics == undefined) {
+        historyGraphics = createGraphics(200, 200);
+        historyGraphics.translate(0, 100);
+    }
+
+    historyGraphics.background(25);
+
+    historyGraphics.strokeWeight(1);
+    historyGraphics.stroke(180, 40, 20);
+    historyGraphics.line(0, 0, 200, 0);
+
+    historyGraphics.stroke(220, 120, 20);
+    historyGraphics.line(155, 70, 165, 70);
+    historyGraphics.stroke(130, 220, 40);
+    historyGraphics.line(155, 85, 165, 85);
+
+    historyGraphics.textAlign(LEFT, CENTER);
+    historyGraphics.textSize(12);
+    historyGraphics.noStroke();
+    historyGraphics.fill(220, 120, 20);
+    historyGraphics.text("Train", 170, 70);
+    historyGraphics.fill(130, 220, 40);
+    historyGraphics.text("Test", 170, 85);
+
+    for (let i = 1; i < historyPoints.length; i++) {
+        historyGraphics.stroke(220, 120, 20);
+        historyGraphics.line(historyPoints[i - 1].x, historyPoints[i - 1].trainY, historyPoints[i].x, historyPoints[i].trainY);
+        historyGraphics.stroke(130, 220, 40);
+        historyGraphics.line(historyPoints[i - 1].x, historyPoints[i - 1].testY, historyPoints[i].x, historyPoints[i].testY);
+    }
+}
+
+function computeHistoryPoints() {
     const history = neuralNetwork.statsHistory;
-    if (!history) return;
-    const statsCanvas = createGraphics(28, 28);
-    statsCanvas.background(25);
-
-    const padding = 10;
-
-    statsCanvas.strokeWeight(1);
-    statsCanvas.stroke(180, 40, 120);
+    if (!history || history.length == 0) return;
+    historyPoints = [];
 
     const minMax = findStatsMaxMin(history);
-    const xStep = (200 - 2 * padding) / (history.length + 1);
-    let prevX = padding;
-    let prevY = 1;
+    const xStep = 180 / (history.length + 1);
 
     for (let i = 0; i < history.length; i++) {
         const element = history[i];
         const trainY = element["Train Loss"] > 0 ? element["Train Loss"] / minMax[1] : -element["Train Loss"] / minMax[0];
         const testY = element["Test Loss"] > 0 ? element["Test Loss"] / minMax[1] : -element["Test Loss"] / minMax[0];
 
-        if (i == 0) {
-            if (element["Train Loss"] < 0) prevY *= -1;
-            statsCanvas.line(padding, prevY * 100, xStep * (i + 1) + padding, 100 + trainY * 100);
-        }
-        else {
-            statsCanvas.line(prevX, prevY, xStep * (i + 1) + padding, 100 + trainY * 100);
+        let currX = xStep * i + 10;
+        let currTrainY = trainY * 90;
+        let currTestY = testY * 90;
 
-        }
-        prevX = xStep * (i + 1) + padding;
-        prevY = 100 + trainY * 100;
+        historyPoints.push(
+            {
+                x: currX,
+                trainY: currTrainY,
+                testY: currTestY,
+            }
+        )
     }
-
-
-    image(statsCanvas, 200, 400, 200, 200);
 }
 
 function findStatsMaxMin(history) {

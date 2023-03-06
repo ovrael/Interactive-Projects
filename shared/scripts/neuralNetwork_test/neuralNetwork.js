@@ -188,7 +188,7 @@ class NeuralNetwork {
                     }
 
                     for (let j = 0; j < batchTrain.length; j++) {
-                        this.feedForward(batchTrain[j].inputs);
+                        this.#feedForward(batchTrain[j].inputs);
                         trainLoss -= this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
                     }
 
@@ -211,7 +211,7 @@ class NeuralNetwork {
             this.changeLayersDropout(false);
             const shuffledTestData = DataManage.shuffle(validationData);
 
-            let testResult = this.validate(shuffledTestData);
+            let testResult = this.#validate(shuffledTestData);
 
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
@@ -238,7 +238,7 @@ class NeuralNetwork {
         // console.table(this);
     }
 
-    trainAdam(trainData, validationData = null, batchSize = 16, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+    trainAdam(trainData, validationData, batchSize = 16, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
         if (!this.#checkConditions(trainData)) {
             return;
         }
@@ -270,7 +270,7 @@ class NeuralNetwork {
             let batchTrain = [];
 
             /** @type {Array<DataPoint>} */
-            const shuffledTrainData = DataManage.shuffle(trainData);
+            const shuffledTrainData = DataManage.shuffleOld(trainData);
             this.changeLayersDropout(true);
 
             for (let i = 0; i < shuffledTrainData.length; i++) {
@@ -283,8 +283,8 @@ class NeuralNetwork {
                     }
 
                     for (let j = 0; j < batchTrain.length; j++) {
-                        this.feedForward(batchTrain[j].inputs);
-                        trainLoss -= this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
+                        this.#feedForward(batchTrain[j].inputs);
+                        trainLoss += this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
                     }
 
                     for (let layer = 1; layer < this.layers.length; layer++) {
@@ -310,12 +310,12 @@ class NeuralNetwork {
                 this.lastTarget = shuffledTrainData[i].label;
             }
 
-            trainLoss /= shuffledTrainData.length;
+            trainLoss /= trainData.length;
 
             this.changeLayersDropout(false);
-            const shuffledTestData = DataManage.shuffle(validationData);
+            const shuffledTestData = DataManage.shuffleOld(validationData);
 
-            let testResult = this.validate(shuffledTestData);
+            let testResult = this.#validate(shuffledTestData);
 
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
@@ -328,6 +328,8 @@ class NeuralNetwork {
                     "Test %": testResult[1] / validationData.length,
                 }
                 this.learningStatistics = results;
+                this.statsHistory.push(results);
+
                 console.table(results);
             }
 
@@ -380,7 +382,7 @@ class NeuralNetwork {
                     }
 
                     for (let j = 0; j < batchTrainX.length; j++) {
-                        this.feedForward(batchTrainX[j]);
+                        this.#feedForward(batchTrainX[j]);
                         trainLoss -= this.#backpropErrorBatch(batchTrainY[j]);
                     }
 
@@ -394,7 +396,7 @@ class NeuralNetwork {
             }
             trainLoss /= splitData.trainX.length;
 
-            let testResult = this.validate(splitData.testX, splitData.testY);
+            let testResult = this.#validate(splitData.testX, splitData.testY);
 
             if (e % showResultStep == 0 || e == epochs - 1) {
 
@@ -434,7 +436,7 @@ class NeuralNetwork {
         if (data.length != this.layers[0].neuronsCount)
             return;
 
-        this.feedForward(data);
+        this.#feedForward(data);
 
         return this.layers[this.layersCount - 1].activations;
     }
@@ -447,7 +449,7 @@ class NeuralNetwork {
         if (data.length != this.layers[0].neuronsCount)
             return;
 
-        this.feedForward(data);
+        this.#feedForward(data);
 
         return this.#getMaxOutputNeuronIndex();
     }
@@ -460,7 +462,7 @@ class NeuralNetwork {
         if (data.length != this.layers[0].neuronsCount)
             return;
 
-        this.feedForward(data);
+        this.#feedForward(data);
 
         const outputIndex = this.#getMaxOutputNeuronIndex();
         const result = {
@@ -510,7 +512,7 @@ class NeuralNetwork {
         Feeds the input data forward through the neural network.
         @param {Array} rowData - the input data to be fed forward through the network.
     */
-    feedForward(rowData) {
+    #feedForward(rowData) {
 
         this.layers[0].fillNeurons(rowData);
 
@@ -525,7 +527,7 @@ class NeuralNetwork {
         @param {Array} target - the target output for the training data.
         @returns {number} the sum of errors for the output layer.
     */
-    backpropLastLayer(target) {
+    #backpropLastLayer(target) {
         let errorSum = 0;
         let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
 
@@ -548,7 +550,7 @@ class NeuralNetwork {
     */
     #backpropError(target) {
 
-        const errorSum = this.backpropLastLayer(target);
+        const errorSum = this.#backpropLastLayer(target);
 
         for (let layer = this.layers.length - 2; layer > 0; layer--) {
             this.layers[layer].computeDerivatives();
@@ -613,7 +615,7 @@ class NeuralNetwork {
         @param {Array<DataPoint>} testData - the test input data
         @returns {number[]} - an array containing the average loss and number of correct predictions
     */
-    validate(testData) {
+    #validate(testData) {
         let testLoss = 0;
         let goodTest = 0;
         this.badResults = [];
@@ -622,7 +624,7 @@ class NeuralNetwork {
         if (this.singleOutput) {
             console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testData.length; i++) {
-                this.feedForward(testData[i].inputs);
+                this.#feedForward(testData[i].inputs);
                 let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
                 testLoss = -outputErrors.reduce((a, b) => a + b, 0);
 
@@ -637,22 +639,23 @@ class NeuralNetwork {
         else {
 
             for (let i = 0; i < testData.length; i++) {
-                this.feedForward(testData[i].inputs);
+                this.#feedForward(testData[i].inputs);
                 let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-                testLoss = -outputErrors.reduce((a, b) => a + b, 0);
+                for (let i = 0; i < outputErrors.length; i++) {
+                    testLoss += outputErrors[i];
+                }
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
+                if (maxIndex == undefined) {
+                    console.warn(outputErrors);
+                    throw new Error("Output undefined");
+                }
 
-                // console.log(`${maxIndex} == ${testY[i]}`)
                 if (maxIndex == testData[i].label) {
                     goodTest++;
                 } else {
-                    if (maxIndex == undefined) {
-                        console.warn(outputErrors);
-                        throw new Error("Output undefined");
-                    }
                     this.badResults.push(testData[i].inputs);
-                    this.badLabels.push(maxIndex);
+                    this.badLabels.push([testData[i].label, maxIndex]);
                 }
                 this.lastTarget = testData[i].label;
             }

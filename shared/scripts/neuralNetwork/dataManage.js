@@ -252,11 +252,6 @@ class DataManage {
     }
 
 
-
-
-
-
-
     // ONLY FOR CLASSIFICATION
     static splitDatapoints(data, ratio, shuffle = true) {
         const splitData = { train: [], test: [] };

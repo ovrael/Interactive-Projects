@@ -17,9 +17,10 @@ const scripts = [
     "neuralNetworkDrawer",
 ];
 
-const scripts2 = [
+const scriptsBackup = [
     "activationFunction",
     "costFunction",
+    "lossFunctions",
     "dataPoint",
     "dataManage",
     "weights",
@@ -38,7 +39,6 @@ const scriptsTest = [
     "weights",
     "layerData",
     "layer",
-    "dropoutLayer",
     "neuralNetwork",
 ];
 
