@@ -32,7 +32,7 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 50, 1, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 2, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -108,7 +108,7 @@ function draw() {
         if (trainingTextShowed) {
             console.warn("Training started!");
             splitData = DataManage.split(datapoints, 0.7, true);
-            neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
+            neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0002);
             // neuralNetwork.train(splitData.train, 1, 128, splitData.test, true);
             computeHistoryPoints();
             updateHistoryGraphics();
@@ -213,7 +213,7 @@ function drawDigit() {
         userDigit.stroke(0);
     }
 
-    userDigit.strokeWeight(14);
+    userDigit.strokeWeight(ProjectData.DrawDigitStroke);
     userDigit.line(mouseX - xOffset, mouseY - yOffset, pmouseX - xOffset, pmouseY - yOffset);
     guessUserDigit();
 }
@@ -286,6 +286,9 @@ function showWrongImage() {
         badImageIndex = Math.floor(Math.random() * neuralNetwork.badResults.length);
         badResultImageData = neuralNetwork.badResults[badImageIndex];
         badLabelsData = neuralNetwork.badLabels[badImageIndex];
+    } else if (neuralNetwork.badResults.length == 0) {
+        badResultImageData = undefined;
+        badLabelsData = undefined;
     }
 
     if (badResultImageData) {
@@ -331,7 +334,7 @@ function drawImageFrame(x, y, r, g, b, a) {
 
 function updateHistoryGraphics() {
 
-    if (!historyPoints || historyPoints.length < 2)
+    if (!historyPoints || historyPoints.length == 0)
         return;
 
     if (historyGraphics == undefined) {
@@ -358,6 +361,13 @@ function updateHistoryGraphics() {
     historyGraphics.fill(130, 220, 40);
     historyGraphics.text("Test", 170, 85);
 
+    if (historyPoints.length == 1) {
+        historyGraphics.stroke(220, 120, 20);
+        historyGraphics.point(historyPoints[0].x, historyPoints[0].trainY);
+        historyGraphics.stroke(130, 220, 40);
+        historyGraphics.point(historyPoints[0].x, historyPoints[0].testY);
+    }
+
     for (let i = 1; i < historyPoints.length; i++) {
         historyGraphics.stroke(220, 120, 20);
         historyGraphics.line(historyPoints[i - 1].x, historyPoints[i - 1].trainY, historyPoints[i].x, historyPoints[i].trainY);
@@ -372,7 +382,7 @@ function computeHistoryPoints() {
     historyPoints = [];
 
     const minMax = findStatsMaxMin(history);
-    const xStep = 180 / (history.length + 1);
+    const xStep = 180 / history.length;
 
     for (let i = 0; i < history.length; i++) {
         const element = history[i];
