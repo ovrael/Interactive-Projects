@@ -28,7 +28,7 @@ let dataImageData = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    const datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 1, true);
+    const datapoints = DataManage.preprocessMNIST(rawData, 10, 20, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -83,8 +83,8 @@ function draw() {
     showDataImage();
     showWrongImage();
 
-
     image(userDigit, xOffset, yOffset);
+
     if (mouseIsPressed) {
         drawDigit();
     }
@@ -94,14 +94,14 @@ function draw() {
 
     if (networkWasTrained) {
         writeTrainingText();
+        drowStatsHistory();
     }
 
     if (training && !userIsDrawing) {
         if (trainingTextShowed) {
             console.warn("Training started!");
-            // neuralNetwork.trainAdam(splitData.train, 128, 0.7, 1, 0.0001);
-            neuralNetwork.train2(splitData.train, 1, 128, splitData.test, true);
-            // neuralNetwork.train(splitData.train, 1, 128, splitData.test);
+            // neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
+            neuralNetwork.train(splitData.train, 1, 128, splitData.test, true);
         }
 
         networkWasTrained = true;
@@ -125,7 +125,7 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.005));
+    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.2));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
@@ -236,7 +236,8 @@ function guessUserDigit() {
     img.resize(28, 28);
     img.loadPixels();
     for (let i = 0; i < 784; i++) {
-        inputs[i] = img.pixels[i * 4] / 255;
+        inputs[i] = img.pixels[i * 4] > 100 ? 1 : 0;
+        // inputs[i] = img.pixels[i * 4] / 255;
     }
     userPrediction = neuralNetwork.predict(inputs);
 }
@@ -278,6 +279,11 @@ function showWrongImage() {
     if (badResultImageData) {
         showImage(badResultImageData, 0, 200);
         drawImageFrame(0, 200, 255, 20, 20, 100);
+
+        push();
+        fill(230, 40, 40);
+        text("Guessed: " + neuralNetwork.badLabels[badImageIndex], 20, 420);
+        pop();
     }
 }
 
@@ -307,4 +313,63 @@ function drawImageFrame(x, y, r, g, b, a) {
     noFill();
     rect(x + strokeW / 2, y + strokeW / 2, 200 - strokeW, 200 - strokeW);
     pop();
+}
+
+function drowStatsHistory() {
+    const history = neuralNetwork.statsHistory;
+    if (!history) return;
+    const statsCanvas = createGraphics(28, 28);
+    statsCanvas.background(25);
+
+    const padding = 10;
+
+    statsCanvas.strokeWeight(1);
+    statsCanvas.stroke(180, 40, 120);
+
+    const minMax = findStatsMaxMin(history);
+    const xStep = (200 - 2 * padding) / (history.length + 1);
+    let prevX = padding;
+    let prevY = 1;
+
+    for (let i = 0; i < history.length; i++) {
+        const element = history[i];
+        const trainY = element["Train Loss"] > 0 ? element["Train Loss"] / minMax[1] : -element["Train Loss"] / minMax[0];
+        const testY = element["Test Loss"] > 0 ? element["Test Loss"] / minMax[1] : -element["Test Loss"] / minMax[0];
+
+        if (i == 0) {
+            if (element["Train Loss"] < 0) prevY *= -1;
+            statsCanvas.line(padding, prevY * 100, xStep * (i + 1) + padding, 100 + trainY * 100);
+        }
+        else {
+            statsCanvas.line(prevX, prevY, xStep * (i + 1) + padding, 100 + trainY * 100);
+
+        }
+        prevX = xStep * (i + 1) + padding;
+        prevY = 100 + trainY * 100;
+    }
+
+
+    image(statsCanvas, 200, 400, 200, 200);
+}
+
+function findStatsMaxMin(history) {
+
+    let max = Number.MIN_SAFE_INTEGER;
+    let min = Number.MAX_SAFE_INTEGER;
+
+    for (let i = 0; i < history.length; i++) {
+        if (history[i]["Train Loss"] > max)
+            max = history[i]["Train Loss"];
+
+        if (history[i]["Test Loss"] > max)
+            max = history[i]["Test Loss"];
+
+        if (history[i]["Train Loss"] < min)
+            min = history[i]["Train Loss"];
+
+        if (history[i]["Test Loss"] < min)
+            min = history[i]["Test Loss"];
+    }
+
+    return [min, max];
 }

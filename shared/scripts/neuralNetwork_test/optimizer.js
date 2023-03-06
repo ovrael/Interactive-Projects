@@ -25,8 +25,6 @@ class Optimizer {
                 break;
         }
 
-        // /** @type {NeuralNetwork} */
-        // this.neuralNetwork = null;
     }
 
     setNeuralNetworkData(model) {
@@ -73,7 +71,6 @@ class Optimizer {
     }
 
     updateWeights(modelData) {
-
         return this.updateWeightsFunction(modelData);
     }
 

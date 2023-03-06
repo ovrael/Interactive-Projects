@@ -378,7 +378,8 @@ class DataManage {
                         }
                     }
                     else {
-                        dataRow.push(pixels[k] / 255);
+                        // dataRow.push(pixels[k] / 255);
+                        dataRow.push(pixels[k] > 100 ? 1 : 0);
                     }
                 }
 
