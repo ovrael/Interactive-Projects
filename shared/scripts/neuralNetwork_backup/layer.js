@@ -159,16 +159,6 @@ class Layer {
         this.weights.initializeRandomWeights();
     }
 
-    updateWeights(learningRate = 0.005) {
-        for (let c = 0; c < this.weights.current; c++) {
-
-            this.biases[c] -= this.gamma[c] * learningRate;
-            for (let p = 0; p < this.weights.previous; p++) {
-                this.weights.data[p][c] -= this.weightsDeltas.data[p][c] * learningRate;
-            }
-        }
-    }
-
     static Input(numberOfNeurons) {
         return new LayerData(
             LayerType.Input,

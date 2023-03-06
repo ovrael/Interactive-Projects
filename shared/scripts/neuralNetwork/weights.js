@@ -8,9 +8,43 @@ class Weights {
         // Fill weights with nubmers between -0.5 and 0.5.
         for (let i = 0; i < this.previous; i++) {
             this.data[i] = new Array(this.current);
+        }
 
+        this.initializeRandomWeights();
+        // this.xavierInitialization();
+    }
+
+    initializeRandomWeights() {
+        for (let i = 0; i < this.previous; i++) {
             for (let j = 0; j < this.current; j++) {
-                this.data[i][j] = (random() - 0.5);
+                this.data[i][j] = Weights.randomNormalDistribution(0, 1) / Math.sqrt(this.current);
+            }
+        }
+    }
+
+    xavierInitialization() {
+        const stdDeviation = 1 / ((this.previous + this.current) * 0.5);
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                this.data[i][j] = Weights.randomNormalDistribution(0, stdDeviation);
+            }
+        }
+    }
+
+    heInitialization() {
+        const stdDeviation = 2 / this.previous;
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                this.data[i][j] = Weights.randomNormalDistribution(0, stdDeviation);
+            }
+        }
+    }
+
+    lecunInitialization() {
+        const stdDeviation = 1 / this.previous;
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                this.data[i][j] = Weights.randomNormalDistribution(0, stdDeviation);
             }
         }
     }
@@ -157,5 +191,13 @@ class Weights {
         const newWeights = Weights.copy(weights);
         newWeights.hadamardMultiply(otherWeights);
         return newWeights;
+    }
+
+    static randomNormalDistribution(mean, standardDeviation) {
+        const x1 = 1 - Math.random();
+        const x2 = 1 - Math.random();
+
+        const y1 = Math.sqrt(-2.0 * Math.log(x1)) * Math.cos(2.0 * Math.PI * x2);
+        return y1 * standardDeviation + mean;
     }
 }
