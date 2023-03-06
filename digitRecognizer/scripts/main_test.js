@@ -134,7 +134,7 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
+    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.sgd(0.001));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.4));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
