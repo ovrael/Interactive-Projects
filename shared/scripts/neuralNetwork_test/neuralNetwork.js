@@ -1,5 +1,6 @@
 class NeuralNetwork {
 
+    #globalEpoch = 0;
     constructor(errorFunction, optimzer) {
         /** @type {CostFunction} */
         this.costFunction = errorFunction;
@@ -15,12 +16,10 @@ class NeuralNetwork {
         this.singleOutput = false;
         this.isLearning = false;
 
+        this.learningEpoch = 0;
         this.learningStatistics = {};
         this.badResults = [];
         this.badLabels = [];
-        this.learningEpoch = 0;
-        this.globalEpoch = 0;
-
         this.statsHistory = [];
     }
 
@@ -38,7 +37,7 @@ class NeuralNetwork {
         this.#updateNeuralNetworkData();
     }
 
-    reinitializeWeights() {
+    resetNetwork() {
 
         if (this.layers.length == 0)
             return;
@@ -47,7 +46,15 @@ class NeuralNetwork {
             this.layers[i].reinitializeWeights();
         }
 
-        this.globalEpoch = 0;
+        this.isLearning = false;
+
+        this.learningStatistics = {};
+        this.badResults = [];
+        this.badLabels = [];
+        this.statsHistory = [];
+
+        this.#globalEpoch = 0;
+        this.learningEpoch = 0;
     }
 
     /**
@@ -143,7 +150,7 @@ class NeuralNetwork {
         @param {number} [epochs=100] - The number of epochs to be used for training.
         @returns {undefined} This function does not return anything.
     */
-    train(trainData, epochs = 10, batchSize = 1, validationData = null, continous = false) {
+    train(trainData, validationData = null, batchSize = 1, epochs = 10, continous = false) {
 
         if (!this.#checkConditions(trainData)) {
             return;
@@ -151,11 +158,11 @@ class NeuralNetwork {
         if (this.isLearning)
             return;
 
-        if (!continous) {
-            this.learningEpoch = 0;
+        if (continous == false) {
+            this.#globalEpoch = 0;
         }
 
-        if (this.learningEpoch == 0) {
+        if (this.#globalEpoch == 0) {
             this.optimzer.setNeuralNetworkData(this);
         }
 
@@ -189,13 +196,13 @@ class NeuralNetwork {
 
                     for (let j = 0; j < batchTrain.length; j++) {
                         this.#feedForward(batchTrain[j].inputs);
-                        trainLoss -= this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
+                        trainLoss += this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
                     }
 
                     this.optimzer.updateWeights(
                         {
                             "layers": this.layers,
-                            "epoch": e
+                            "epoch": this.#globalEpoch
                         }
                     );
 
@@ -216,7 +223,7 @@ class NeuralNetwork {
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
                     "Epoch": this.learningEpoch,
-                    "Global Epoch": this.globalEpoch,
+                    "Global Epoch": this.#globalEpoch,
                     "Train Loss": trainLoss,
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
@@ -229,7 +236,7 @@ class NeuralNetwork {
             }
 
             this.learningEpoch++;
-            this.globalEpoch++;
+            this.#globalEpoch++;
         }
         this.isLearning = false;
         this.changeLayersDropout(this.isLearning);
@@ -320,7 +327,7 @@ class NeuralNetwork {
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
                     "Epoch": e,
-                    "Global Epoch": this.globalEpoch,
+                    "Global Epoch": this.#globalEpoch,
                     "Train Loss": trainLoss,
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
@@ -334,7 +341,7 @@ class NeuralNetwork {
             }
 
             this.learningEpoch++;
-            this.globalEpoch++;
+            this.#globalEpoch++;
         }
         this.isLearning = false;
         this.changeLayersDropout(this.isLearning);

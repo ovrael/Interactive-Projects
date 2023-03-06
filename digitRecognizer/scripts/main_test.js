@@ -32,7 +32,7 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 2, 2, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -108,8 +108,8 @@ function draw() {
         if (trainingTextShowed) {
             console.warn("Training started!");
             splitData = DataManage.split(datapoints, 0.7, true);
-            neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0002);
-            // neuralNetwork.train(splitData.train, 1, 128, splitData.test, true);
+            // neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
+            neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
             updateHistoryGraphics();
         }
@@ -231,7 +231,7 @@ function keyPressed() {
         userDigit.background(0);
     }
     else if (key === 'r') {
-        neuralNetwork.reinitializeWeights();
+        neuralNetwork.resetNetwork();
         console.warn("Model weights has been reset");
     }
 }
