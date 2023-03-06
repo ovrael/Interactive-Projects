@@ -107,8 +107,7 @@ function draw() {
     if (training && !userIsDrawing) {
         if (trainingTextShowed) {
             console.warn("Training started!");
-            splitData = DataManage.split(datapoints, 0.7, true);
-            // neuralNetwork.trainAdam(splitData.train, splitData.test, 128, 1, 0.0001);
+            // splitData = DataManage.split(datapoints, 0.7, true);
             neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
             updateHistoryGraphics();

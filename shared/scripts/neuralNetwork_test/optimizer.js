@@ -71,12 +71,24 @@ class Optimizer {
     }
 
     updateWeights(modelData) {
-        return this.updateWeightsFunction(modelData);
+        this.updateWeightsFunction(modelData);
     }
 
     trainSGD(modelData) {
+        for (let i = 1; i < modelData.layersCount; i++) {
+            const weights = modelData.layers.weights;
+            const biases = modelData.layers.biases;
+            const gamma = modelData.layer.gamma;
+            const weightsDeltas = modelData.layer.weightsDeltas;
 
+            for (let c = 0; c < weights.current; c++) {
 
+                biases[c] -= gamma[c] * this.learningRate;
+                for (let p = 0; p < weights.previous; p++) {
+                    weights.data[p][c] -= weightsDeltas.data[p][c] * this.learningRate;
+                }
+            }
+        }
     }
 
     trainAdam(modelData) {
@@ -96,47 +108,6 @@ class Optimizer {
             const delta = Weights.scalarMultiply(Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, this.epsilon)), this.learningRate);
             modelData.layers[layer].weights.weightsSubtract(delta);
         }
-        return modelData.layers;
-    }
-
-    /**
-    Computes the BATCH error for the last layer of the neural network.
-    @param {Array} target - the target output for the training data.
-    @returns {number} the sum of errors for the output layer.
-*/
-    #backpropLastLayerBatch(target) {
-        let errorSum = 0;
-        let outputErrors = this.neuralNetwork.costFunction(this.neuralNetwork.layers[this.neuralNetwork.layers.length - 1].activations, target);
-
-        this.neuralNetwork.layers[this.neuralNetwork.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < this.neuralNetwork.layers[this.neuralNetwork.layers.length - 1].neuronsCount; i++) {
-            this.neuralNetwork.layers[this.neuralNetwork.layers.length - 1].errors[i] = outputErrors[i];
-            this.neuralNetwork.layers[this.neuralNetwork.layers.length - 1].gamma[i] = outputErrors[i] * this.neuralNetwork.layers[this.neuralNetwork.layers.length - 1].derivatives[i];
-            errorSum += outputErrors[i];
-        }
-
-        this.neuralNetwork.layers[this.neuralNetwork.layersCount - 1].computeWeightsDeltasBatch(this.neuralNetwork.layers[this.neuralNetwork.layersCount - 2]);
-
-        return errorSum;
-    }
-
-
-    /**
-        Computes the BATCH error for each layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the neural network.
-    */
-    #backpropErrorBatch(target) {
-
-        const errorSum = this.#backpropLastLayerBatch(target);
-
-        for (let layer = this.neuralNetwork.layers.length - 2; layer > 0; layer--) {
-            this.neuralNetwork.layers[layer].computeDerivatives();
-            this.neuralNetwork.layers[layer].computeGamma(this.neuralNetwork.layers[layer + 1]);
-            this.neuralNetwork.layers[layer].computeWeightsDeltasBatch(this.neuralNetwork.layers[layer - 1]);
-        }
-
-        return errorSum;
     }
 
     static sgd(learningRate = 0.005, momentum = 0.9) {

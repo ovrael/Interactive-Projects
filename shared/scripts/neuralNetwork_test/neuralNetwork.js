@@ -170,8 +170,6 @@ class NeuralNetwork {
         this.isLearning = true;
         this.#updateNeuralNetworkData();
 
-        // this.optimzer.train(trainData, epochs, batchSize, validationData);
-
         const showResultStep = Math.floor(epochs / 10);
 
         for (let e = 0; e < epochs; e++) {
@@ -201,8 +199,8 @@ class NeuralNetwork {
 
                     this.optimzer.updateWeights(
                         {
+                            "epoch": this.#globalEpoch,
                             "layers": this.layers,
-                            "epoch": this.#globalEpoch
                         }
                     );
 
@@ -242,185 +240,6 @@ class NeuralNetwork {
         this.changeLayersDropout(this.isLearning);
 
         console.info("Training finished");
-        // console.table(this);
-    }
-
-    trainAdam(trainData, validationData, batchSize = 16, epochs = 100, alpha = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
-        if (!this.#checkConditions(trainData)) {
-            return;
-        }
-
-        if (this.isLearning) {
-            console.warn("Network is alredy learning!");
-            return;
-        }
-
-        this.isLearning = true;
-
-        this.#updateNeuralNetworkData();
-
-        const showResultStep = Math.floor(epochs / 10);
-
-        let m = [];
-        let v = [];
-
-        for (let i = 1; i < this.layers.length; i++) {
-            m[i] = Weights.createZero(this.layers[i].weights);
-            v[i] = Weights.createZero(this.layers[i].weights);
-        }
-
-        for (let e = 0; e < epochs; e++) {
-
-            let trainLoss = 0;
-
-            /** @type {Array<DataPoint>} */
-            let batchTrain = [];
-
-            /** @type {Array<DataPoint>} */
-            const shuffledTrainData = DataManage.shuffleOld(trainData);
-            this.changeLayersDropout(true);
-
-            for (let i = 0; i < shuffledTrainData.length; i++) {
-
-                batchTrain.push(shuffledTrainData[i]);
-
-                if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
-                    for (let layer = 1; layer < this.layers.length; layer++) {
-                        this.layers[layer].setWeihtsDeltasToZero();
-                    }
-
-                    for (let j = 0; j < batchTrain.length; j++) {
-                        this.#feedForward(batchTrain[j].inputs);
-                        trainLoss += this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
-                    }
-
-                    for (let layer = 1; layer < this.layers.length; layer++) {
-                        const dw = this.layers[layer].weightsDeltas.copy();
-
-                        m[layer] = Weights.scalarMultiply(m[layer], beta1);
-                        m[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - beta1));
-
-                        v[layer] = Weights.scalarMultiply(v[layer], beta2);
-                        v[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - beta2));
-
-                        const mHat = Weights.scalarDivide(m[layer], 1 - Math.pow(beta1, e + 1));
-                        const vHat = Weights.scalarDivide(v[layer], 1 - Math.pow(beta2, e + 1));
-                        const vHatSquared = Weights.sqrt(vHat);
-
-                        const delta = Weights.scalarMultiply(Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, epsilon)), alpha);
-                        this.layers[layer].weights.weightsSubtract(delta);
-                    }
-
-                    batchTrain = [];
-                }
-
-                this.lastTarget = shuffledTrainData[i].label;
-            }
-
-            trainLoss /= trainData.length;
-
-            this.changeLayersDropout(false);
-            const shuffledTestData = DataManage.shuffleOld(validationData);
-
-            let testResult = this.#validate(shuffledTestData);
-
-            if (e % showResultStep == 0 || e == epochs - 1) {
-                const results = {
-                    "Epoch": e,
-                    "Global Epoch": this.#globalEpoch,
-                    "Train Loss": trainLoss,
-                    "Test Loss": testResult[0],
-                    "Good Test": testResult[1],
-                    "Test length": validationData.length,
-                    "Test %": testResult[1] / validationData.length,
-                }
-                this.learningStatistics = results;
-                this.statsHistory.push(results);
-
-                console.table(results);
-            }
-
-            this.learningEpoch++;
-            this.#globalEpoch++;
-        }
-        this.isLearning = false;
-        this.changeLayersDropout(this.isLearning);
-
-        console.info("Training finished");
-        // console.table(this);
-    }
-
-    /**
-        Trains the neural network using mini-batch gradient descent with the given data and targets with the given parameters.
-        @param {Array<Array<number>>} data - The data to be used for training.
-        @param {Array<Array<number>>} targets - The target outputs to be used for training.
-        @param {number} [batchSize=16] - The batch size to be used for training.
-        @param {number} [trainTestRatio=0.7] - The ratio of data to be used for training, the rest will be used for testing.
-        @param {number} [epochs=100] - The number of epochs to be used for training.
-        @returns {undefined} This function does not return anything.
-    */
-    trainBatch(data, targets, batchSize = 16, trainTestRatio = 0.7, epochs = 100) {
-
-        if (!this.#checkConditions(data, targets)) {
-            return;
-        }
-
-        this.#updateNeuralNetworkData();
-
-        const splitData = DataManage.split(data, targets, trainTestRatio);
-        const showResultStep = Math.floor(epochs / 10);
-
-        for (let e = 0; e < epochs; e++) {
-            let trainLoss = 0;
-
-            let batchTrainX = [];
-            let batchTrainY = [];
-
-
-            for (let i = 0; i < splitData.trainX.length; i++) {
-
-                batchTrainX.push(splitData.trainX[i]);
-                batchTrainY.push(splitData.trainY[i]);
-
-                if (batchTrainX.length == batchSize || i == splitData.trainX.length - 1) {
-
-                    for (let layer = 1; layer < this.layers.length; layer++) {
-                        this.layers[layer].setWeihtsDeltasToZero();
-                    }
-
-                    for (let j = 0; j < batchTrainX.length; j++) {
-                        this.#feedForward(batchTrainX[j]);
-                        trainLoss -= this.#backpropErrorBatch(batchTrainY[j]);
-                    }
-
-                    this.#tweakWeights();
-                    batchTrainX = [];
-                    batchTrainY = [];
-                }
-
-                // Used for neural network drawer
-                this.lastTarget = splitData.trainY[i];
-            }
-            trainLoss /= splitData.trainX.length;
-
-            let testResult = this.#validate(splitData.testX, splitData.testY);
-
-            if (e % showResultStep == 0 || e == epochs - 1) {
-
-                const results = {
-                    "Epoch": e,
-                    "Train Loss": trainLoss,
-                    "Test Loss": testResult[0],
-                    "Good Test": testResult[1],
-                    "Test length": splitData.testX.length,
-                    "Test %": (testResult[1] / splitData.testX.length).toFixed(2),
-                }
-                console.table(results);
-            }
-        }
-
-        console.info("Training finished");
-        console.table(this);
     }
 
     /**
@@ -530,45 +349,6 @@ class NeuralNetwork {
     }
 
     /**
-        Computes the error for the last layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the output layer.
-    */
-    #backpropLastLayer(target) {
-        let errorSum = 0;
-        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
-
-        this.layers[this.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
-            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
-            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
-            errorSum += outputErrors[i];
-        }
-
-        this.layers[this.layersCount - 1].computeWeightsDeltas(this.layers[this.layersCount - 2]);
-
-        return errorSum;
-    }
-
-    /**
-        Computes the error for each layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the neural network.
-    */
-    #backpropError(target) {
-
-        const errorSum = this.#backpropLastLayer(target);
-
-        for (let layer = this.layers.length - 2; layer > 0; layer--) {
-            this.layers[layer].computeDerivatives();
-            this.layers[layer].computeGamma(this.layers[layer + 1]);
-            this.layers[layer].computeWeightsDeltas(this.layers[layer - 1]);
-        }
-
-        return errorSum;
-    }
-
-    /**
         Computes the BATCH error for the last layer of the neural network.
         @param {Array} target - the target output for the training data.
         @returns {number} the sum of errors for the output layer.
@@ -606,15 +386,6 @@ class NeuralNetwork {
         }
 
         return errorSum;
-    }
-
-    /**
-        Adjusts the weights of the network using backpropagation and the learning rate
-    */
-    #tweakWeights() {
-        for (let i = 1; i < this.layersCount; i++) {
-            this.layers[i].updateWeights(this.learningRate);
-        }
     }
 
     /**
