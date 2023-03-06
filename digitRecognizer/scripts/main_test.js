@@ -349,24 +349,31 @@ function updateHistoryGraphics() {
     historyGraphics.line(0, 0, 200, 0);
 
     historyGraphics.stroke(220, 120, 20);
-    historyGraphics.line(155, 70, 165, 70);
+    historyGraphics.line(50, 70, 60, 70);
     historyGraphics.stroke(130, 220, 40);
-    historyGraphics.line(155, 85, 165, 85);
+    historyGraphics.line(50, 85, 60, 85);
 
     historyGraphics.textAlign(LEFT, CENTER);
     historyGraphics.textSize(12);
     historyGraphics.noStroke();
+
     historyGraphics.fill(220, 120, 20);
-    historyGraphics.text("Train", 170, 70);
+    historyGraphics.text("Train:", 65, 70);
+    historyGraphics.text(Mathematics.round(neuralNetwork.statsHistory[historyPoints.length - 1]["Train Loss"], 12), 100, 70);
+
     historyGraphics.fill(130, 220, 40);
-    historyGraphics.text("Test", 170, 85);
+    historyGraphics.text("Test:", 65, 85);
+    historyGraphics.text(Mathematics.round(neuralNetwork.statsHistory[historyPoints.length - 1]["Test Loss"], 12), 100, 85);
 
     if (historyPoints.length == 1) {
+        historyGraphics.strokeWeight(3);
         historyGraphics.stroke(220, 120, 20);
         historyGraphics.point(historyPoints[0].x, historyPoints[0].trainY);
         historyGraphics.stroke(130, 220, 40);
         historyGraphics.point(historyPoints[0].x, historyPoints[0].testY);
+        return;
     }
+    historyGraphics.strokeWeight(1);
 
     for (let i = 1; i < historyPoints.length; i++) {
         historyGraphics.stroke(220, 120, 20);

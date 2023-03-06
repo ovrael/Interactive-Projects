@@ -44,9 +44,16 @@ class Mathematics {
     }
 
     static round(number, decimalPlaces = 2) {
-        throw new Error("IMPROVE");
-        return Math.round(number * 10000) / 100;
+        // Shift the decimal point to the right by the desired number of decimal places
+        const shift = 10 ** decimalPlaces;
+        const shiftedNumber = number * shift;
+        // Round the shifted number to the nearest integer
+        const roundedShiftedNumber = Math.round(shiftedNumber);
+        // Shift the decimal point back to the left by the desired number of decimal places
+        const roundedNumber = roundedShiftedNumber / shift;
+        return roundedNumber;
     }
+    
     static toPercent(number) {
         return Math.round(number * 10000) / 100;
     }
