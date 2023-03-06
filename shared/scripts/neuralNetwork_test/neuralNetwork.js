@@ -62,7 +62,7 @@ class NeuralNetwork {
     @param {number} numberOfNeurons - The number of neurons in the new layer.
     @param {Function} activationFunction - The activation function to be used for the new layer.
     @returns {undefined} This function does not return anything.
-*/
+    */
     addLayer(layerData) {
 
         if (!(layerData instanceof LayerData)) {
@@ -134,7 +134,7 @@ class NeuralNetwork {
         this.rememberedDropoutData = null;
     }
 
-    changeLayersDropout(shouldDropout) {
+    #changeLayersDropout(shouldDropout) {
         for (let i = 0; i < this.layersCount - 1; i++) {
             if (this.layers[i].type == LayerType.Dropout) {
                 this.layers[i].changeDropoutMode(shouldDropout);
@@ -142,14 +142,17 @@ class NeuralNetwork {
         }
     }
 
+
     /**
-        Trains the neural network using the given data and targets with the given parameters.
-        @param {Array<Array<number>>} trainData - The data to be used for training.
-        @param {Array<Array<number>>} targets - The target outputs to be used for training.
-        @param {number} [trainTestRatio=0.7] - The ratio of data to be used for training, the rest will be used for testing.
-        @param {number} [epochs=100] - The number of epochs to be used for training.
-        @returns {undefined} This function does not return anything.
-    */
+     * It takes a batch of data, feeds it forward, calculates the error, and then backpropagates the
+     * error.
+     * @param trainData - The training data.
+     * @param [validationData=null] - The data to test the network on.
+     * @param [batchSize=1] - The number of data points to be used in a single training step.
+     * @param [epochs=10] - The number of epochs to train for.
+     * @param [continous=false] - If true, the training will continue from the last epoch.
+     * @returns the results of the training.
+     */
     train(trainData, validationData = null, batchSize = 1, epochs = 10, continous = false) {
 
         if (!this.#checkConditions(trainData)) {
@@ -181,7 +184,7 @@ class NeuralNetwork {
 
             /** @type {Array<DataPoint>} */
             const shuffledTrainData = DataManage.shuffle(trainData);
-            this.changeLayersDropout(true);
+            this.#changeLayersDropout(true);
 
             for (let i = 0; i < shuffledTrainData.length; i++) {
 
@@ -213,7 +216,7 @@ class NeuralNetwork {
 
             trainLoss /= shuffledTrainData.length;
 
-            this.changeLayersDropout(false);
+            this.#changeLayersDropout(false);
             const shuffledTestData = DataManage.shuffle(validationData);
 
             let testResult = this.#validate(shuffledTestData);
@@ -237,7 +240,7 @@ class NeuralNetwork {
             this.#globalEpoch++;
         }
         this.isLearning = false;
-        this.changeLayersDropout(this.isLearning);
+        this.#changeLayersDropout(this.isLearning);
 
         console.info("Training finished");
     }
