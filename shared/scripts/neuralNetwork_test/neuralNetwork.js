@@ -585,11 +585,11 @@ class NeuralNetwork {
 
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
-                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-                for (let i = 0; i < outputErrors.length; i++) {
-                    cost += outputErrors[i];
-                }
-                // cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
+                // let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
+                // for (let i = 0; i < outputErrors.length; i++) {
+                //     cost += outputErrors[i];
+                // }
+                cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
                 if (maxIndex == undefined) {

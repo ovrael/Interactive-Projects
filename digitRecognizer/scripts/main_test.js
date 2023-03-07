@@ -32,7 +32,7 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 50, 1, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 25, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -108,8 +108,8 @@ function draw() {
         if (trainingTextShowed) {
             console.warn("Training started!");
             // splitData = DataManage.split(datapoints, 0.7, true);
-            // neuralNetwork.train_test(splitData.train, splitData.test, 64, 1, false);
-            neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
+            neuralNetwork.train_test(splitData.train, splitData.test, 32, 1, false);
+            // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
 
             // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
@@ -137,13 +137,13 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    // const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.01));
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
+    const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.005));
+    // const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));
-    neuralNetwork.addLayer(Layer.Dropout(0.4));
-    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
     neuralNetwork.addLayer(Layer.Dropout(0.2));
+    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
+    neuralNetwork.addLayer(Layer.Dropout(0.1));
     neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
 
     return neuralNetwork;

@@ -60,6 +60,7 @@ class CostFunction {
                 if (singleOutput == 0 || singleOutput == 1) {
                     return 0;
                 }
+
                 return (-singleOutput + singleTarget) / (singleOutput * (singleOutput - 1));
             },
             "CrossEntropy"
