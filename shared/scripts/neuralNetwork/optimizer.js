@@ -76,13 +76,12 @@ class Optimizer {
 
     trainSGD(modelData) {
         for (let i = 1; i < modelData.layersCount; i++) {
-            const weights = modelData.layers.weights;
-            const biases = modelData.layers.biases;
-            const gamma = modelData.layer.gamma;
-            const weightsDeltas = modelData.layer.weightsDeltas;
+            const weights = modelData.layers[i].weights;
+            const biases = modelData.layers[i].biases;
+            const gamma = modelData.layers[i].gamma;
+            const weightsDeltas = modelData.layers[i].weightsDeltas;
 
             for (let c = 0; c < weights.current; c++) {
-
                 biases[c] -= gamma[c] * this.learningRate;
                 for (let p = 0; p < weights.previous; p++) {
                     weights.data[p][c] -= weightsDeltas.data[p][c] * this.learningRate;
