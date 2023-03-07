@@ -44,10 +44,10 @@ class CostFunction {
 
         return new CostFunction(
 
-            function (predicted, targets) {
+            function (outputs, targets) {
                 let cost = 0;
-                for (let i = 0; i < predicted.length; i++) {
-                    const x = predicted[i];
+                for (let i = 0; i < outputs.length; i++) {
+                    const x = outputs[i];
                     const y = targets[i];
                     const v = (y == 1) ? -Math.log(x) : -Math.log(1 - x);
                     cost += isNaN(v) ? 0 : v;

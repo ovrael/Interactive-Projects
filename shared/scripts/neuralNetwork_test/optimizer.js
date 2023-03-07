@@ -33,22 +33,32 @@ class Optimizer {
                 break;
 
             case "adam":
-                this.m = new Array(model.layerCount);
-                this.v = new Array(model.layerCount);
+                this.mWeights = new Array(model.layerCount);
+                this.vWeights = new Array(model.layerCount);
+                this.mBiases = new Array(model.layerCount);
+                this.vBiases = new Array(model.layerCount);
 
                 for (let i = 1; i < model.layers.length; i++) {
-                    this.m[i] = Weights.createZero(model.layers[i].weights);
-                    this.v[i] = Weights.createZero(model.layers[i].weights);
+                    this.mWeights[i] = Weights.createZero(model.layers[i].weights);
+                    this.vWeights[i] = Weights.createZero(model.layers[i].weights);
+
+                    this.mBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
+                    this.vBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
                 }
                 break;
 
             default:
-                this.m = new Array(model.layerCount);
-                this.v = new Array(model.layerCount);
+                this.mWeights = new Array(model.layerCount);
+                this.vWeights = new Array(model.layerCount);
+                this.mBiases = new Array(model.layerCount);
+                this.vBiases = new Array(model.layerCount);
 
                 for (let i = 1; i < model.layers.length; i++) {
-                    this.m[i] = Weights.createZero(model.layers[i].weights);
-                    this.v[i] = Weights.createZero(model.layers[i].weights);
+                    this.mWeights[i] = Weights.createZero(model.layers[i].weights);
+                    this.vWeights[i] = Weights.createZero(model.layers[i].weights);
+
+                    this.mBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
+                    this.vBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
                 }
                 break;
         }
@@ -78,13 +88,13 @@ class Optimizer {
         for (let i = 1; i < modelData.layersCount; i++) {
             const weights = modelData.layers[i].weights;
             const biases = modelData.layers[i].biases;
-            const gamma = modelData.layers[i].gamma;
+            const biasesDeltas = modelData.layers[i].biasesDeltas;
             const weightsDeltas = modelData.layers[i].weightsDeltas;
 
             for (let c = 0; c < weights.current; c++) {
-                biases[c] -= gamma[c] * this.learningRate;
+                biases[c] -= this.learningRate * biasesDeltas[c];
                 for (let p = 0; p < weights.previous; p++) {
-                    weights.data[p][c] -= weightsDeltas.data[p][c] * this.learningRate;
+                    weights.data[p][c] -= this.learningRate * weightsDeltas.data[p][c];
                 }
             }
         }
@@ -93,19 +103,51 @@ class Optimizer {
     trainAdam(modelData) {
         for (let layer = 1; layer < modelData.layers.length; layer++) {
             const dw = modelData.layers[layer].weightsDeltas.copy();
+            const db = modelData.layers[layer].biasDeltas.copy();
 
-            this.m[layer] = Weights.scalarMultiply(this.m[layer], this.beta1);
-            this.m[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - this.beta1));
+            // M(t) = M(t-1) * beta1
+            this.mWeights[layer].scalarMultiply(this.beta1);
+            this.mBiases[layer].scalarMultiply(this.beta1);
 
-            this.v[layer] = Weights.scalarMultiply(this.v[layer], this.beta2);
-            this.v[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - this.beta2));
+            // M(t) += gradient(t) * (1 - beta1)
+            this.mWeights[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - this.beta1));
+            this.mBiases[layer].weightsAdd(Weights.scalarMultiply(db, 1 - this.beta1));
 
-            const mHat = Weights.scalarDivide(this.m[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
-            const vHat = Weights.scalarDivide(this.v[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
-            const vHatSquared = Weights.sqrt(vHat);
+            // V(t) = V(t-1) * beta2
+            this.vWeights[layer].scalarMultiply(this.beta2);
+            this.vBiases[layer].scalarMultiply(this.beta2);
 
-            const delta = Weights.scalarMultiply(Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, this.epsilon)), this.learningRate);
-            modelData.layers[layer].weights.weightsSubtract(delta);
+            // V(t) += gradient(t)^2 * (1 - beta2)
+            this.vWeights[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - this.beta2));
+            this.vBiases[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(db, db), 1 - this.beta2));
+
+            // Mh(t) = M(t) / (1 - beta1^t)
+            const mHatWeights = Weights.scalarDivide(this.mWeights[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
+            const mHatBiases = Weights.scalarDivide(this.mBiases[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
+
+            // Hh(t) = H(t) / (1 - beta2^t)
+            const vHatWeights = Weights.scalarDivide(this.vWeights[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
+            const vHatWeightsSquared = Weights.sqrt(vHatWeights);
+
+            const vHatBiases = Weights.scalarDivide(this.vBiases[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
+            const vHatBiasesSquared = Weights.sqrt(vHatBiases);
+
+            // Mh / (Hh^(1/2) + epsilon)
+            vHatWeightsSquared.scalarAdd(this.epsilon);
+            vHatBiasesSquared.scalarAdd(this.epsilon);
+
+            const weightsHatFraction = Weights.weightsDivide(mHatWeights, vHatWeightsSquared);
+            const biasesHatFraction = Weights.weightsDivide(mHatBiases, vHatBiasesSquared);
+
+            // Weights and bias change
+            const deltaW = Weights.scalarMultiply(weightsHatFraction, this.learningRate);
+            const deltaB = Weights.scalarMultiply(biasesHatFraction, this.learningRate);
+
+            modelData.layers[layer].weights.weightsSubtract(deltaW);
+
+            for (let i = 0; i < modelData.layers[layer].biases.length; i++) {
+                modelData.layers[layer].biases[i] = deltaB.data[0][i];
+            }
         }
     }
 

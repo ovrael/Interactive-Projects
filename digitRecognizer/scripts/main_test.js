@@ -32,7 +32,7 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 2, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 4, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -108,7 +108,8 @@ function draw() {
         if (trainingTextShowed) {
             console.warn("Training started!");
             // splitData = DataManage.split(datapoints, 0.7, true);
-            neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
+            neuralNetwork.train_test(splitData.train, splitData.test, 64, 1, false);
+            // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
             updateHistoryGraphics();
         }
@@ -134,7 +135,7 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.sgd(0.001));
+    const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.003));
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.4));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
@@ -367,18 +368,18 @@ function updateHistoryGraphics() {
     if (historyPoints.length == 1) {
         historyGraphics.strokeWeight(3);
         historyGraphics.stroke(220, 120, 20);
-        historyGraphics.point(historyPoints[0].x, historyPoints[0].trainY);
+        historyGraphics.point(historyPoints[0].x, -historyPoints[0].trainY);
         historyGraphics.stroke(130, 220, 40);
-        historyGraphics.point(historyPoints[0].x, historyPoints[0].testY);
+        historyGraphics.point(historyPoints[0].x, -historyPoints[0].testY);
         return;
     }
     historyGraphics.strokeWeight(1);
 
     for (let i = 1; i < historyPoints.length; i++) {
         historyGraphics.stroke(220, 120, 20);
-        historyGraphics.line(historyPoints[i - 1].x, historyPoints[i - 1].trainY, historyPoints[i].x, historyPoints[i].trainY);
+        historyGraphics.line(historyPoints[i - 1].x, -historyPoints[i - 1].trainY, historyPoints[i].x, -historyPoints[i].trainY);
         historyGraphics.stroke(130, 220, 40);
-        historyGraphics.line(historyPoints[i - 1].x, historyPoints[i - 1].testY, historyPoints[i].x, historyPoints[i].testY);
+        historyGraphics.line(historyPoints[i - 1].x, -historyPoints[i - 1].testY, historyPoints[i].x, -historyPoints[i].testY);
     }
 }
 

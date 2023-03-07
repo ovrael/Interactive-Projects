@@ -1,7 +1,8 @@
 class ActivationFunction {
-    constructor(func, dfunc) {
+    constructor(func, dfunc, dfunc2) {
         this.function = func;
         this.derivative = dfunc;
+        this.derivative2 = dfunc2;
     }
 
     static sigmoid() {
@@ -28,6 +29,7 @@ class ActivationFunction {
         return new ActivationFunction(
             neurons => neurons.map((n) => n > 0 ? n : 0.001 * n),
             activations => activations.map((a) => a > 0 ? 1 : 0.001),
+            activation => activation > 0 ? 1 : 0.001,
         );
     }
 
@@ -51,6 +53,7 @@ class ActivationFunction {
                 }
                 return derivatives;
             },
+            activation => activation * (1 - activation),
         );
     }
 }

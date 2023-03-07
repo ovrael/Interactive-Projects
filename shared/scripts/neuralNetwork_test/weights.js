@@ -132,6 +132,12 @@ class Weights {
         return newWeights;
     }
 
+    static createZeroBySize(previous, current) {
+        const newWeights = new Weights(previous, current);
+        newWeights.scalarFillData(0);
+        return newWeights;
+    }
+
     static scalarAdd(weights, scalar) {
         const newWeights = Weights.copy(weights);
         newWeights.scalarAdd(scalar);

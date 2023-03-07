@@ -15,7 +15,7 @@ class Layer {
         this.activations = [];  // Activation of sums from current layer
         this.derivatives = [];  // Derivatives of activations from current layer
         this.errors = [];       // Errors from current layer
-        this.gamma = [];        //error * derivative
+        this.gamma = [];        // error * derivative
 
         for (let i = 0; i < numberOfNeurons; i++) {
             this.biases.push(Math.random() - 0.5);
@@ -34,6 +34,8 @@ class Layer {
             this.weights = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
             /** @type {Weights} */
             this.weightsDeltas = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
+            /** @type {Weights} */
+            this.biasDeltas = (numberOfPreviousNeurons > 0) ? new Weights(1, numberOfNeurons) : null;
 
             /** @type {ActivationFunction} */
             this.activationFunction = activationFunction;
@@ -123,6 +125,10 @@ class Layer {
         this.derivatives = this.activationFunction.derivative(this.activations);
     }
 
+    computeDerivative2(i) {
+        return this.activationFunction.derivative2(this.activations[i]);
+    }
+
     computeGamma(nextLayer) {
 
         for (let i = 0; i < this.neuronsCount; i++) {
@@ -130,7 +136,8 @@ class Layer {
             for (let j = 0; j < nextLayer.neuronsCount; j++) {
                 this.gamma[i] += nextLayer.gamma[j] * nextLayer.weights.data[i][j];
             }
-            this.gamma[i] *= this.derivatives[i];
+
+            this.gamma[i] *= this.activationFunction.derivative2(i);
         }
     }
 
@@ -143,11 +150,23 @@ class Layer {
         }
     }
 
-    computeWeightsDeltasBatch(previousLayer) {
-        for (let p = 0; p < this.weightsDeltas.previous; p++) {
-            for (let c = 0; c < this.weightsDeltas.current; c++) {
-                this.weightsDeltas.data[p][c] += this.gamma[c] * previousLayer.activations[p];
+    updateGradient(previousActivations) {
+        for (let c = 0; c < this.weightsDeltas.current; c++) {
+            for (let p = 0; p < this.weightsDeltas.previous; p++) {
+                this.weightsDeltas.data[p][c] += this.gamma[c] * previousActivations[p];
             }
+
+            this.biasDeltas.data[0][c] += this.gamma[c];
+        }
+    }
+
+    clearGradient() {
+        for (let c = 0; c < this.weightsDeltas.current; c++) {
+            for (let p = 0; p < this.weightsDeltas.previous; p++) {
+                this.weightsDeltas.data[p][c] = 0;
+            }
+
+            this.biasDeltas.data[0][c] = 0;
         }
     }
 
