@@ -49,7 +49,7 @@ class Weights {
         }
     }
 
-    fillData(otherWeights) {
+    weightsFillData(otherWeights) {
         for (let i = 0; i < this.previous; i++) {
             for (let j = 0; j < this.current; j++) {
                 this.data[i][j] = otherWeights.data[i][j];
@@ -78,7 +78,7 @@ class Weights {
 
     copy() {
         const newWeights = new Weights(this.previous, this.current);
-        newWeights.fillData(this);
+        newWeights.weightsFillData(this);
         return newWeights;
     }
 

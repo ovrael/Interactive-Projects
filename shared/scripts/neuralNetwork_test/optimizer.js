@@ -33,32 +33,32 @@ class Optimizer {
                 break;
 
             case "adam":
-                this.mWeights = new Array(model.layerCount);
-                this.vWeights = new Array(model.layerCount);
-                this.mBiases = new Array(model.layerCount);
-                this.vBiases = new Array(model.layerCount);
+                this.mWeights = new Array(model.backpropLayers.length);
+                this.vWeights = new Array(model.backpropLayers.length);
+                this.mBiases = new Array(model.backpropLayers.length);
+                this.vBiases = new Array(model.backpropLayers.length);
 
-                for (let i = 1; i < model.layers.length; i++) {
-                    this.mWeights[i] = Weights.createZero(model.layers[i].weights);
-                    this.vWeights[i] = Weights.createZero(model.layers[i].weights);
+                for (let i = 0; i < model.backpropLayers.length; i++) {
+                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
+                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
 
-                    this.mBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
-                    this.vBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
+                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
+                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
                 }
                 break;
 
             default:
-                this.mWeights = new Array(model.layerCount);
-                this.vWeights = new Array(model.layerCount);
-                this.mBiases = new Array(model.layerCount);
-                this.vBiases = new Array(model.layerCount);
+                this.mWeights = new Array(model.backpropLayers.length);
+                this.vWeights = new Array(model.backpropLayers.length);
+                this.mBiases = new Array(model.backpropLayers.length);
+                this.vBiases = new Array(model.backpropLayers.length);
 
-                for (let i = 1; i < model.layers.length; i++) {
-                    this.mWeights[i] = Weights.createZero(model.layers[i].weights);
-                    this.vWeights[i] = Weights.createZero(model.layers[i].weights);
+                for (let i = 0; i < model.backpropLayers.length; i++) {
+                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
+                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
 
-                    this.mBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
-                    this.vBiases[i] = Weights.createZero(model.layers[i].biasDeltas);
+                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
+                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
                 }
                 break;
         }
@@ -101,9 +101,10 @@ class Optimizer {
     }
 
     trainAdam(modelData) {
-        for (let layer = 1; layer < modelData.layers.length; layer++) {
-            const dw = modelData.layers[layer].weightsDeltas.copy();
-            const db = modelData.layers[layer].biasDeltas.copy();
+
+        for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
+            const dw = modelData.backpropLayers[layer].weightsDeltas.copy();
+            const db = modelData.backpropLayers[layer].biasDeltas.copy();
 
             // M(t) = M(t-1) * beta1
             this.mWeights[layer].scalarMultiply(this.beta1);
@@ -143,11 +144,8 @@ class Optimizer {
             const deltaW = Weights.scalarMultiply(weightsHatFraction, this.learningRate);
             const deltaB = Weights.scalarMultiply(biasesHatFraction, this.learningRate);
 
-            modelData.layers[layer].weights.weightsSubtract(deltaW);
-
-            for (let i = 0; i < modelData.layers[layer].biases.length; i++) {
-                modelData.layers[layer].biases[i] = deltaB.data[0][i];
-            }
+            modelData.layers[layer + 1].weights.weightsSubtract(deltaW);
+            modelData.layers[layer + 1].biases.weightsSubtract(deltaB);
         }
     }
 

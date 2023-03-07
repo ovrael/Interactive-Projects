@@ -4,6 +4,7 @@ class CostFunction {
         this.func = func;
         this.derivative = derivative;
         this.name = name;
+        this.epsilon = 1e-12;
     }
 
     static onehotIndexTarget(target, predictedLength) {
@@ -50,7 +51,7 @@ class CostFunction {
                     const x = outputs[i];
                     const y = targets[i];
                     const v = (y == 1) ? -Math.log(x) : -Math.log(1 - x);
-                    cost += isNaN(v) ? 0 : v;
+                    cost += isFinite(v) ? v : 0;
                 }
                 return cost;
             },
