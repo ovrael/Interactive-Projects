@@ -41,6 +41,7 @@ const scriptsTest = [
     "weights",
     "layerData",
     "layer",
+    "backpropLayer",
     "neuralNetwork",
 ];
 

@@ -9,6 +9,8 @@ class NeuralNetwork {
 
         /** @type {Array<Layer>} */
         this.layers = [];
+        /** @type {Array<BackpropLayer>} */
+        this.backpropLayers = [];
         this.rememberedDropoutData = null;
         this.layersCount = -1;
 
@@ -83,6 +85,15 @@ class NeuralNetwork {
                 break;
             default:
                 break;
+        }
+
+        if (this.layers.length > 1) {
+            this.backpropLayers.push(
+                new BackpropLayer(
+                    this.layers[this.layers.length - 1].neuronsCount,
+                    this.layers[this.layers.length - 2].neuronsCount
+                )
+            );
         }
 
         this.layersCount = this.layers.length;
