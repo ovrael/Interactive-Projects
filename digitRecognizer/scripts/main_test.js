@@ -108,8 +108,11 @@ function draw() {
         if (trainingTextShowed) {
             console.warn("Training started!");
 
+            // IT SHOULDN'T BE HERE !!!
+            // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
+            // NEED BETTER SOLUTION: REGULARIZATION, SGD WITH MOMENTUM ETC.
             splitData = DataManage.split(datapoints, 0.7, true);
-            neuralNetwork.train_test(splitData.train, splitData.test, 64, 1, false);
+            neuralNetwork.train_test(splitData.train, splitData.test, 32, 1, true);
             // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
             updateHistoryGraphics();
