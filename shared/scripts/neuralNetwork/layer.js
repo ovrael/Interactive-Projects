@@ -10,30 +10,26 @@ class Layer {
         this.type = type;
 
         this.neuronsCount = numberOfNeurons;
-        this.biases = [];       // Small values added each time sum happens
         this.sums = [];         // Sum of activations (previous layer) * weights + biases (current layer) 
         this.activations = [];  // Activation of sums from current layer
-        this.derivatives = [];  // Derivatives of activations from current layer
-        this.errors = [];       // Errors from current layer
-        this.gamma = [];        //error * derivative
 
         for (let i = 0; i < numberOfNeurons; i++) {
-            this.biases.push(Math.random() - 0.5);
             this.sums.push(0);
             this.activations.push(0);
-            this.derivatives.push(0);
-            this.errors.push(0);
-            this.gamma.push(0);
         }
 
         if (this.type == LayerType.Input) {
             this.fillNeurons = this.fillNeuronsWithoutDropout;
         }
         else {
+            if (numberOfPreviousNeurons <= 0) {
+                throw new Error("Hidden layer cannot have 0 previous neurons!");
+            }
+
             /** @type {Weights} */
-            this.weights = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
+            this.weights = new Weights(numberOfPreviousNeurons, numberOfNeurons);
             /** @type {Weights} */
-            this.weightsDeltas = (numberOfPreviousNeurons > 0) ? new Weights(numberOfPreviousNeurons, numberOfNeurons) : null;
+            this.biases = new Weights(1, numberOfNeurons);
 
             /** @type {ActivationFunction} */
             this.activationFunction = activationFunction;
@@ -97,7 +93,7 @@ class Layer {
 
     sumNeurons(previousLayer) {
         for (let i = 0; i < this.neuronsCount; i++) {
-            this.sums[i] = this.biases[i];
+            this.sums[i] = this.biases.data[0][i];
             for (let j = 0; j < previousLayer.activations.length; j++) {
                 this.sums[i] += previousLayer.activations[j] * this.weights.data[j][i];
             }
@@ -123,36 +119,8 @@ class Layer {
         this.derivatives = this.activationFunction.derivative(this.activations);
     }
 
-    computeGamma(nextLayer) {
-
-        for (let i = 0; i < this.neuronsCount; i++) {
-            this.gamma[i] = 0;
-            for (let j = 0; j < nextLayer.neuronsCount; j++) {
-                this.gamma[i] += nextLayer.gamma[j] * nextLayer.weights.data[i][j];
-            }
-            this.gamma[i] *= this.derivatives[i];
-        }
-    }
-
-    computeWeightsDeltas(previousLayer) {
-        for (let p = 0; p < this.weightsDeltas.previous; p++) {
-            for (let c = 0; c < this.weightsDeltas.current; c++) {
-                this.weightsDeltas.data[p][c] =
-                    this.gamma[c] * previousLayer.activations[p];
-            }
-        }
-    }
-
-    computeWeightsDeltasBatch(previousLayer) {
-        for (let p = 0; p < this.weightsDeltas.previous; p++) {
-            for (let c = 0; c < this.weightsDeltas.current; c++) {
-                this.weightsDeltas.data[p][c] += this.gamma[c] * previousLayer.activations[p];
-            }
-        }
-    }
-
-    setWeihtsDeltasToZero() {
-        this.weightsDeltas.scalarFillData(0);
+    computeDerivativeAtIndex(i) {
+        return this.activationFunction.derivative2(this.activations[i]);
     }
 
     reinitializeWeights() {

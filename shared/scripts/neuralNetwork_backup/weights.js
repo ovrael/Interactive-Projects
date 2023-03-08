@@ -49,7 +49,7 @@ class Weights {
         }
     }
 
-    fillData(otherWeights) {
+    weightsFillData(otherWeights) {
         for (let i = 0; i < this.previous; i++) {
             for (let j = 0; j < this.current; j++) {
                 this.data[i][j] = otherWeights.data[i][j];
@@ -78,7 +78,7 @@ class Weights {
 
     copy() {
         const newWeights = new Weights(this.previous, this.current);
-        newWeights.fillData(this);
+        newWeights.weightsFillData(this);
         return newWeights;
     }
 
@@ -128,6 +128,12 @@ class Weights {
 
     static createZero(weights) {
         const newWeights = weights.copy();
+        newWeights.scalarFillData(0);
+        return newWeights;
+    }
+
+    static createZeroBySize(previous, current) {
+        const newWeights = new Weights(previous, current);
         newWeights.scalarFillData(0);
         return newWeights;
     }
@@ -199,5 +205,15 @@ class Weights {
 
         const y1 = Math.sqrt(-2.0 * Math.log(x1)) * Math.cos(2.0 * Math.PI * x2);
         return y1 * standardDeviation + mean;
+    }
+
+    sumWeights() {
+        let sum = 0;
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                sum += this.data[i][j];
+            }
+        }
+        return sum;
     }
 }

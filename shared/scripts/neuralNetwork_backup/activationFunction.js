@@ -1,7 +1,8 @@
 class ActivationFunction {
-    constructor(func, dfunc) {
+    constructor(func, dfunc, dfunc2) {
         this.function = func;
         this.derivative = dfunc;
+        this.derivative2 = dfunc2;
     }
 
     static sigmoid() {
@@ -28,12 +29,16 @@ class ActivationFunction {
         return new ActivationFunction(
             neurons => neurons.map((n) => n > 0 ? n : 0.001 * n),
             activations => activations.map((a) => a > 0 ? 1 : 0.001),
+            activation => activation > 0 ? 1 : 0.001,
         );
     }
 
     static softmax() {
         return new ActivationFunction(
             neurons => {
+
+                // neurons = neurons.map((n) => isNaN(n) ? 0 : n);
+
                 let max = Number.MIN_VALUE;
                 for (let i = 0; i < neurons.length; i++) {
                     if (neurons[i] > max)
@@ -41,6 +46,7 @@ class ActivationFunction {
                 }
                 const exponents = neurons.map((n) => Math.exp(n - max));
                 const sum = exponents.reduce((a, b) => a + b);
+
                 return exponents.map((e) => e / sum);
             },
             activations => {
@@ -51,6 +57,7 @@ class ActivationFunction {
                 }
                 return derivatives;
             },
+            activation => activation * (1 - activation),
         );
     }
 }

@@ -1,14 +1,16 @@
 class NeuralNetwork {
 
     #globalEpoch = 0;
-    constructor(errorFunction, optimzer) {
+    constructor(errorFunction, optimizer) {
         /** @type {CostFunction} */
         this.costFunction = errorFunction;
         /** @type {Optimizer} */
-        this.optimzer = optimzer;
+        this.optimizer = optimizer;
 
         /** @type {Array<Layer>} */
         this.layers = [];
+        /** @type {Array<BackpropLayer>} */
+        this.backpropLayers = [];
         this.rememberedDropoutData = null;
         this.layersCount = -1;
 
@@ -27,13 +29,13 @@ class NeuralNetwork {
 
     /**
         Compiles the neural network with the given error function and learning rate.
-        @param {Function} errorFunction - The error function to be used for the neural network.
+        @param {Function} costFunction - The error function to be used for the neural network.
         @param {number} [learningRate=0.05] - The learning rate to be used for the neural network.
         @returns {undefined} This function does not return anything.
     */
-    compile(errorFunction, optimzer) {
-        this.costFunction = errorFunction;
-        this.optimzer = optimzer;
+    compile(costFunction, optimzer) {
+        this.costFunction = costFunction;
+        this.optimizer = optimzer;
         this.#updateNeuralNetworkData();
     }
 
@@ -76,6 +78,7 @@ class NeuralNetwork {
                 break;
             case LayerType.Dense:
                 this.#addDenseLayer(layerData);
+                this.#addBackpropLayer();
                 break;
 
             case LayerType.Dropout:
@@ -84,8 +87,16 @@ class NeuralNetwork {
             default:
                 break;
         }
-
         this.layersCount = this.layers.length;
+    }
+
+    #addBackpropLayer() {
+        this.backpropLayers.push(
+            new BackpropLayer(
+                this.layers[this.layers.length - 1].neuronsCount,
+                this.layers[this.layers.length - 2].neuronsCount
+            )
+        );
     }
 
     // constructor(type, numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction, dropoutRate)
@@ -142,7 +153,6 @@ class NeuralNetwork {
         }
     }
 
-
     /**
      * It takes a batch of data, feeds it forward, calculates the error, and then backpropagates the
      * error.
@@ -158,15 +168,15 @@ class NeuralNetwork {
         if (!this.#checkConditions(trainData)) {
             return;
         }
-        if (this.isLearning)
-            return;
+
+        console.log("Neural network is learning!");
 
         if (continous == false) {
             this.#globalEpoch = 0;
         }
 
         if (this.#globalEpoch == 0) {
-            this.optimzer.setNeuralNetworkData(this);
+            this.optimizer.setNeuralNetworkData(this);
         }
 
 
@@ -191,22 +201,24 @@ class NeuralNetwork {
                 batchTrain.push(shuffledTrainData[i]);
 
                 if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
-                    for (let layer = 1; layer < this.layers.length; layer++) {
-                        this.layers[layer].setWeihtsDeltasToZero();
-                    }
 
                     for (let j = 0; j < batchTrain.length; j++) {
                         this.#feedForward(batchTrain[j].inputs);
-                        trainLoss += this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
+
+                        trainLoss += this.costFunction.func(this.layers[this.layers.length - 1].activations, batchTrain[j].expectedOutputs);
+
+                        this.#backpropError(batchTrain[j].expectedOutputs);
                     }
 
-                    this.optimzer.updateWeights(
+                    this.optimizer.updateWeights(
                         {
                             "epoch": this.#globalEpoch,
                             "layers": this.layers,
+                            "backpropLayers": this.backpropLayers,
                         }
                     );
 
+                    this.#clearGradients();
 
                     batchTrain = [];
                 }
@@ -319,6 +331,10 @@ class NeuralNetwork {
         @returns {boolean} true if the neural network meets the conditions, false otherwise.
     */
     #checkConditions(dataPoints) {
+
+        if (this.isLearning)
+            return false;
+
         if (this.layers.length < 3) {
             console.error("Neural network is too small. It should have at least 3 layers!");
             return false;
@@ -352,43 +368,46 @@ class NeuralNetwork {
     }
 
     /**
-        Computes the BATCH error for the last layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the output layer.
-    */
-    #backpropLastLayerBatch(target) {
-        let errorSum = 0;
-        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
+       Computes the BATCH error for the last layer of the neural network.
+       @param {Array} target - the target output for the training data.
+       @returns {number} the sum of errors for the output layer.
+   */
+    #backpropLastLayer(targets) {
 
-        this.layers[this.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
-            this.layers[this.layers.length - 1].errors[i] = outputErrors[i];
-            this.layers[this.layers.length - 1].gamma[i] = outputErrors[i] * this.layers[this.layers.length - 1].derivatives[i];
-            errorSum += outputErrors[i];
+        const lastLayer = this.layers[this.layers.length - 1];
+
+        for (let i = 0; i < lastLayer.neuronsCount; i++) {
+            const activationDerivative = lastLayer.computeDerivativeAtIndex(i);
+            const costDerivative = this.costFunction.derivative(lastLayer.activations[i], targets[i]);
+            this.backpropLayers.at(-1).gamma.data[0][i] = activationDerivative * costDerivative;
         }
 
-        this.layers[this.layersCount - 1].computeWeightsDeltasBatch(this.layers[this.layersCount - 2]);
+        this.backpropLayers.at(-1).updateGradient(this.layers.at(-2).activations);
 
-        return errorSum;
     }
 
 
     /**
         Computes the BATCH error for each layer of the neural network.
-        @param {Array} target - the target output for the training data.
+        @param {Array} targets - the target output for the training data.
         @returns {number} the sum of errors for the neural network.
     */
-    #backpropErrorBatch(target) {
+    #backpropError(targets) {
 
-        const errorSum = this.#backpropLastLayerBatch(target);
-
-        for (let layer = this.layers.length - 2; layer > 0; layer--) {
-            this.layers[layer].computeDerivatives();
-            this.layers[layer].computeGamma(this.layers[layer + 1]);
-            this.layers[layer].computeWeightsDeltasBatch(this.layers[layer - 1]);
+        this.#backpropLastLayer(targets);
+        for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
+            this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
+            this.backpropLayers[layer].updateGradient(this.layers[layer].activations);
         }
+    }
 
-        return errorSum;
+    #clearGradients() {
+
+        // console.log(JSON.parse(JSON.stringify(this.layers)));
+
+        for (let i = 0; i < this.backpropLayers.length; i++) {
+            this.backpropLayers[i].clearGradient();
+        }
     }
 
     /**
@@ -397,7 +416,7 @@ class NeuralNetwork {
         @returns {number[]} - an array containing the average loss and number of correct predictions
     */
     #validate(testData) {
-        let testLoss = 0;
+        let cost = 0;
         let goodTest = 0;
         this.badResults = [];
         this.badLabels = [];
@@ -406,8 +425,7 @@ class NeuralNetwork {
             console.warn("SINGLE OUTPUT")
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
-                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-                testLoss = -outputErrors.reduce((a, b) => a + b, 0);
+                cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
 
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
 
@@ -421,15 +439,12 @@ class NeuralNetwork {
 
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
-                let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-                for (let i = 0; i < outputErrors.length; i++) {
-                    testLoss += outputErrors[i];
-                }
+                cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
                 if (maxIndex == undefined) {
-                    console.warn(outputErrors);
-                    throw new Error("Output undefined");
+                    console.warn(this.layers[this.layers.length - 1].activations);
+                    throw new Error("Can't find max index");
                 }
 
                 if (maxIndex == testData[i].label) {
@@ -441,9 +456,9 @@ class NeuralNetwork {
                 this.lastTarget = testData[i].label;
             }
         }
-        testLoss /= testData.length;
+        cost /= testData.length;
 
-        return [testLoss, goodTest];
+        return [cost, goodTest];
     }
 
 

@@ -4,6 +4,7 @@ class CostFunction {
         this.func = func;
         this.derivative = derivative;
         this.name = name;
+        this.epsilon = 1e-8;
     }
 
     static onehotIndexTarget(target, predictedLength) {
@@ -44,21 +45,22 @@ class CostFunction {
 
         return new CostFunction(
 
-            function (predicted, targets) {
+            function (outputs, targets) {
                 let cost = 0;
-                for (let i = 0; i < predicted.length; i++) {
-                    const x = predicted[i];
+                for (let i = 0; i < outputs.length; i++) {
+                    const x = isFinite(outputs[i]) ? outputs[i] : 0;
                     const y = targets[i];
-                    const v = (y == 1) ? -Math.log(x) : -Math.log(1 - x);
-                    cost += isNaN(v) ? 0 : v;
+                    const v = (y == 1) ? -Math.log(x + this.epsilon) : -Math.log(1 - x + this.epsilon);
+                    cost += isFinite(v) ? v : 0;
                 }
                 return cost;
             },
             function (singleOutput, singleTarget) {
 
-                if (singleOutput == 0 || singleOutput == 1) {
+                if (singleOutput <= this.epsilon || singleOutput >= 1 - this.epsilon) {
                     return 0;
                 }
+
                 return (-singleOutput + singleTarget) / (singleOutput * (singleOutput - 1));
             },
             "CrossEntropy"
