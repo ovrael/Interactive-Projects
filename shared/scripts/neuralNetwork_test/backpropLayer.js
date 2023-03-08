@@ -25,7 +25,7 @@ class BackpropLayer {
     clearGradient() {
         for (let i = 0; i < this.currentNeurons; i++) {
 
-            this.gamma.data[0][i] = 0;
+            // this.gamma.data[0][i] = 0;
             this.biasDeltas.data[0][i] = 0;
 
             for (let j = 0; j < this.previousNeurons; j++) {
@@ -36,12 +36,13 @@ class BackpropLayer {
 
     computeGamma(nextBackpropLayer, nextLayer) {
         for (let i = 0; i < nextBackpropLayer.previousNeurons; i++) {
-            this.gamma[i] = 0;
+            this.gamma.data[0][i] = 0;
             for (let j = 0; j < nextBackpropLayer.currentNeurons; j++) {
-                this.gamma[i] += nextBackpropLayer.gamma.data[0][j] * nextLayer.weights.data[i][j];
+                this.gamma.data[0][i] += nextBackpropLayer.gamma.data[0][j] * nextLayer.weights.data[i][j];
             }
 
-            this.gamma[i] *= nextLayer.computeDerivativeAtIndex(i);
+
+            this.gamma.data[0][i] *= nextLayer.computeDerivativeAtIndex(i);
         }
     }
 

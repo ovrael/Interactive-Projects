@@ -328,6 +328,8 @@ class NeuralNetwork {
                         }
                     );
                     // console.log(JSON.parse(JSON.stringify(this.layers)));
+                    // throw new Error('');
+
 
                     this.#clearGradients();
 
@@ -490,6 +492,7 @@ class NeuralNetwork {
         }
 
         this.backpropLayers.at(-1).updateGradient(this.layers.at(-2).activations);
+
     }
 
 
@@ -501,7 +504,6 @@ class NeuralNetwork {
     #backpropErrorBatch_test(targets) {
 
         this.#backpropLastLayerBatch_test(targets);
-
         for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
             this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
             this.backpropLayers[layer].updateGradient(this.layers[layer].activations);

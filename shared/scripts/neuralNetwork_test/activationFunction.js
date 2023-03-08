@@ -36,6 +36,9 @@ class ActivationFunction {
     static softmax() {
         return new ActivationFunction(
             neurons => {
+
+                // neurons = neurons.map((n) => isNaN(n) ? 0 : n);
+
                 let max = Number.MIN_VALUE;
                 for (let i = 0; i < neurons.length; i++) {
                     if (neurons[i] > max)
@@ -43,6 +46,7 @@ class ActivationFunction {
                 }
                 const exponents = neurons.map((n) => Math.exp(n - max));
                 const sum = exponents.reduce((a, b) => a + b);
+
                 return exponents.map((e) => e / sum);
             },
             activations => {

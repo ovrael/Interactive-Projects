@@ -206,4 +206,14 @@ class Weights {
         const y1 = Math.sqrt(-2.0 * Math.log(x1)) * Math.cos(2.0 * Math.PI * x2);
         return y1 * standardDeviation + mean;
     }
+
+    sumWeights() {
+        let sum = 0;
+        for (let i = 0; i < this.previous; i++) {
+            for (let j = 0; j < this.current; j++) {
+                sum += this.data[i][j];
+            }
+        }
+        return sum;
+    }
 }

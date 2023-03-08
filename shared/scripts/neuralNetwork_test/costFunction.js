@@ -4,7 +4,7 @@ class CostFunction {
         this.func = func;
         this.derivative = derivative;
         this.name = name;
-        this.epsilon = 1e-12;
+        this.epsilon = 1e-8;
     }
 
     static onehotIndexTarget(target, predictedLength) {
@@ -48,16 +48,21 @@ class CostFunction {
             function (outputs, targets) {
                 let cost = 0;
                 for (let i = 0; i < outputs.length; i++) {
-                    const x = outputs[i];
+                    const x = isFinite(outputs[i]) ? outputs[i] : 0;
                     const y = targets[i];
-                    const v = (y == 1) ? -Math.log(x) : -Math.log(1 - x);
+                    const v = (y == 1) ? -Math.log(x + this.epsilon) : -Math.log(1 - x + this.epsilon);
                     cost += isFinite(v) ? v : 0;
+
+
+                    // cost -= y * Math.log(x + this.epsilon) - (1 - y) * Math.log(1 - x + this.epsilon);
                 }
                 return cost;
             },
             function (singleOutput, singleTarget) {
 
-                if (singleOutput == 0 || singleOutput == 1) {
+                // return singleTarget * Math.log(singleOutput + this.epsilon) - (1 - singleTarget) * Math.log(1 - singleOutput + this.epsilon);
+
+                if (singleOutput <= this.epsilon || singleOutput >= 1 - this.epsilon) {
                     return 0;
                 }
 

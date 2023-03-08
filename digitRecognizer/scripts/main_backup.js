@@ -32,7 +32,7 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 2, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 20, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);

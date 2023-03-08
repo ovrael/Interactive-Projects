@@ -25,6 +25,7 @@ const scriptsBackup = [
     "lossFunctions",
     "dataPoint",
     "dataManage",
+    "optimizer",
     "weights",
     "layerData",
     "layer",
