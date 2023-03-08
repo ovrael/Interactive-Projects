@@ -30,8 +30,6 @@ let datapoints;
 let historyPoints = [];
 let historyGraphics = undefined;
 let learningTimeout = null;
-let startPerformance = 0;
-let endPerformance = 0;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
@@ -117,7 +115,6 @@ function draw() {
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
             // NEED BETTER SOLUTION: REGULARIZATION, SGD WITH MOMENTUM ETC.
 
-            startPerformance = performance.now();
             learningTimeout = setTimeout(() => {
                 splitData = DataManage.split(datapoints, 0.7, true);
                 neuralNetwork.train(splitData.train, splitData.test, 32, 1, true);
@@ -125,11 +122,6 @@ function draw() {
                 updateHistoryGraphics();
                 clearTimeout(learningTimeout);
                 learningTimeout = null;
-
-                endPerformance = performance.now();
-                const performanceTime = (endPerformance - startPerformance) / 1000;
-                console.warn("EPOCH TOOK: " + performanceTime + " s");
-
             }, 50);
         }
 
