@@ -4,11 +4,6 @@ class BackpropLayer {
         this.currentNeurons = currentNeurons;
         this.previousNeurons = previousNeurons;
 
-        // /** @type {Weights} */
-        // this.derivatives = (previousNeurons > 0) ? new Weights(1, currentNeurons) : null;
-        // /** @type {Weights} */
-        // this.errors = (previousNeurons > 0) ? new Weights(1, currentNeurons) : null;
-
         /** @type {Weights} */
         this.gamma = new Weights(1, currentNeurons);
 
@@ -19,13 +14,10 @@ class BackpropLayer {
         this.biasDeltas = new Weights(1, currentNeurons);
 
         this.clearGradient();
-        // this.weightsDeltas.scalarFillData(1);
     }
 
     clearGradient() {
         for (let i = 0; i < this.currentNeurons; i++) {
-
-            // this.gamma.data[0][i] = 0;
             this.biasDeltas.data[0][i] = 0;
 
             for (let j = 0; j < this.previousNeurons; j++) {

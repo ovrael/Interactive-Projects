@@ -35,7 +35,6 @@ const scriptsBackup = [
 const scriptsTest = [
     "activationFunction",
     "costFunction",
-    "lossFunctions",
     "dataPoint",
     "dataManage",
     "optimizer",

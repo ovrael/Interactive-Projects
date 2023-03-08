@@ -1,6 +1,14 @@
+const NormalizationType = {
+    // OneZero: "Input",
+    Scale: "scale",
+    LightPixels: "lightPixel",
+    HalfLightPixels: "halfLightPixel"
+}
+
 class DataManage {
 
     static imageSize = 28;
+    static normalizationFunction = DataManage.lightPixel;
 
     static noiseSingleRow(dataRow) {
 
@@ -432,7 +440,7 @@ class DataManage {
                     }
                 }
                 else {
-                    dataRow.push(pixels[j] / 255);
+                    dataRow.push(DataManage.normalizationFunction(pixels[j]));
                 }
             }
 
@@ -477,9 +485,7 @@ class DataManage {
                         }
                     }
                     else {
-                        // dataRow.push(pixels[k] / 255);
-                        // dataRow.push(pixels[k] > 100 ? 1 : 0);
-                        dataRow.push(pixels[k] > 0 ? 1 : 0);
+                        dataRow.push(DataManage.normalizationFunction(pixels[k]));
                     }
                 }
 
@@ -510,5 +516,37 @@ class DataManage {
         let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
         // Transform to the desired mean and standard deviation:
         return z * stdev + mean;
+    }
+
+    static scalePixel(pixel) {
+        return pixel / 255;
+    }
+
+    static lightPixel(pixel) {
+        return pixel > 0 ? 1 : 0;
+    }
+
+    static halfLightPixel(pixel) {
+        return pixel > 127 ? 1 : 0;
+    }
+
+    static setNormalizationFunction(name) {
+        switch (name) {
+            case "scale":
+                DataManage.normalizationFunction = DataManage.scalePixel;
+                break;
+
+            case "lightPixel":
+                DataManage.normalizationFunction = DataManage.lightPixel;
+                break;
+
+            case "halfLightPixel":
+                DataManage.normalizationFunction = DataManage.halfLightPixel;
+                break;
+
+            default:
+                DataManage.normalizationFunction = DataManage.scalePixel;
+                break;
+        }
     }
 }

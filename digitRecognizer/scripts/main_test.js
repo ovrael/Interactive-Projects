@@ -32,7 +32,9 @@ let historyGraphics = undefined;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 2, true);
+
+    DataManage.setNormalizationFunction(NormalizationType.Scale);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 2, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -111,8 +113,9 @@ function draw() {
             // IT SHOULDN'T BE HERE !!!
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
             // NEED BETTER SOLUTION: REGULARIZATION, SGD WITH MOMENTUM ETC.
-            splitData = DataManage.split(datapoints, 0.7, true);
-            neuralNetwork.train_test(splitData.train, splitData.test, 32, 1, true);
+            // splitData = DataManage.split(datapoints, 0.7, true);
+
+            neuralNetwork.train(splitData.train, splitData.test, 32, 1, true);
             // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
             computeHistoryPoints();
             updateHistoryGraphics();
@@ -252,9 +255,7 @@ function guessUserDigit() {
     img.resize(28, 28);
     img.loadPixels();
     for (let i = 0; i < 28 * 28; i++) {
-        // inputs[i] = img.pixels[i * 4] > 100 ? 1 : 0;
-        // inputs[i] = img.pixels[i * 4] / 255;
-        inputs[i] = img.pixels[i * 4] > 0 ? 1 : 0;
+        inputs[i] = DataManage.normalizationFunction(img.pixels[i * 4]);
     }
     userPrediction = neuralNetwork.predict(inputs);
 }

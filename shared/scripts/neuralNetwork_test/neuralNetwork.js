@@ -153,7 +153,6 @@ class NeuralNetwork {
         }
     }
 
-
     /**
      * It takes a batch of data, feeds it forward, calculates the error, and then backpropagates the
      * error.
@@ -202,124 +201,15 @@ class NeuralNetwork {
                 batchTrain.push(shuffledTrainData[i]);
 
                 if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
-                    // for (let layer = 1; layer < this.layers.length; layer++) {
-                    //     this.layers[layer].setWeihtsDeltasToZero();
-                    // }
-
-                    for (let j = 0; j < batchTrain.length; j++) {
-                        this.#feedForward(batchTrain[j].inputs);
-                        trainLoss += this.#backpropErrorBatch(batchTrain[j].expectedOutputs);
-                    }
-
-                    this.optimizer.updateWeights(
-                        {
-                            "epoch": this.#globalEpoch,
-                            "layers": this.layers,
-                            "backpropLayers": this.backpropLayers,
-                        }
-                    );
-
-
-                    batchTrain = [];
-
-                    this.#clearGradients();
-                }
-
-                this.lastTarget = shuffledTrainData[i].label;
-            }
-
-            trainLoss /= shuffledTrainData.length;
-
-            this.#changeLayersDropout(false);
-            const shuffledTestData = DataManage.shuffle(validationData);
-
-            let testResult = this.#validate(shuffledTestData);
-
-            if (e % showResultStep == 0 || e == epochs - 1) {
-                const results = {
-                    "Epoch": this.learningEpoch,
-                    "Global Epoch": this.#globalEpoch,
-                    "Train Loss": trainLoss,
-                    "Test Loss": testResult[0],
-                    "Good Test": testResult[1],
-                    "Test length": validationData.length,
-                    "Test %": testResult[1] / validationData.length,
-                }
-                this.learningStatistics = results;
-                this.statsHistory.push(results);
-                console.table(results);
-            }
-
-            this.learningEpoch++;
-            this.#globalEpoch++;
-        }
-        this.isLearning = false;
-        this.#changeLayersDropout(this.isLearning);
-
-        console.info("Training finished");
-    }
-
-    /**
-     * It takes a batch of data, feeds it forward, calculates the error, and then backpropagates the
-     * error.
-     * @param trainData - The training data.
-     * @param [validationData=null] - The data to test the network on.
-     * @param [batchSize=1] - The number of data points to be used in a single training step.
-     * @param [epochs=10] - The number of epochs to train for.
-     * @param [continous=false] - If true, the training will continue from the last epoch.
-     * @returns the results of the training.
-     */
-    train_test(trainData, validationData = null, batchSize = 1, epochs = 10, continous = false) {
-
-        if (!this.#checkConditions(trainData)) {
-            return;
-        }
-        if (this.isLearning)
-            return;
-
-        if (continous == false) {
-            this.#globalEpoch = 0;
-        }
-
-        if (this.#globalEpoch == 0) {
-            this.optimizer.setNeuralNetworkData(this);
-        }
-
-
-        this.isLearning = true;
-        this.#updateNeuralNetworkData();
-
-        const showResultStep = Math.floor(epochs / 10);
-
-        for (let e = 0; e < epochs; e++) {
-
-            let trainLoss = 0;
-
-            /** @type {Array<DataPoint>} */
-            let batchTrain = [];
-
-            /** @type {Array<DataPoint>} */
-            const shuffledTrainData = DataManage.shuffle(trainData);
-            this.#changeLayersDropout(true);
-
-            for (let i = 0; i < shuffledTrainData.length; i++) {
-
-                batchTrain.push(shuffledTrainData[i]);
-
-                if (batchTrain.length == batchSize || i == shuffledTrainData.length - 1) {
-                    // for (let layer = 1; layer < this.layers.length; layer++) {
-                    //     this.layers[layer].setWeihtsDeltasToZero();
-                    // }
 
                     for (let j = 0; j < batchTrain.length; j++) {
                         this.#feedForward(batchTrain[j].inputs);
 
                         trainLoss += this.costFunction.func(this.layers[this.layers.length - 1].activations, batchTrain[j].expectedOutputs);
 
-                        this.#backpropErrorBatch_test(batchTrain[j].expectedOutputs);
+                        this.#backpropError(batchTrain[j].expectedOutputs);
                     }
 
-                    // console.log(JSON.parse(JSON.stringify(this.layers)));
                     this.optimizer.updateWeights(
                         {
                             "epoch": this.#globalEpoch,
@@ -327,9 +217,6 @@ class NeuralNetwork {
                             "backpropLayers": this.backpropLayers,
                         }
                     );
-                    // console.log(JSON.parse(JSON.stringify(this.layers)));
-                    // throw new Error('');
-
 
                     this.#clearGradients();
 
@@ -481,7 +368,7 @@ class NeuralNetwork {
        @param {Array} target - the target output for the training data.
        @returns {number} the sum of errors for the output layer.
    */
-    #backpropLastLayerBatch_test(targets) {
+    backpropLastLayer(targets) {
 
         const lastLayer = this.layers[this.layers.length - 1];
 
@@ -501,9 +388,9 @@ class NeuralNetwork {
         @param {Array} targets - the target output for the training data.
         @returns {number} the sum of errors for the neural network.
     */
-    #backpropErrorBatch_test(targets) {
+    #backpropError(targets) {
 
-        this.#backpropLastLayerBatch_test(targets);
+        this.backpropLastLayer(targets);
         for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
             this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
             this.backpropLayers[layer].updateGradient(this.layers[layer].activations);
@@ -517,45 +404,6 @@ class NeuralNetwork {
         for (let i = 0; i < this.backpropLayers.length; i++) {
             this.backpropLayers[i].clearGradient();
         }
-    }
-
-    /**
-        Computes the BATCH error for the last layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the output layer.
-    */
-    #backpropLastLayerBatch(target) {
-        let errorSum = 0;
-        let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, target);
-
-        this.layers[this.layersCount - 1].computeDerivatives();
-        for (let i = 0; i < this.layers[this.layers.length - 1].neuronsCount; i++) {
-            const activationDerivative = this.layers[this.layers.length - 1].derivatives[i];
-            this.backpropLayers.at(-1).gamma.data[0][i] = activationDerivative * outputErrors[i];
-            errorSum += outputErrors[i];
-        }
-
-        this.backpropLayers.at(-1).updateGradient(this.layers.at(-2).activations);
-
-        return errorSum;
-    }
-
-
-    /**
-        Computes the BATCH error for each layer of the neural network.
-        @param {Array} target - the target output for the training data.
-        @returns {number} the sum of errors for the neural network.
-    */
-    #backpropErrorBatch(target) {
-
-        const errorSum = this.#backpropLastLayerBatch(target);
-
-        for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
-            this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
-            this.backpropLayers[layer].updateGradient(this.layers[layer].activations);
-        }
-
-        return errorSum;
     }
 
     /**
@@ -587,10 +435,6 @@ class NeuralNetwork {
 
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
-                // let outputErrors = this.costFunction(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-                // for (let i = 0; i < outputErrors.length; i++) {
-                //     cost += outputErrors[i];
-                // }
                 cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();

@@ -123,51 +123,6 @@ class Layer {
         return this.activationFunction.derivative2(this.activations[i]);
     }
 
-    // computeGamma(nextLayer) {
-
-    //     for (let i = 0; i < this.neuronsCount; i++) {
-    //         this.gamma[i] = 0;
-    //         for (let j = 0; j < nextLayer.neuronsCount; j++) {
-    //             this.gamma[i] += nextLayer.gamma[j] * nextLayer.weights.data[i][j];
-    //         }
-
-    //         this.gamma[i] *= this.computeDerivativeAtIndex(i);
-    //     }
-    // }
-
-    // computeWeightsDeltas(previousLayer) {
-    //     for (let p = 0; p < this.weightsDeltas.previous; p++) {
-    //         for (let c = 0; c < this.weightsDeltas.current; c++) {
-    //             this.weightsDeltas.data[p][c] =
-    //                 this.gamma[c] * previousLayer.activations[p];
-    //         }
-    //     }
-    // }
-
-    // updateGradient(previousActivations) {
-    //     for (let c = 0; c < this.weightsDeltas.current; c++) {
-    //         for (let p = 0; p < this.weightsDeltas.previous; p++) {
-    //             this.weightsDeltas.data[p][c] += this.gamma[c] * previousActivations[p];
-    //         }
-
-    //         this.biasDeltas.data[0][c] += this.gamma[c];
-    //     }
-    // }
-
-    // clearGradient() {
-    //     for (let c = 0; c < this.weightsDeltas.current; c++) {
-    //         for (let p = 0; p < this.weightsDeltas.previous; p++) {
-    //             this.weightsDeltas.data[p][c] = 0;
-    //         }
-
-    //         this.biasDeltas.data[0][c] = 0;
-    //     }
-    // }
-
-    // setWeihtsDeltasToZero() {
-    //     this.weightsDeltas.scalarFillData(0);
-    // }
-
     reinitializeWeights() {
         this.weights.initializeRandomWeights();
     }

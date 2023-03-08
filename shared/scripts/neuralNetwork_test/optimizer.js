@@ -103,18 +103,8 @@ class Optimizer {
     trainAdam(modelData) {
 
         for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
+
             const dw = modelData.backpropLayers[layer].weightsDeltas.copy();
-
-            // const dwSum = dw.sumWeights();
-            // const dbSum = db.sumWeights();
-            // console.warn("Weights deltas sum: " + dwSum);
-            // console.warn("Bias deltas sum: " + dbSum);
-            // console.log("dw");
-            // console.log(dw);
-            // console.log("db");
-            // console.log(db);
-            // throw new Error();
-
 
             // M(t) = M(t-1) * beta1
             this.mWeights[layer] = Weights.scalarMultiply(this.mWeights[layer], this.beta1);
@@ -133,12 +123,13 @@ class Optimizer {
 
             // Vh(t) = V(t) / (1 - beta2^t)
             const vHatWeights = Weights.scalarDivide(this.vWeights[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
+            
+            
+            // √(Vh) + epsilon
             const vHatWeightsSqrt = Weights.sqrt(vHatWeights);
-
-
-            // Mh / (Vh^(1/2) + epsilon)
             vHatWeightsSqrt.scalarAdd(this.epsilon);
 
+            // Mh / (√(Vh) + epsilon)
             const weightsHatFraction = Weights.weightsDivide(mHatWeights, vHatWeightsSqrt);
 
             // Weights and bias change
