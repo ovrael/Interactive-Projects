@@ -113,7 +113,11 @@ function draw() {
         if (trainingTextShowed && learningTimeout == null) {
             // IT SHOULDN'T BE HERE !!!
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
-            // NEED BETTER SOLUTION: REGULARIZATION, SGD WITH MOMENTUM ETC.
+            // NEED BETTER SOLUTION: 
+            // REGULARIZATION, 
+            // SGD WITH MOMENTUM,
+            // GRADIENT LIMITING, 
+            // ETC.
 
             learningTimeout = setTimeout(() => {
                 splitData = DataManage.split(datapoints, 0.7, true);
