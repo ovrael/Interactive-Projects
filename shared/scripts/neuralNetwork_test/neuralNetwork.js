@@ -168,8 +168,8 @@ class NeuralNetwork {
         if (!this.#checkConditions(trainData)) {
             return;
         }
-        if (this.isLearning)
-            return;
+
+        console.log("Neural network is learning!");
 
         if (continous == false) {
             this.#globalEpoch = 0;
@@ -331,6 +331,10 @@ class NeuralNetwork {
         @returns {boolean} true if the neural network meets the conditions, false otherwise.
     */
     #checkConditions(dataPoints) {
+
+        if (this.isLearning)
+            return false;
+
         if (this.layers.length < 3) {
             console.error("Neural network is too small. It should have at least 3 layers!");
             return false;

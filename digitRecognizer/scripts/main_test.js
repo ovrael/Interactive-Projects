@@ -29,12 +29,15 @@ let dataImageData = undefined;
 let datapoints;
 let historyPoints = [];
 let historyGraphics = undefined;
+let learningTimeout = null;
+let startPerformance = 0;
+let endPerformance = 0;
 
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
 
     DataManage.setNormalizationFunction(NormalizationType.Scale);
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 2, 2, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 20, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -100,25 +103,34 @@ function draw() {
 
     if (networkWasTrained) {
         writeTrainingText();
+        if (historyGraphics)
+            image(historyGraphics, 200, 400);
+
+        trainingTextShowed = true;
     }
 
-    if (historyGraphics)
-        image(historyGraphics, 200, 400);
 
 
     if (training && !userIsDrawing) {
-        if (trainingTextShowed) {
-            console.warn("Training started!");
-
+        if (trainingTextShowed && learningTimeout == null) {
             // IT SHOULDN'T BE HERE !!!
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
             // NEED BETTER SOLUTION: REGULARIZATION, SGD WITH MOMENTUM ETC.
-            splitData = DataManage.split(datapoints, 0.7, true);
 
-            neuralNetwork.train(splitData.train, splitData.test, 32, 1, true);
-            // neuralNetwork.train(splitData.train, splitData.test, 64, 1, false);
-            computeHistoryPoints();
-            updateHistoryGraphics();
+            startPerformance = performance.now();
+            learningTimeout = setTimeout(() => {
+                splitData = DataManage.split(datapoints, 0.7, true);
+                neuralNetwork.train(splitData.train, splitData.test, 32, 1, true);
+                computeHistoryPoints();
+                updateHistoryGraphics();
+                clearTimeout(learningTimeout);
+                learningTimeout = null;
+
+                endPerformance = performance.now();
+                const performanceTime = (endPerformance - startPerformance) / 1000;
+                console.warn("EPOCH TOOK: " + performanceTime + " s");
+
+            }, 50);
         }
 
         networkWasTrained = true;
@@ -163,7 +175,6 @@ function writeTrainingText() {
         acc = 0.00;
 
     text("Accuracy: " + Mathematics.toPercent(acc) + "%", ProjectData.CanvasWidth / 2 - 80, 120);
-    trainingTextShowed = true;
 }
 
 function writeNetworkOutputs() {
