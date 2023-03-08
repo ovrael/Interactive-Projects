@@ -368,7 +368,7 @@ class NeuralNetwork {
        @param {Array} target - the target output for the training data.
        @returns {number} the sum of errors for the output layer.
    */
-    backpropLastLayer(targets) {
+    #backpropLastLayer(targets) {
 
         const lastLayer = this.layers[this.layers.length - 1];
 
@@ -390,7 +390,7 @@ class NeuralNetwork {
     */
     #backpropError(targets) {
 
-        this.backpropLastLayer(targets);
+        this.#backpropLastLayer(targets);
         for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
             this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
             this.backpropLayers[layer].updateGradient(this.layers[layer].activations);

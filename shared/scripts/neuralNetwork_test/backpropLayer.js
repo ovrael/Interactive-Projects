@@ -8,20 +8,20 @@ class BackpropLayer {
         this.gamma = new Weights(1, currentNeurons);
 
         /** @type {Weights} */
-        this.weightsDeltas = new Weights(previousNeurons, currentNeurons);
+        this.weightsGradient = new Weights(previousNeurons, currentNeurons);
 
         /** @type {Weights} */
-        this.biasDeltas = new Weights(1, currentNeurons);
+        this.biasGradient = new Weights(1, currentNeurons);
 
         this.clearGradient();
     }
 
     clearGradient() {
         for (let i = 0; i < this.currentNeurons; i++) {
-            this.biasDeltas.data[0][i] = 0;
+            this.biasGradient.data[0][i] = 0;
 
             for (let j = 0; j < this.previousNeurons; j++) {
-                this.weightsDeltas.data[j][i] = 0;
+                this.weightsGradient.data[j][i] = 0;
             }
         }
     }
@@ -40,10 +40,10 @@ class BackpropLayer {
 
     updateGradient(previousActivations) {
         for (let i = 0; i < this.currentNeurons; i++) {
-            this.biasDeltas.data[0][i] += this.gamma.data[0][i];
+            this.biasGradient.data[0][i] += this.gamma.data[0][i];
 
             for (let j = 0; j < this.previousNeurons; j++) {
-                this.weightsDeltas.data[j][i] += this.gamma.data[0][i] * previousActivations[j];
+                this.weightsGradient.data[j][i] += this.gamma.data[0][i] * previousActivations[j];
             }
         }
     }

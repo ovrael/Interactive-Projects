@@ -39,11 +39,11 @@ class Optimizer {
                 this.vBiases = new Array(model.backpropLayers.length);
 
                 for (let i = 0; i < model.backpropLayers.length; i++) {
-                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
-                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
+                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsGradient);
+                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsGradient);
 
-                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
-                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
+                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasGradient);
+                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasGradient);
                 }
                 break;
 
@@ -54,11 +54,11 @@ class Optimizer {
                 this.vBiases = new Array(model.backpropLayers.length);
 
                 for (let i = 0; i < model.backpropLayers.length; i++) {
-                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
-                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsDeltas);
+                    this.mWeights[i] = Weights.createZero(model.backpropLayers[i].weightsGradient);
+                    this.vWeights[i] = Weights.createZero(model.backpropLayers[i].weightsGradient);
 
-                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
-                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasDeltas);
+                    this.mBiases[i] = Weights.createZero(model.backpropLayers[i].biasGradient);
+                    this.vBiases[i] = Weights.createZero(model.backpropLayers[i].biasGradient);
                 }
                 break;
         }
@@ -88,13 +88,13 @@ class Optimizer {
         for (let i = 0; i < modelData.backpropLayers.length; i++) {
             const weights = modelData.layers[i + 1].weights;
             const biases = modelData.layers[i + 1].biases;
-            const biasesDeltas = modelData.backpropLayers[i].biasesDeltas;
-            const weightsDeltas = modelData.backpropLayers[i].weightsDeltas;
+            const biasGradient = modelData.backpropLayers[i].biasGradient;
+            const weightsGradient = modelData.backpropLayers[i].weightsGradient;
 
             for (let c = 0; c < weights.current; c++) {
-                biases[c] -= this.learningRate * biasesDeltas[0][c];
+                biases[c] -= this.learningRate * biasGradient[0][c];
                 for (let p = 0; p < weights.previous; p++) {
-                    weights.data[p][c] -= this.learningRate * weightsDeltas.data[p][c];
+                    weights.data[p][c] -= this.learningRate * weightsGradient.data[p][c];
                 }
             }
         }
@@ -104,7 +104,7 @@ class Optimizer {
 
         for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
 
-            const dw = modelData.backpropLayers[layer].weightsDeltas.copy();
+            const dw = modelData.backpropLayers[layer].weightsGradient.copy();
 
             // M(t) = M(t-1) * beta1
             this.mWeights[layer] = Weights.scalarMultiply(this.mWeights[layer], this.beta1);
@@ -137,7 +137,7 @@ class Optimizer {
 
             modelData.layers[layer + 1].weights.weightsSubtract(deltaW);
 
-            // const db = modelData.backpropLayers[layer].biasDeltas.copy();
+            // const db = modelData.backpropLayers[layer].biasGradient.copy();
             // this.mBiases[layer] = Weights.scalarMultiply(this.mBiases[layer], this.beta1);
             // this.mBiases[layer].weightsAdd(Weights.scalarMultiply(db, 1 - this.beta1));
             // this.vBiases[layer] = Weights.scalarMultiply(this.vBiases[layer], this.beta2);
@@ -154,7 +154,7 @@ class Optimizer {
 
     trainAdam_old(modelData) {
         for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
-            const dw = modelData.backpropLayers[layer].weightsDeltas.copy();
+            const dw = modelData.backpropLayers[layer].weightsGradient.copy();
 
             this.mWeights[layer] = Weights.scalarMultiply(this.mWeights[layer], this.beta1);
             this.mWeights[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - this.beta1));
