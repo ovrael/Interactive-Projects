@@ -35,7 +35,7 @@ function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
 
     DataManage.setNormalizationFunction(NormalizationType.Scale);
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 20, 2, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 200, 2, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -150,7 +150,9 @@ function draw() {
 
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.002));
+    // const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.002));
+    const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.sgd(0.001, 0.9, 0.075));
+
     // const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));

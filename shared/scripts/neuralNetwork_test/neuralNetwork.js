@@ -212,7 +212,6 @@ class NeuralNetwork {
 
                     this.optimizer.updateWeights(
                         {
-                            "epoch": this.#globalEpoch,
                             "layers": this.layers,
                             "backpropLayers": this.backpropLayers,
                         }
