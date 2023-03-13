@@ -103,22 +103,20 @@ class Car {
 
 
         let points = this.getUnvisitedPoints(storagePoints);
-        console.log(points)
         let fastEnd = false;
 
-        while (points.length > 0 || fastEnd) {
-            console.log("Left: " + points.length)
+        while (points.length > 0 && !fastEnd) {
 
             const randPoint = random(points);
             randPoint.visited[this.id] = true;
 
             this.addToRoad(randPoint);
 
-            fastEnd = random(0, 1000) < 5;
+            fastEnd = random(0, 1000) < 200;
             points = this.getUnvisitedPoints(storagePoints);
         }
 
-
+        this.addToRoad(this);
     }
 
     getUnvisitedPoints(storagePoints) {

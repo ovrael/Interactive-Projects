@@ -11,7 +11,7 @@ function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     frameRate(60);
     centerCanvas();
-    randomSeed(ProjectData.RandomSeed);
+    // randomSeed(ProjectData.RandomSeed);
     rectMode(CENTER);
 
     initPoints();
@@ -19,10 +19,10 @@ function setup() {
 
 function draw() {
     background(90);
-    drawPoints();
     for (let i = 0; i < cars.length; i++) {
         cars[i].drawRoute();
     }
+    drawPoints();
 }
 
 function windowResized() {
