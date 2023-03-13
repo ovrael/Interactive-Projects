@@ -73,10 +73,14 @@ class Optimizer {
 
     setAdam(data) {
         this.name = "adam";
+        this.iteration = 0;
         this.learningRate = data.learningRate == null ? 0.001 : data.learningRate;
+        this.currentLearningRate = this.learningRate;
         this.beta1 = data.beta1 == null ? 0.900 : data.beta1;
         this.beta2 = data.beta2 == null ? 0.999 : data.beta2;
         this.epsilon = data.epsilon == null ? 1e-8 : data.epsilon;
+        this.weightDecay = data.weightDecay == null ? 0 : data.weightDecay;
+
         this.updateWeightsFunction = this.trainAdam;
     }
 
@@ -102,73 +106,66 @@ class Optimizer {
 
     trainAdam(modelData) {
 
+        if (this.weightDecay > 0)
+            this.#decayLearningRate();
+
         for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
 
             const dw = modelData.backpropLayers[layer].weightsGradient.copy();
+            const db = modelData.backpropLayers[layer].biasGradient.copy();
 
+            // UPDATE MOMENTUM WITH GRADIENT
             // M(t) = M(t-1) * beta1
             this.mWeights[layer] = Weights.scalarMultiply(this.mWeights[layer], this.beta1);
+            this.mBiases[layer] = Weights.scalarMultiply(this.mBiases[layer], this.beta1);
 
             // M(t) += gradient(t) * (1 - beta1)
             this.mWeights[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - this.beta1));
+            this.mBiases[layer].weightsAdd(Weights.scalarMultiply(db, 1 - this.beta1));
 
+            // COMPUTE CORRECTED MOMENTUM
+            // Mh(t) = M(t) / (1 - beta1^t)
+            const mHatWeights = Weights.scalarDivide(this.mWeights[layer], 1 - Math.pow(this.beta1, this.iteration + 1));
+            const mHatBiases = Weights.scalarDivide(this.mBiases[layer], 1 - Math.pow(this.beta1, this.iteration + 1));
+
+            // UPDATE SECOND MOMENTUM (CACHE?)
             // V(t) = V(t-1) * beta2
             this.vWeights[layer] = Weights.scalarMultiply(this.vWeights[layer], this.beta2);
+            this.vBiases[layer] = Weights.scalarMultiply(this.vBiases[layer], this.beta2);
 
             // V(t) += gradient(t)^2 * (1 - beta2)
             this.vWeights[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - this.beta2));
+            this.vBiases[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(db, db), 1 - this.beta2));
 
-            // Mh(t) = M(t) / (1 - beta1^t)
-            const mHatWeights = Weights.scalarDivide(this.mWeights[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
-
+            // COMPUTE CORRECTED SECOND MOMENTUM
             // Vh(t) = V(t) / (1 - beta2^t)
-            const vHatWeights = Weights.scalarDivide(this.vWeights[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
-            
-            
+            const vHatWeights = Weights.scalarDivide(this.vWeights[layer], 1 - Math.pow(this.beta2, this.iteration + 1));
+            const vHatBiases = Weights.scalarDivide(this.vBiases[layer], 1 - Math.pow(this.beta2, this.iteration + 1));
+
             // √(Vh) + epsilon
             const vHatWeightsSqrt = Weights.sqrt(vHatWeights);
             vHatWeightsSqrt.scalarAdd(this.epsilon);
 
+            const vHatBiasesSqrt = Weights.sqrt(vHatBiases);
+            vHatBiasesSqrt.scalarAdd(this.epsilon);
+
             // Mh / (√(Vh) + epsilon)
             const weightsHatFraction = Weights.weightsDivide(mHatWeights, vHatWeightsSqrt);
+            const biasesHatFraction = Weights.weightsDivide(mHatBiases, vHatBiasesSqrt);
 
             // Weights and bias change
-            const deltaW = Weights.scalarMultiply(weightsHatFraction, this.learningRate);
+            const deltaW = Weights.scalarMultiply(weightsHatFraction, this.currentLearningRate);
+            const deltaB = Weights.scalarMultiply(biasesHatFraction, this.currentLearningRate);
 
             modelData.layers[layer + 1].weights.weightsSubtract(deltaW);
+            modelData.layers[layer + 1].biases.weightsSubtract(deltaB);
 
-            // const db = modelData.backpropLayers[layer].biasGradient.copy();
-            // this.mBiases[layer] = Weights.scalarMultiply(this.mBiases[layer], this.beta1);
-            // this.mBiases[layer].weightsAdd(Weights.scalarMultiply(db, 1 - this.beta1));
-            // this.vBiases[layer] = Weights.scalarMultiply(this.vBiases[layer], this.beta2);
-            // this.vBiases[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(db, db), 1 - this.beta2));
-            // const mHatBiases = Weights.scalarDivide(this.mBiases[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
-            // const vHatBiases = Weights.scalarDivide(this.vBiases[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
-            // const vHatBiasesSqrt = Weights.sqrt(vHatBiases);
-            // vHatBiasesSqrt.scalarAdd(this.epsilon);
-            // const biasesHatFraction = Weights.weightsDivide(mHatBiases, vHatBiasesSqrt);
-            // const deltaB = Weights.scalarMultiply(biasesHatFraction, this.learningRate);
-            // modelData.layers[layer + 1].biases.weightsSubtract(deltaB);
+            this.iteration++;
         }
     }
 
-    trainAdam_old(modelData) {
-        for (let layer = 0; layer < modelData.backpropLayers.length; layer++) {
-            const dw = modelData.backpropLayers[layer].weightsGradient.copy();
-
-            this.mWeights[layer] = Weights.scalarMultiply(this.mWeights[layer], this.beta1);
-            this.mWeights[layer].weightsAdd(Weights.scalarMultiply(dw, 1 - this.beta1));
-
-            this.vWeights[layer] = Weights.scalarMultiply(this.vWeights[layer], this.beta2);
-            this.vWeights[layer].weightsAdd(Weights.scalarMultiply(Weights.hadamardMultiply(dw, dw), 1 - this.beta2));
-
-            const mHat = Weights.scalarDivide(this.mWeights[layer], 1 - Math.pow(this.beta1, modelData.epoch + 1));
-            const vHat = Weights.scalarDivide(this.vWeights[layer], 1 - Math.pow(this.beta2, modelData.epoch + 1));
-            const vHatSquared = Weights.sqrt(vHat);
-
-            const delta = Weights.scalarMultiply(Weights.weightsDivide(mHat, Weights.scalarAdd(vHatSquared, this.epsilon)), this.learningRate);
-            modelData.layers[layer + 1].weights.weightsSubtract(delta);
-        }
+    #decayLearningRate() {
+        this.currentLearningRate = this.learningRate * (1.0 / (1.0 + this.weightDecay * this.iteration))
     }
 
     static sgd(learningRate = 0.005, momentum = 0.9) {
@@ -181,14 +178,28 @@ class Optimizer {
         );
     }
 
-    static adam(learningRate = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
+    /**
+       Given input data, predict the output of the neural network.
+       @param {Number} learningRate [0.001] - how much weights and biases should change during learning
+       @param {Number} beta1 [0.900] - beta
+       @param {Number} beta2 [0.999] - beta
+       @param {Number} epsilon [1e-8] - very small number to avoid dividing by zero
+       @param {Number} weightDecay [0.0] - how much learning rate should change during learning
+       
+       @returns {Optimizer} The predicted outputs of the neural network.
+                       The output will be a one-dimensional array if only one data point is provided,
+                       or a two-dimensional array if multiple data points are provided,
+                       here each row represents the predicted output for a single data point.
+   */
+    static adam(learningRate = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8, weightDecay = 0) {
         return new Optimizer(
             {
                 "name": "adam",
                 "learningRate": learningRate,
                 "beta1": beta1,
                 "beta2": beta2,
-                "epsilon": epsilon
+                "epsilon": epsilon,
+                "weightDecay": weightDecay
             }
         );
     }
