@@ -377,7 +377,6 @@ class NeuralNetwork {
 
     }
 
-
     /**
         Computes the BATCH error for each layer of the neural network.
         @param {Array} targets - the target output for the training data.

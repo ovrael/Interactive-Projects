@@ -1,5 +1,5 @@
 class BackpropLayer {
-    constructor(currentNeurons, previousNeurons) {
+    constructor(currentNeurons, previousNeurons, regulizer) {
 
         this.currentNeurons = currentNeurons;
         this.previousNeurons = previousNeurons;
@@ -46,5 +46,9 @@ class BackpropLayer {
                 this.weightsGradient.data[j][i] += this.gamma.data[0][i] * previousActivations[j];
             }
         }
+    }
+
+    #addRegularization(){
+
     }
 }
