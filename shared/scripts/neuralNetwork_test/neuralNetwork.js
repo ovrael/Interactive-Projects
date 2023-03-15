@@ -128,7 +128,7 @@ class NeuralNetwork {
                 layerData.neurons,
                 this.layers[this.layers.length - 1].neuronsCount,
                 layerData.activationFunction,
-                0
+                layerData.regulizer
             )
         );
     }
@@ -198,9 +198,8 @@ class NeuralNetwork {
 
                     for (let j = 0; j < batchTrain.length; j++) {
                         this.#feedForward(batchTrain[j].inputs);
-
                         trainLoss += this.costFunction.func(this.layers[this.layers.length - 1].activations, batchTrain[j].expectedOutputs);
-
+                        trainLoss += this.#computeRegularization();
                         this.#backpropError(batchTrain[j].expectedOutputs);
                     }
 
@@ -358,6 +357,14 @@ class NeuralNetwork {
         }
     }
 
+    #computeRegularization() {
+        let regularization = 0;
+        for (let i = 1; i < this.layers.length; i++) {
+            regularization += this.layers[i].forwardRegularization();
+        }
+        return regularization;
+    }
+
     /**
        Computes the BATCH error for the last layer of the neural network.
        @param {Array} target - the target output for the training data.
@@ -373,8 +380,7 @@ class NeuralNetwork {
             this.backpropLayers.at(-1).gamma.data[0][i] = activationDerivative * costDerivative;
         }
 
-        this.backpropLayers.at(-1).updateGradient(this.layers.at(-2).activations);
-
+        this.backpropLayers.at(-1).updateGradient(this.layers.at(-2).activations, lastLayer);
     }
 
     /**
@@ -387,7 +393,7 @@ class NeuralNetwork {
         this.#backpropLastLayer(targets);
         for (let layer = this.backpropLayers.length - 2; layer >= 0; layer--) {
             this.backpropLayers[layer].computeGamma(this.backpropLayers[layer + 1], this.layers[layer + 1]);
-            this.backpropLayers[layer].updateGradient(this.layers[layer].activations);
+            this.backpropLayers[layer].updateGradient(this.layers[layer].activations, this.layers[layer + 1]);
         }
     }
 
@@ -416,7 +422,7 @@ class NeuralNetwork {
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
                 cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
-
+                cost += this.#computeRegularization();
                 const res = this.layers[this.layers.length - 1].activations[0] > 0.5 ? 1 : 0;
 
                 if (res == testData[i].label) {
@@ -430,6 +436,7 @@ class NeuralNetwork {
             for (let i = 0; i < testData.length; i++) {
                 this.#feedForward(testData[i].inputs);
                 cost += this.costFunction.func(this.layers[this.layers.length - 1].activations, testData[i].expectedOutputs);
+                cost += this.#computeRegularization();
 
                 let maxIndex = this.#getMaxOutputNeuronIndex();
                 if (maxIndex == undefined) {

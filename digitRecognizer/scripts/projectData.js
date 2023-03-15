@@ -39,6 +39,7 @@ const scriptsTest = [
     "dataManage",
     "optimizer",
     "weights",
+    "weightsRegulizer",
     "layerData",
     "layer",
     "backpropLayer",
