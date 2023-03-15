@@ -114,7 +114,6 @@ function draw() {
             // IT SHOULDN'T BE HERE !!!
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
             // NEED BETTER SOLUTION: 
-            // REGULARIZATION, 
             // GRADIENT LIMITING, 
             // ETC.
 
@@ -155,9 +154,9 @@ function createModel() {
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.5));
-    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
+    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu(), WeightsRegulizer.L2(0.1)));
     neuralNetwork.addLayer(Layer.Dropout(0.3));
-    neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
+    neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax(), WeightsRegulizer.L2(0.1)));
 
     return neuralNetwork;
 }

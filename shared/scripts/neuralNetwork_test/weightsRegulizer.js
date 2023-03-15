@@ -111,4 +111,16 @@ class WeightsRegulizer {
         const l2 = this.#l2RegularizationBackpropSingle(weight);
         return l1 + l2;
     }
+
+    static L1(value) {
+        return new WeightsRegulizer(value, 0);
+    }
+
+    static L2(value) {
+        return new WeightsRegulizer(0, value);
+    }
+
+    static L1_L2(l1, l2) {
+        return new WeightsRegulizer(l1, l2);
+    }
 }
