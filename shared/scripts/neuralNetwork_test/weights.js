@@ -95,7 +95,7 @@ class Weights {
     }
 
     scalarDivide(scalar) {
-        this.scalarMultiply(1 / scalar);
+        this.map((e, i, j) => e / scalar);
     }
 
     scalarPower(scalar) {

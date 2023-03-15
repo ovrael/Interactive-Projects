@@ -1,6 +1,5 @@
 class NeuralNetwork {
 
-    #globalEpoch = 0;
     constructor(errorFunction, optimizer) {
         /** @type {CostFunction} */
         this.costFunction = errorFunction;
@@ -55,7 +54,6 @@ class NeuralNetwork {
         this.badLabels = [];
         this.statsHistory = [];
 
-        this.#globalEpoch = 0;
         this.learningEpoch = 0;
     }
 
@@ -163,7 +161,7 @@ class NeuralNetwork {
      * @param [continous=false] - If true, the training will continue from the last epoch.
      * @returns the results of the training.
      */
-    train(trainData, validationData = null, batchSize = 1, epochs = 10, continous = false) {
+    train(trainData, validationData = null, batchSize = 1, epochs = 10) {
 
         if (!this.#checkConditions(trainData)) {
             return;
@@ -171,11 +169,7 @@ class NeuralNetwork {
 
         console.log("Neural network is learning!");
 
-        if (continous == false) {
-            this.#globalEpoch = 0;
-        }
-
-        if (this.#globalEpoch == 0) {
+        if (this.learningEpoch == 0) {
             this.optimizer.setNeuralNetworkData(this);
         }
 
@@ -235,7 +229,6 @@ class NeuralNetwork {
             if (e % showResultStep == 0 || e == epochs - 1) {
                 const results = {
                     "Epoch": this.learningEpoch,
-                    "Global Epoch": this.#globalEpoch,
                     "Train Loss": trainLoss,
                     "Test Loss": testResult[0],
                     "Good Test": testResult[1],
@@ -248,7 +241,6 @@ class NeuralNetwork {
             }
 
             this.learningEpoch++;
-            this.#globalEpoch++;
         }
         this.isLearning = false;
         this.#changeLayersDropout(this.isLearning);

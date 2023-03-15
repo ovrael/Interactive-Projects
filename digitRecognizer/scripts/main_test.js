@@ -35,7 +35,7 @@ function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
 
     DataManage.setNormalizationFunction(NormalizationType.Scale);
-    datapoints = DataManage.preprocessMNIST(rawData, 10, 3, 1, true);
+    datapoints = DataManage.preprocessMNIST(rawData, 10, 50, 1, true);
     images = [];
     for (let i = 0; i < datapoints.length; i++) {
         images.push([...datapoints[i].inputs]);
@@ -115,13 +115,11 @@ function draw() {
             // SPLIT HERE MAKES THAT NEURAL NETWORK LEARNS ALSO ON TEST DATA (IT MIXES DATA EACH TIME)
             // NEED BETTER SOLUTION: 
             // REGULARIZATION, 
-            // SGD WITH MOMENTUM,
             // GRADIENT LIMITING, 
             // ETC.
 
             learningTimeout = setTimeout(() => {
-                splitData = DataManage.split(datapoints, 0.7, true);
-                neuralNetwork.train(splitData.train, splitData.test, 32, 1, true);
+                neuralNetwork.train(splitData.train, splitData.test, 64, 1);
                 computeHistoryPoints();
                 updateHistoryGraphics();
                 clearTimeout(learningTimeout);
@@ -156,9 +154,9 @@ function createModel() {
     // const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));
-    neuralNetwork.addLayer(Layer.Dropout(0.4));
+    neuralNetwork.addLayer(Layer.Dropout(0.5));
     neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu()));
-    neuralNetwork.addLayer(Layer.Dropout(0.2));
+    neuralNetwork.addLayer(Layer.Dropout(0.3));
     neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax()));
 
     return neuralNetwork;
