@@ -20,7 +20,6 @@ class TrainHistory {
 
     getGraphGraphics(graphicsWidth = 200, graphicsHeight = 200) {
 
-        console.log(this.history)
         this.#computeHistoryPoints(graphicsWidth, graphicsHeight);
 
         if (!this.graphPoints || this.graphPoints.length == 0)

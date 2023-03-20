@@ -16,8 +16,6 @@ let imageIsEmpty;
 let userPrediction;
 
 let drawIteration = 0;
-let dataFramerate = 5;
-let wrongFramerate = 30;
 let canControl = true;
 
 let wrongResultSample = undefined;
@@ -26,13 +24,27 @@ let dataImageData = undefined;
 let historyGraphics = undefined;
 let learningTimeout = null;
 
+function updateDataManageSettings() {
+    DataManage.setNormalizationFunction(ProjectData.NormalizationMethod);
+    DataManage.maxRotateAngle = ProjectData.MaxRotateAngle;
+    DataManage.verticallyShiftChance = ProjectData.VerticallyShiftChance / 100;
+    DataManage.horizontallyShiftChance = ProjectData.HorizontallyShiftChance / 100;
+    DataManage.noiseSize = ProjectData.NoiseSize / 100;
+    DataManage.noiseStrength = ProjectData.NoiseStrength;
+}
+
 function preload() {
     readTextFile('./digits_4kEach_zeroCounter.bin');
+    updateDataManageSettings();
+    const datapoints = DataManage.preprocessMNIST(
+        rawData,
+        10,
+        ProjectData.SamplesPerDigit,
+        ProjectData.OversamplesPerDigit,
+        ProjectData.AddOriginalDigit
+    );
 
-    DataManage.setNormalizationFunction(NormalizationType.Scale);
-    const datapoints = DataManage.preprocessMNIST(rawData, 10, 10, 1, true);
-
-    splitData = DataManage.split(datapoints, 0.7, true);
+    splitData = DataManage.split(datapoints, ProjectData.SplitFraction, ProjectData.ShouldShuffle);
 
     console.log("Loaded data!");
     console.log(splitData)
@@ -198,16 +210,16 @@ function writeNetworkOutputs() {
 
 function controlImages() {
     if (keyIsDown(188)) { // Pressed ',' or '<' ---> decrease speed of showing test data
-        dataFramerate = dataFramerate >= 60 ? 60 : dataFramerate + 1;
+        ProjectData.TrainDataSpeed = ProjectData.TrainDataSpeed >= 60 ? 60 : ProjectData.TrainDataSpeed + 1;
     }
     else if (keyIsDown(190)) { // Pressed '.' or '>' ---> increase speed of showing test data
-        dataFramerate = dataFramerate <= 1 ? 1 : dataFramerate - 1;
+        ProjectData.TrainDataSpeed = ProjectData.TrainDataSpeed <= 1 ? 1 : ProjectData.TrainDataSpeed - 1;
     }
     else if (keyIsDown(189)) { // Pressed '-' or '_' ---> decrease speed of showing wrong labeled data
-        wrongFramerate = wrongFramerate >= 60 ? 60 : wrongFramerate + 1;
+        ProjectData.WrongDataSpeed = ProjectData.WrongDataSpeed >= 60 ? 60 : ProjectData.WrongDataSpeed + 1;
     }
     else if (keyIsDown(187)) { // Pressed '+' or '=' ---> increase speed of showing wrong labeled data
-        wrongFramerate = wrongFramerate <= 1 ? 1 : wrongFramerate - 1;
+        ProjectData.WrongDataSpeed = ProjectData.WrongDataSpeed <= 1 ? 1 : ProjectData.WrongDataSpeed - 1;
     }
 }
 
@@ -273,7 +285,7 @@ function guessUserDigit() {
 }
 
 function showDataImage() {
-    if (drawIteration % dataFramerate == 0) {
+    if (drawIteration % ProjectData.TrainDataSpeed == 0) {
         dataImageIndex = Math.floor(Math.random() * splitData.train.length);
         dataImageData = splitData.train[dataImageIndex].inputs;
     }
@@ -289,7 +301,7 @@ function showWrongImage() {
 
     const wrongResults = neuralNetwork.trainHistory.wrongResults;
 
-    if (drawIteration % wrongFramerate == 0) {
+    if (drawIteration % ProjectData.WrongDataSpeed == 0) {
         const badImageIndex = Math.floor(Math.random() * wrongResults.length);
         wrongResultSample = wrongResults[badImageIndex];
     }

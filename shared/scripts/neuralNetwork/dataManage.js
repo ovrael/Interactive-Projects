@@ -1,5 +1,5 @@
 const NormalizationType = {
-    // OneZero: "Input",
+    Nothing: "noNormalization",
     Scale: "scale",
     LightPixels: "lightPixel",
     HalfLightPixels: "halfLightPixel"
@@ -10,22 +10,35 @@ class DataManage {
     static imageSize = 28;
     static normalizationFunction = DataManage.lightPixel;
 
+    static maxRotateAngle = 20;
+    static horizontallyShiftChance = 0.6;
+    static verticallyShiftChance = 0.6;
+    static noiseSize = 0.01;
+    static noiseStrength = 120;
+
     static noiseSingleRow(dataRow) {
 
-        const rotateAngle = Math.random() * 40 - 20;
         let noiseRow = [...dataRow];
-        noiseRow = this.rotatePixelsOld(noiseRow, rotateAngle);
 
-        if (Math.random() < 0.8) {
-            const direction = Math.floor(Math.random() * 4); // randomly choose left, top, right, or bottom
-            noiseRow = this.shiftPixels(noiseRow, direction);
-
-            if (Math.random() < 0.4) {
-                const changeDirection = Math.random() < 0.5 ? 2 : 0;
-                noiseRow = this.shiftPixels(noiseRow, direction + 1 + changeDirection);
-            }
+        if (this.maxRotateAngle > 0) {
+            const rotateAngle = Math.random() * this.maxRotateAngle * 2 - this.maxRotateAngle;
+            noiseRow = this.rotatePixels(noiseRow, rotateAngle);
         }
-        noiseRow = this.noisePixels(noiseRow, 0.01);
+
+        if (Math.random() < this.horizontallyShiftChance) {
+            // randomly choose 0=left or 2=right
+            const horizontallyDirection = Math.random() < 0.5 ? 0 : 2;
+            noiseRow = this.shiftPixels(noiseRow, horizontallyDirection);
+        }
+
+        if (Math.random() < this.verticallyShiftChance) {
+            // randomly choose  1=top or 3=bottom
+            const verticallyDirection = Math.random() < 0.5 ? 1 : 3;
+            noiseRow = this.shiftPixels(noiseRow, verticallyDirection);
+        }
+
+        if (this.noiseSize > 0)
+            noiseRow = this.noisePixels(noiseRow, this.noiseSize);
 
         for (let i = 0; i < noiseRow.length; i++) {
             if (noiseRow[i] == undefined) {
@@ -187,8 +200,9 @@ class DataManage {
         const newPixels = new Array(this.imageSize * this.imageSize);
         for (let i = 0; i < pixels.length; i++) {
             if (Math.random() < chance) {
-                newPixels[i] = Math.round((Math.random() * 0.5 + 0.25) * 100) / 100;
-                // newPixels[i] = DataManage.randomGaussian(0.5, 0.4);
+                // newPixels[i] = Math.round((Math.random() * 0.5 + 0.25) * 100) / 100;
+                newPixels[i] = DataManage.randomGaussian(127, this.noiseStrength);
+                newPixels[i] = DataManage.normalizationFunction(newPixels[i]);
             }
             else {
                 newPixels[i] = pixels[i];
@@ -268,40 +282,43 @@ class DataManage {
             case 0: // left
                 for (let x = 0; x < this.imageSize; x++) {
                     for (let y = 0; y < this.imageSize; y++) {
-                        if (pixels[this.imageSize * y + x] == 1) {
+                        if (pixels[this.imageSize * y + x] > 0) {
                             return x;
                         }
                     }
                 }
-
                 break;
+
             case 1: // top
                 for (let y = 0; y < this.imageSize; y++) {
                     for (let x = 0; x < this.imageSize; x++) {
-                        if (pixels[this.imageSize * y + x] == 1) {
+                        if (pixels[this.imageSize * y + x] > 0) {
                             return y;
                         }
                     }
                 }
                 break;
+
             case 2: // right
                 for (let x = this.imageSize - 1; x >= 0; x--) {
                     for (let y = 0; y < this.imageSize; y++) {
-                        if (pixels[this.imageSize * y + x] == 1) {
-                            return this.imageSize - 1 - x;
+                        if (pixels[this.imageSize * y + x] > 0) {
+                            return this.imageSize - x;
                         }
                     }
                 }
                 break;
+
             case 3: // bottom
                 for (let y = this.imageSize - 1; y >= 0; y--) {
                     for (let x = 0; x < this.imageSize; x++) {
-                        if (pixels[this.imageSize * y + x] == 1) {
-                            return this.imageSize - 1 - y;
+                        if (pixels[this.imageSize * y + x] > 0) {
+                            return this.imageSize - y;
                         }
                     }
                 }
                 break;
+
             default:
                 throw new Error("Invalid direction");
         }
@@ -518,6 +535,10 @@ class DataManage {
         return z * stdev + mean;
     }
 
+    static noNormalization(pixel) {
+        return pixel;
+    }
+
     static scalePixel(pixel) {
         return pixel / 255;
     }
@@ -544,8 +565,12 @@ class DataManage {
                 DataManage.normalizationFunction = DataManage.halfLightPixel;
                 break;
 
+            case "noNormalization":
+                DataManage.normalizationFunction = DataManage.noNormalization;
+                break;
+
             default:
-                DataManage.normalizationFunction = DataManage.scalePixel;
+                DataManage.normalizationFunction = DataManage.noNormalization;
                 break;
         }
     }
