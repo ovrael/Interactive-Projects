@@ -70,15 +70,15 @@ class TrainHistory {
             acc = 0.00;
 
         fill(250, 160, 50);
-        text("Accuracy: " + Mathematics.toPercent(acc) + "%", startX, 100);
+        text("Accuracy: " + Mathematics.toPercent(acc) + "%", startX, 120);
 
         fill(220, 120, 20);
-        text("Train:", startX, 125);
-        text(Mathematics.round(lastHistoryPoint["Train Loss"], 12), startX + 45, 125);
+        text("Train:", startX, 140);
+        text(Mathematics.round(lastHistoryPoint["Train Loss"], 12), startX + 45, 140);
 
         fill(130, 220, 40);
-        text("Test:", startX, 150);
-        text(Mathematics.round(lastHistoryPoint["Test Loss"], 12), startX + 45, 150);
+        text("Test:", startX, 160);
+        text(Mathematics.round(lastHistoryPoint["Test Loss"], 12), startX + 45, 160);
         pop();
     }
 

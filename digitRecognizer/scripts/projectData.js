@@ -1,9 +1,11 @@
 class ProjectData {
-    static CanvasWidth = 600;               // slider,   Width,  200, 1000, 600, 10
-    static CanvasHeight = 600;              // slider,   Height,  200, 1000, 600, 10
-    static BackgroundColor = '#646464';     // color,    Background,  #646464
+    static CanvasWidth = 600;               /* Keep width at 600px */
+    static CanvasHeight = 600;              /* Keep height at 600px */
+    static BackgroundColor = '#646464';     /* Keep background color at smooth gray */
 
-    static DrawDigitStroke = 10;            // slider,   Draw thickness,  200, 1000, 600, 10
+    // tab: Look
+    // section: SECTION_NAME
+    static DrawDigitStroke = 10;            // slider,   Draw thickness,  4, 32, 12, 1
 }
 
 // const scriptsTest = [

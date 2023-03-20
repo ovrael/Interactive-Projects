@@ -1,3 +1,9 @@
+const TrainingStatus = {
+    Before: "Not trained",
+    During: "Training",
+    After: "Trained",
+}
+
 class NeuralNetwork {
 
     constructor(errorFunction, optimizer) {
@@ -15,7 +21,7 @@ class NeuralNetwork {
 
         this.lastTarget = null;
         this.singleOutput = false;
-        this.isLearning = false;
+        this.trainingStatus = TrainingStatus.Before;
 
         this.learningEpoch = 0;
         this.trainHistory = new TrainHistory();
@@ -32,10 +38,8 @@ class NeuralNetwork {
             this.layers[i].reinitializeWeights();
         }
 
-        this.isLearning = false;
-
+        this.trainingStatus = TrainingStatus.Before;
         this.trainHistory = new TrainHistory();
-
         this.learningEpoch = 0;
     }
 
@@ -156,7 +160,7 @@ class NeuralNetwork {
         }
 
 
-        this.isLearning = true;
+        this.trainingStatus = TrainingStatus.During;
         this.#updateNeuralNetworkData();
 
         const showResultStep = Math.floor(epochs / 10);
@@ -222,8 +226,8 @@ class NeuralNetwork {
 
             this.learningEpoch++;
         }
-        this.isLearning = false;
-        this.#changeLayersDropout(this.isLearning);
+        this.trainingStatus = TrainingStatus.After;
+        this.#changeLayersDropout(false);
 
         console.info("Training finished");
     }
@@ -303,7 +307,7 @@ class NeuralNetwork {
     */
     #checkConditions(dataPoints) {
 
-        if (this.isLearning)
+        if (this.trainingStatus == TrainingStatus.During)
             return false;
 
         if (this.layers.length < 3) {

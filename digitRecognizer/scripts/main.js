@@ -102,7 +102,7 @@ function draw() {
         userIsDrawing = false;
     }
 
-    if (neuralNetwork.trainHistory.history.length > 0) {
+    if (training || neuralNetwork.trainHistory.history.length > 0) {
         writeTrainingText();
         if (historyGraphics)
             image(historyGraphics, 200, 400);
@@ -117,7 +117,7 @@ function draw() {
             historyGraphics = neuralNetwork.trainHistory.getGraphGraphics(200, 200);
             clearTimeout(learningTimeout);
             learningTimeout = null;
-        }, 50);
+        }, 0);
     }
 
     if (!userIsDrawing)
@@ -136,6 +136,21 @@ function draw() {
     drawIteration++;
 }
 
+function windowResized() {
+    centerCanvas();
+}
+
+function centerCanvas() {
+    var x = (windowWidth - width) / 2;
+    var y = (windowHeight - height) / 2;
+    canvas.position(x, y);
+}
+
+function resetCanvas() {
+    canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
+    centerCanvas();
+}
+
 function writeTrainingText() {
 
     const startX = ProjectData.CanvasWidth / 2 - 85;
@@ -145,9 +160,17 @@ function writeTrainingText() {
     textSize(24);
     text("Training data", startX, 40);
 
-    textSize(16);
+    textSize(15);
     fill(50, 168, 131);
-    text("Epoch: " + neuralNetwork.learningEpoch, startX, 65);
+    let nnStatus = neuralNetwork.trainingStatus;
+    if (nnStatus != TrainingStatus.Before) {
+        nnStatus = training ? TrainingStatus.During : TrainingStatus.After;
+    }
+    text("Status: " + nnStatus, startX, 80);
+
+    fill(134, 182, 252);
+    text("Epoch: " + neuralNetwork.learningEpoch, startX, 60);
+
     pop();
 
     if (neuralNetwork.trainHistory.history.length == 0) {
@@ -247,21 +270,6 @@ function guessUserDigit() {
         inputs[i] = DataManage.normalizationFunction(img.pixels[i * 4]);
     }
     userPrediction = neuralNetwork.predict(inputs);
-}
-
-function windowResized() {
-    centerCanvas();
-}
-
-function centerCanvas() {
-    var x = (windowWidth - width) / 2;
-    var y = (windowHeight - height) / 2;
-    canvas.position(x, y);
-}
-
-function resetCanvas() {
-    canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
-    centerCanvas();
 }
 
 function showDataImage() {
