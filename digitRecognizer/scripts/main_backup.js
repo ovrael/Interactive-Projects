@@ -298,15 +298,15 @@ function showWrongImage() {
 
     if (drawIteration % wrongFramerate == 0 && neuralNetwork.badResults.length > 0) {
         badImageIndex = Math.floor(Math.random() * neuralNetwork.badResults.length);
-        badResultImageData = neuralNetwork.badResults[badImageIndex];
+        wrongResultSample = neuralNetwork.badResults[badImageIndex];
         badLabelsData = neuralNetwork.badLabels[badImageIndex];
     } else if (neuralNetwork.badResults.length == 0) {
-        badResultImageData = undefined;
+        wrongResultSample = undefined;
         badLabelsData = undefined;
     }
 
-    if (badResultImageData) {
-        showImage(badResultImageData, 0, 200);
+    if (wrongResultSample) {
+        showImage(wrongResultSample, 0, 200);
         drawImageFrame(0, 200, 255, 20, 20, 100);
 
         push();

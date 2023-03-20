@@ -18,25 +18,10 @@ class NeuralNetwork {
         this.isLearning = false;
 
         this.learningEpoch = 0;
-        this.learningStatistics = {};
-        this.badResults = [];
-        this.badLabels = [];
-        this.statsHistory = [];
+        this.trainHistory = new TrainHistory();
     }
 
     // PUBLIC
-
-    /**
-        Compiles the neural network with the given error function and learning rate.
-        @param {Function} costFunction - The error function to be used for the neural network.
-        @param {number} [learningRate=0.05] - The learning rate to be used for the neural network.
-        @returns {undefined} This function does not return anything.
-    */
-    compile(costFunction, optimzer) {
-        this.costFunction = costFunction;
-        this.optimizer = optimzer;
-        this.#updateNeuralNetworkData();
-    }
 
     resetNetwork() {
 
@@ -49,10 +34,7 @@ class NeuralNetwork {
 
         this.isLearning = false;
 
-        this.learningStatistics = {};
-        this.badResults = [];
-        this.badLabels = [];
-        this.statsHistory = [];
+        this.trainHistory = new TrainHistory();
 
         this.learningEpoch = 0;
     }
@@ -234,8 +216,7 @@ class NeuralNetwork {
                     "Test length": validationData.length,
                     "Test %": testResult[1] / validationData.length,
                 }
-                this.learningStatistics = results;
-                this.statsHistory.push(results);
+                this.trainHistory.addResults(results);
                 console.table(results);
             }
 
@@ -414,8 +395,7 @@ class NeuralNetwork {
     #validate(testData) {
         let cost = 0;
         let goodTest = 0;
-        this.badResults = [];
-        this.badLabels = [];
+        this.trainHistory.clearWrongResults();
 
         if (this.singleOutput) {
             console.warn("SINGLE OUTPUT")
@@ -447,8 +427,12 @@ class NeuralNetwork {
                 if (maxIndex == testData[i].label) {
                     goodTest++;
                 } else {
-                    this.badResults.push(testData[i].inputs);
-                    this.badLabels.push([testData[i].label, maxIndex]);
+                    this.trainHistory.addWrongResult(
+                        {
+                            "dataPoint": testData[i],
+                            "wrongLabel": maxIndex
+                        }
+                    );
                 }
                 this.lastTarget = testData[i].label;
             }

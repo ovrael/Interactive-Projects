@@ -43,6 +43,7 @@ const scriptsTest = [
     "layerData",
     "layer",
     "backpropLayer",
+    "trainHistory",
     "neuralNetwork",
 ];
 
