@@ -6,55 +6,29 @@ class ProjectData {
     static DrawDigitStroke = 10;
 }
 
-const scripts = [
-    "activationFunction",
-    "costFunction",
-    "lossFunctions",
-    // "dataPoint",
-    "dataManage",
-    "weights",
-    "layer",
-    "dropoutLayer",
-    "neuralNetwork",
-    "neuralNetworkDrawer",
-];
+// const scriptsTest = [
+//     "activationFunction",
+//     "costFunction",
+//     "dataPoint",
+//     "dataManage",
+//     "optimizer",
+//     "weights",
+//     "weightsRegulizer",
+//     "layerData",
+//     "layer",
+//     "backpropLayer",
+//     "trainHistory",
+//     "neuralNetwork",
+// ];
 
-const scriptsBackup = [
-    "activationFunction",
-    "costFunction",
-    "lossFunctions",
-    "dataPoint",
-    "dataManage",
-    "optimizer",
-    "weights",
-    "layerData",
-    "layer",
-    "neuralNetwork",
-];
+// const head = document.getElementById("mainHead");
 
-const scriptsTest = [
-    "activationFunction",
-    "costFunction",
-    "dataPoint",
-    "dataManage",
-    "optimizer",
-    "weights",
-    "weightsRegulizer",
-    "layerData",
-    "layer",
-    "backpropLayer",
-    "trainHistory",
-    "neuralNetwork",
-];
+// const scriptsToLoad = scriptsTest;
+// const folder = "neuralNetwork_test";
+// const path = "../shared/scripts/" + folder + "/";
 
-const head = document.getElementById("mainHead");
-
-const scriptsToLoad = scriptsTest;
-const folder = "neuralNetwork_test";
-const path = "../shared/scripts/" + folder + "/";
-
-for (let i = 0; i < scriptsToLoad.length; i++) {
-    let scriptElement = document.createElement("script");
-    scriptElement.src = path + scriptsToLoad[i] + ".js";
-    head.append(scriptElement);
-}
+// for (let i = 0; i < scriptsToLoad.length; i++) {
+//     let scriptElement = document.createElement("script");
+//     scriptElement.src = path + scriptsToLoad[i] + ".js";
+//     head.append(scriptElement);
+// }

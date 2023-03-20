@@ -6,7 +6,7 @@ const LayerType = {
 
 class Layer {
 
-    constructor(type, numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction) {
+    constructor(type, numberOfNeurons, numberOfPreviousNeurons = 0, activationFunction = null, weightsRegulizer = null) {
         this.type = type;
 
         this.neuronsCount = numberOfNeurons;
@@ -34,6 +34,11 @@ class Layer {
             /** @type {ActivationFunction} */
             this.activationFunction = activationFunction;
             this.activateNeurons = this.activateNeuronsWithoutDropout;
+
+            if (weightsRegulizer == null)
+                weightsRegulizer = new WeightsRegulizer(0, 0);
+
+            this.weightsRegulizer = weightsRegulizer;
         }
     }
 
@@ -127,6 +132,14 @@ class Layer {
         this.weights.initializeRandomWeights();
     }
 
+    forwardRegularization() {
+        return this.weightsRegulizer.forward(this.weights);
+    }
+
+    backpropSingleRegularization(p, c) {
+        return this.weightsRegulizer.backpropSingle(this.weights.data[p][c]);
+    }
+
     static Input(numberOfNeurons) {
         return new LayerData(
             LayerType.Input,
@@ -136,12 +149,13 @@ class Layer {
         );
     }
 
-    static Dense(numberOfNeurons, activationFunction) {
+    static Dense(numberOfNeurons, activationFunction, weightsRegulizer) {
         return new LayerData(
             LayerType.Dense,
             numberOfNeurons,
             activationFunction,
-            0
+            0,
+            weightsRegulizer
         );
     }
 
