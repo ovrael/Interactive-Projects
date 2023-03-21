@@ -41,7 +41,7 @@ class CostFunction {
         );
     }
 
-    static crossEntropy() {
+    static crossentropy() {
 
         return new CostFunction(
 

@@ -1,0 +1,687 @@
+<!-- GENERATED BUTTONS -->
+
+    <div class="backButton noselect" id="backButton"
+    onclick="backToMainWebsite()">
+    Back
+</div>
+<div class="openPanelButton noselect" id="openPanelButton"
+    onclick="openSettings();">
+    Open settings
+</div>
+<!-- GENERATED SETTINGS PANEL -->
+
+<div id="settingsPanel" class="panel allTransition">
+<div class="closeButton noselect" onclick="closeSettings(); ">
+    <i class="bi bi-arrow-right"></i>
+</div>
+<div class="container text-center">
+    <div class="row">
+        <h2>
+            Settings
+        </h2>
+    </div>
+    <div class="row customTabNav">
+        <div class="col-3 noselect tabDiv activeTab"
+            onclick="tabClick(this)"
+            data-tabname="look">
+            Look
+        </div>
+        <div class="col-3 noselect tabDiv "
+            onclick="tabClick(this)"
+            data-tabname="data">
+            Data
+        </div>
+        <div class="col-3 noselect tabDiv "
+            onclick="tabClick(this)"
+            data-tabname="model">
+            Model
+        </div>
+        <div class="col-3 noselect tabDiv "
+            onclick="tabClick(this)"
+            data-tabname="model 2">
+            Model 2
+        </div>
+    </div>
+</div>
+<!-- Generated tab for Look. -->
+<div id="lookTab" class="tabContent" >
+
+
+<!-- Generated section for Drawing. -->
+<h4><i>
+Drawing
+</i></h4>
+
+<!-- Generated slider for drawDigitStroke. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="drawDigitStrokeSlider"
+                            class="noselect"> draw thickness </label><br>
+                        <input type="range" min="4" max="32" step="1"
+                            value="10" class="form-range"
+                            id="drawDigitStrokeSlider"
+                            data-variable="drawDigitStroke"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="drawDigitStroke">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="drawDigitStrokeText"
+                                data-variable="drawDigitStroke">10
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="drawDigitStroke">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated section for Image display. -->
+<h4><i>
+Image display
+</i></h4>
+
+<!-- Generated slider for trainDataSpeed. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="trainDataSpeedSlider"
+                            class="noselect"> training data speed </label><br>
+                        <input type="range" min="1" max="60" step="1"
+                            value="5" class="form-range"
+                            id="trainDataSpeedSlider"
+                            data-variable="trainDataSpeed"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="trainDataSpeed">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="trainDataSpeedText"
+                                data-variable="trainDataSpeed">5
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="trainDataSpeed">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for wrongDataSpeed. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="wrongDataSpeedSlider"
+                            class="noselect"> wrong data speed </label><br>
+                        <input type="range" min="1" max="60" step="1"
+                            value="30" class="form-range"
+                            id="wrongDataSpeedSlider"
+                            data-variable="wrongDataSpeed"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="wrongDataSpeed">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="wrongDataSpeedText"
+                                data-variable="wrongDataSpeed">30
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="wrongDataSpeed">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+</div>
+
+<!-- Generated tab for Data. -->
+<div id="dataTab" class="tabContent" hidden>
+
+
+<!-- Generated section for Loading data. -->
+<h4><i>
+Loading data
+</i></h4>
+
+<!-- Generated slider for samplesPerDigit. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="samplesPerDigitSlider"
+                            class="noselect"> samples per digit </label><br>
+                        <input type="range" min="10" max="1000" step="10"
+                            value="300" class="form-range"
+                            id="samplesPerDigitSlider"
+                            data-variable="samplesPerDigit"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="samplesPerDigit">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="samplesPerDigitText"
+                                data-variable="samplesPerDigit">300
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="samplesPerDigit">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for splitFraction. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="splitFractionSlider"
+                            class="noselect"> test/validation split fraction </label><br>
+                        <input type="range" min="0.1" max="1.0" step="0.01"
+                            value="0.7" class="form-range"
+                            id="splitFractionSlider"
+                            data-variable="splitFraction"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="splitFraction">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="splitFractionText"
+                                data-variable="splitFraction">0.7
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="splitFraction">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated checkbox for shouldShuffle. -->
+<div class="row pb-2 pt-1">
+<div class="col-8 noselect controlPanelText">
+shuffle splitted data?
+
+</div>
+<div class="col-4">
+<input class="form-check-input" type="checkbox"
+value="" aria-label="shuffle splitted data?"
+id="shouldShuffleCheckbox"
+onchange="checkboxChange(this)"
+checked
+data-variable="shouldShuffle">
+</div>
+</div>
+
+<!-- Generated select for normalizationMethod. -->
+<div class="row">
+                    <div class="col-8 noselect controlPanelText">
+                        normalization method
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" aria-label="CreatedSelect"
+                            id="normalizationMethodSelect"
+                            onchange="selectChange(this)">
+<option selected value="scale">Scale</option><option  value="lightpixel">Lightpixel</option><option  value="halflightpixel">Halflightpixel</option><option  value="nonormalization">Nonormalization</option>                        </select>
+                    </div>
+                </div>
+
+<!-- Generated section for Oversampling. -->
+<h4><i>
+Oversampling
+</i></h4>
+
+<!-- Generated slider for oversamplesPerDigit. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="oversamplesPerDigitSlider"
+                            class="noselect"> generated samples per digit </label><br>
+                        <input type="range" min="0" max="10" step="1"
+                            value="2" class="form-range"
+                            id="oversamplesPerDigitSlider"
+                            data-variable="oversamplesPerDigit"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="oversamplesPerDigit">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="oversamplesPerDigitText"
+                                data-variable="oversamplesPerDigit">2
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="oversamplesPerDigit">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated checkbox for addOriginalDigit. -->
+<div class="row pb-2 pt-1">
+<div class="col-8 noselect controlPanelText">
+add original digits?
+
+</div>
+<div class="col-4">
+<input class="form-check-input" type="checkbox"
+value="" aria-label="add original digits?"
+id="addOriginalDigitCheckbox"
+onchange="checkboxChange(this)"
+checked
+data-variable="addOriginalDigit">
+</div>
+</div>
+
+<!-- Generated slider for maxRotateAngle. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="maxRotateAngleSlider"
+                            class="noselect"> max rotate angle </label><br>
+                        <input type="range" min="0" max="90" step="1"
+                            value="20" class="form-range"
+                            id="maxRotateAngleSlider"
+                            data-variable="maxRotateAngle"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxRotateAngle">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="maxRotateAngleText"
+                                data-variable="maxRotateAngle">20
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="maxRotateAngle">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for horizontallyShiftChance. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="horizontallyShiftChanceSlider"
+                            class="noselect"> horizontally shift chance % </label><br>
+                        <input type="range" min="0" max="100" step="1"
+                            value="60" class="form-range"
+                            id="horizontallyShiftChanceSlider"
+                            data-variable="horizontallyShiftChance"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="horizontallyShiftChance">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="horizontallyShiftChanceText"
+                                data-variable="horizontallyShiftChance">60
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="horizontallyShiftChance">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for verticallyShiftChance. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="verticallyShiftChanceSlider"
+                            class="noselect"> vertically shift chance % </label><br>
+                        <input type="range" min="0" max="100" step="1"
+                            value="60" class="form-range"
+                            id="verticallyShiftChanceSlider"
+                            data-variable="verticallyShiftChance"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="verticallyShiftChance">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="verticallyShiftChanceText"
+                                data-variable="verticallyShiftChance">60
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="verticallyShiftChance">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for noiseSize. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="noiseSizeSlider"
+                            class="noselect"> noise size </label><br>
+                        <input type="range" min="0" max="100" step="1"
+                            value="1" class="form-range"
+                            id="noiseSizeSlider"
+                            data-variable="noiseSize"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="noiseSize">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="noiseSizeText"
+                                data-variable="noiseSize">1
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="noiseSize">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated slider for noiseStrength. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="noiseStrengthSlider"
+                            class="noselect"> noise strength </label><br>
+                        <input type="range" min="0" max="120" step="1"
+                            value="100" class="form-range"
+                            id="noiseStrengthSlider"
+                            data-variable="noiseStrength"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="noiseStrength">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="noiseStrengthText"
+                                data-variable="noiseStrength">100
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="noiseStrength">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+</div>
+
+<!-- Generated tab for Model. -->
+<div id="modelTab" class="tabContent" hidden>
+
+
+<!-- Generated section for Creation. -->
+<h4><i>
+Creation
+</i></h4>
+
+<!-- Generated select for costFunctionName. -->
+<div class="row">
+                    <div class="col-8 noselect controlPanelText">
+                        cost function
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" aria-label="CreatedSelect"
+                            id="costFunctionNameSelect"
+                            onchange="selectChange(this)">
+<option selected value="crossentropy">Crossentropy</option><option  value="mean squared error">Mse</option>                        </select>
+                    </div>
+                </div>
+
+<!-- Generated select for optimizerName. -->
+<div class="row">
+                    <div class="col-8 noselect controlPanelText">
+                        optimizer
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" aria-label="CreatedSelect"
+                            id="optimizerNameSelect"
+                            onchange="selectChange(this)">
+<option selected value="stochastic gradient descent">Sgd</option><option  value="adam">Adam</option><option  value="rmsprop">Rmsprop</option>                        </select>
+                    </div>
+                </div>
+
+</div>
+
+<!-- Generated tab for Model 2. -->
+<div id="model 2Tab" class="tabContent" hidden>
+
+
+<!-- Generated section for Hyperparameters. -->
+<h4><i>
+Hyperparameters
+</i></h4>
+
+<!-- Generated slider for trainBatchSize. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="trainBatchSizeSlider"
+                            class="noselect"> train batch size </label><br>
+                        <input type="range" min="1" max="512" step="1"
+                            value="64" class="form-range"
+                            id="trainBatchSizeSlider"
+                            data-variable="trainBatchSize"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="trainBatchSize">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="trainBatchSizeText"
+                                data-variable="trainBatchSize">64
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="trainBatchSize">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Generated section for Optimizer. -->
+<h4><i>
+Optimizer
+</i></h4>
+
+<!-- Generated slider for learningRate. -->
+<div class="row">
+
+                    <div class="col-8">
+                        <label for="learningRateSlider"
+                            class="noselect"> learning rate </label><br>
+                        <input type="range" min="0.00001" max="0.1" step="0.00001"
+                            value="0.001" class="form-range"
+                            id="learningRateSlider"
+                            data-variable="learningRate"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="learningRate">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="learningRateText"
+                                data-variable="learningRate">0.001
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="learningRate">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+</div>
+
+</div>
+
+<!-- END OF SETTINGS PANEL -->
+

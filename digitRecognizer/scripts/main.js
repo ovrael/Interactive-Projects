@@ -63,11 +63,35 @@ function readTextFile(file) {
     rawFile.send(null);
 }
 
+function createOptimizer() {
+    let optimizer = undefined;
+    switch (ProjectData.OptimizerName) {
+        case 'sgd':
+            optimizer = Optimizer.sgd(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay);
+            break;
+
+        case 'adam':
+            optimizer = Optimizer.adam(ProjectData.LearningRate, ProjectData.OptimizerBeta1, ProjectData.OptimizerBeta2, ProjectData.OptimizerEpsilon, ProjectData.OptimizerWeightsDecay);
+            break;
+
+        case 'rmsProp':
+            optimizer = Optimizer.rmsProp(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay, ProjectData.OptimizerEpsilon);
+            break;
+
+        default:
+            optimizer = Optimizer.sgd(0.001, 0.9, 0.075);
+            break;
+    }
+    return optimizer;
+}
+
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
-    // const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.adam(0.002));
-    // const neuralNetwork = new NeuralNetwork(LossFunctions.MultiClassification.CategoricalCrossEntropy, Optimizer.adam(0.0001));
-    const neuralNetwork = new NeuralNetwork(CostFunction.crossEntropy(), Optimizer.sgd(0.001, 0.9, 0.075));
+    // const neuralNetwork = new NeuralNetwork(CostFunction.crossentropy(), Optimizer.adam(0.002));
+
+    const optimizer = createOptimizer();
+
+    const neuralNetwork = new NeuralNetwork(CostFunction.crossentropy(), optimizer);
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.5));
@@ -125,7 +149,7 @@ function draw() {
     if (training && !userIsDrawing && learningTimeout == null) {
 
         learningTimeout = setTimeout(() => {
-            neuralNetwork.train(splitData.train, splitData.test, 64, 1);
+            neuralNetwork.train(splitData.train, splitData.test, ProjectData.TrainBatchSize, 1);
             historyGraphics = neuralNetwork.trainHistory.getGraphGraphics(200, 200);
             clearTimeout(learningTimeout);
             learningTimeout = null;
@@ -258,6 +282,10 @@ function keyPressed() {
         training = !training;
     }
     else if (keyCode === ESCAPE) {
+        if (PanelIsOpen === true) {
+            closeSettings();
+            return;
+        }
         userIsDrawing = false;
         imageIsEmpty = true;
         userPrediction = null;

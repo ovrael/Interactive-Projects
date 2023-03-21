@@ -1,8 +1,13 @@
+let PanelIsOpen = false;
+
 function openSettings() {
+    if (PanelIsOpen === true)
+        return;
+
     document.getElementById('settingsPanel').style.contentVisibility = "visible";
     document.getElementById('settingsPanel').style.width = "30%";
     document.getElementById('settingsPanel').style.minWidth = "500px";
-
+    PanelIsOpen = true;
 }
 
 function tabClick(tab) {
@@ -20,11 +25,16 @@ function tabClick(tab) {
 }
 
 function closeSettings() {
+
+    if (PanelIsOpen === false)
+        return;
+
     document.getElementById('settingsPanel').style.width = "0";
     document.getElementById('settingsPanel').style.minWidth = "0";
 
     setTimeout(() => {
         document.getElementById('settingsPanel').style.contentVisibility = "hidden";
+        PanelIsOpen = false;
     }, 800);
 }
 
@@ -37,6 +47,7 @@ function moveCanvasBack() {
 }
 
 function backToMainWebsite() {
+    PanelIsOpen = false;
     let url = window.location.href;
     if (url.includes("127.0.0")) {
         window.location.href = "/_main/index.html";
