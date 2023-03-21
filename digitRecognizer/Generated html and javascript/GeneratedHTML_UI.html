@@ -33,13 +33,13 @@
         </div>
         <div class="col-3 noselect tabDiv "
             onclick="tabClick(this)"
-            data-tabname="model">
-            Model
+            data-tabname="create model">
+            Create model
         </div>
         <div class="col-3 noselect tabDiv "
             onclick="tabClick(this)"
-            data-tabname="model 2">
-            Model 2
+            data-tabname="adjust model">
+            Adjust model
         </div>
     </div>
 </div>
@@ -47,8 +47,8 @@
 <div id="lookTab" class="tabContent" >
 
 
-<!-- Generated section for Drawing. -->
-<h4><i>
+<!-- Generated firstsection for Drawing. -->
+<h4 class="noselect"><i>
 Drawing
 </i></h4>
 
@@ -92,7 +92,7 @@ Drawing
                 </div>
 
 <!-- Generated section for Image display. -->
-<h4><i>
+<h4 class="mt-4 noselect"><i>
 Image display
 </i></h4>
 
@@ -180,8 +180,8 @@ Image display
 <div id="dataTab" class="tabContent" hidden>
 
 
-<!-- Generated section for Loading data. -->
-<h4><i>
+<!-- Generated firstsection for Loading data. -->
+<h4 class="noselect"><i>
 Loading data
 </i></h4>
 
@@ -230,7 +230,7 @@ Loading data
                     <div class="col-8">
                         <label for="splitFractionSlider"
                             class="noselect"> test/validation split fraction </label><br>
-                        <input type="range" min="0.1" max="1.0" step="0.01"
+                        <input type="range" min="0.1" max="0.9" step="0.01"
                             value="0.7" class="form-range"
                             id="splitFractionSlider"
                             data-variable="splitFraction"
@@ -288,14 +288,30 @@ data-variable="shouldShuffle">
                         <select class="form-select" aria-label="CreatedSelect"
                             id="normalizationMethodSelect"
                             onchange="selectChange(this)">
-<option selected value="scale">Scale</option><option  value="lightpixel">Lightpixel</option><option  value="halflightpixel">Halflightpixel</option><option  value="nonormalization">Nonormalization</option>                        </select>
+<option selected value="scale">Scale</option><option  value="lightpixel">Light pixel</option><option  value="halflightpixel">Half light pixel</option><option  value="nonormalization">No normalization</option>                        </select>
                     </div>
                 </div>
 
 <!-- Generated section for Oversampling. -->
-<h4><i>
+<h4 class="mt-4 noselect"><i>
 Oversampling
 </i></h4>
+
+<!-- Generated checkbox for addOriginalDigit. -->
+<div class="row pb-2 pt-1">
+<div class="col-8 noselect controlPanelText">
+add original digits?
+
+</div>
+<div class="col-4">
+<input class="form-check-input" type="checkbox"
+value="" aria-label="add original digits?"
+id="addOriginalDigitCheckbox"
+onchange="checkboxChange(this)"
+checked
+data-variable="addOriginalDigit">
+</div>
+</div>
 
 <!-- Generated slider for oversamplesPerDigit. -->
 <div class="row">
@@ -335,22 +351,6 @@ Oversampling
                         </div>
                     </div>
                 </div>
-
-<!-- Generated checkbox for addOriginalDigit. -->
-<div class="row pb-2 pt-1">
-<div class="col-8 noselect controlPanelText">
-add original digits?
-
-</div>
-<div class="col-4">
-<input class="form-check-input" type="checkbox"
-value="" aria-label="add original digits?"
-id="addOriginalDigitCheckbox"
-onchange="checkboxChange(this)"
-checked
-data-variable="addOriginalDigit">
-</div>
-</div>
 
 <!-- Generated slider for maxRotateAngle. -->
 <div class="row">
@@ -549,49 +549,23 @@ data-variable="addOriginalDigit">
 
 </div>
 
-<!-- Generated tab for Model. -->
-<div id="modelTab" class="tabContent" hidden>
+<!-- Generated tab for Create model. -->
+<div id="create modelTab" class="tabContent" hidden>
 
 
-<!-- Generated section for Creation. -->
-<h4><i>
-Creation
+<!-- Generated firstsection for Layers. -->
+<h4 class="noselect"><i>
+Layers
 </i></h4>
-
-<!-- Generated select for costFunctionName. -->
-<div class="row">
-                    <div class="col-8 noselect controlPanelText">
-                        cost function
-                    </div>
-                    <div class="col-4">
-                        <select class="form-select" aria-label="CreatedSelect"
-                            id="costFunctionNameSelect"
-                            onchange="selectChange(this)">
-<option selected value="crossentropy">Crossentropy</option><option  value="mean squared error">Mse</option>                        </select>
-                    </div>
-                </div>
-
-<!-- Generated select for optimizerName. -->
-<div class="row">
-                    <div class="col-8 noselect controlPanelText">
-                        optimizer
-                    </div>
-                    <div class="col-4">
-                        <select class="form-select" aria-label="CreatedSelect"
-                            id="optimizerNameSelect"
-                            onchange="selectChange(this)">
-<option selected value="stochastic gradient descent">Sgd</option><option  value="adam">Adam</option><option  value="rmsprop">Rmsprop</option>                        </select>
-                    </div>
-                </div>
 
 </div>
 
-<!-- Generated tab for Model 2. -->
-<div id="model 2Tab" class="tabContent" hidden>
+<!-- Generated tab for Adjust model. -->
+<div id="adjust modelTab" class="tabContent" hidden>
 
 
-<!-- Generated section for Hyperparameters. -->
-<h4><i>
+<!-- Generated firstsection for Hyperparameters. -->
+<h4 class="noselect"><i>
 Hyperparameters
 </i></h4>
 
@@ -634,11 +608,6 @@ Hyperparameters
                     </div>
                 </div>
 
-<!-- Generated section for Optimizer. -->
-<h4><i>
-Optimizer
-</i></h4>
-
 <!-- Generated slider for learningRate. -->
 <div class="row">
 
@@ -675,6 +644,37 @@ Optimizer
                                 +
                             </div>
                         </div>
+                    </div>
+                </div>
+
+<!-- Generated select for costFunctionName. -->
+<div class="row">
+                    <div class="col-8 noselect controlPanelText">
+                        cost function
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" aria-label="CreatedSelect"
+                            id="costFunctionNameSelect"
+                            onchange="selectChange(this)">
+<option selected value="crossentropy">Crossentropy</option><option  value="mse">Mean squared error</option>                        </select>
+                    </div>
+                </div>
+
+<!-- Generated section for Optimizer. -->
+<h4 class="mt-4 noselect"><i>
+Optimizer
+</i></h4>
+
+<!-- Generated select for optimizerName. -->
+<div class="row">
+                    <div class="col-8 noselect controlPanelText">
+                        optimizer type
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" aria-label="CreatedSelect"
+                            id="optimizerNameSelect"
+                            onchange="selectChange(this)">
+<option selected value="sgd">Stochastic gradient descent</option><option  value="adam">Adam</option><option  value="rmsprop">Rmsprop</option>                        </select>
                     </div>
                 </div>
 

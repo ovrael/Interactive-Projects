@@ -85,13 +85,32 @@ function createOptimizer() {
     return optimizer;
 }
 
+function getCostFunction() {
+    let costFunction = undefined;
+    switch (ProjectData.CostFunctionName) {
+        case 'crossentropy':
+            costFunction = CostFunction.crossentropy();
+            break;
+
+        case 'mse':
+            costFunction = CostFunction.meanSquaredError();
+            break;
+
+        default:
+            costFunction = CostFunction.crossentropy();
+            break;
+    }
+    return costFunction;
+}
+
 function createModel() {
     const inputLenght = splitData.train[0].inputs.length;
     // const neuralNetwork = new NeuralNetwork(CostFunction.crossentropy(), Optimizer.adam(0.002));
 
     const optimizer = createOptimizer();
+    const costFunction = getCostFunction();
 
-    const neuralNetwork = new NeuralNetwork(CostFunction.crossentropy(), optimizer);
+    const neuralNetwork = new NeuralNetwork(costFunction, optimizer);
 
     neuralNetwork.addLayer(Layer.Input(inputLenght));
     neuralNetwork.addLayer(Layer.Dropout(0.5));

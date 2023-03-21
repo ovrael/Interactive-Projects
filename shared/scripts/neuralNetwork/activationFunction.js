@@ -1,3 +1,13 @@
+const ActivationFunctionNames =
+{
+    sigmoid: "sigmoid",
+    tanh: "tanh",
+    relu: "relu",
+    leakyRelu: "leakyRelu",
+    softmax: "softmax",
+}
+
+// TO ADD - MORE FUNCTIONS E.G. ELU
 class ActivationFunction {
     constructor(func, dfunc, dfunc2) {
         this.function = func;

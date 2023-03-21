@@ -1,133 +1,134 @@
 function sliderChange(slider) {
 
-    document.getElementById(slider.dataset.variable + 'Text').innerHTML = Number(slider.value);
-    switch (slider.dataset.variable) {
+document.getElementById(slider.dataset.variable + 'Text').innerHTML = Number(slider.value);
 
-        case 'drawDigitStroke':
-            ProjectData.DrawDigitStroke = Number(slider.value);
+switch (slider.dataset.variable) {
 
-            break;
+case 'drawDigitStroke':
+ProjectData.DrawDigitStroke = Number(slider.value);
 
-        case 'trainDataSpeed':
-            ProjectData.TrainDataSpeed = Number(slider.value);
+break;
 
-            break;
+case 'trainDataSpeed':
+ProjectData.TrainDataSpeed = Number(slider.value);
 
-        case 'wrongDataSpeed':
-            ProjectData.WrongDataSpeed = Number(slider.value);
+break;
 
-            break;
+case 'wrongDataSpeed':
+ProjectData.WrongDataSpeed = Number(slider.value);
 
-        case 'samplesPerDigit':
-            ProjectData.SamplesPerDigit = Number(slider.value);
+break;
 
-            break;
+case 'samplesPerDigit':
+ProjectData.SamplesPerDigit = Number(slider.value);
 
-        case 'splitFraction':
-            ProjectData.SplitFraction = Number(slider.value);
+break;
 
-            break;
+case 'splitFraction':
+ProjectData.SplitFraction = Number(slider.value);
 
-        case 'oversamplesPerDigit':
-            ProjectData.OversamplesPerDigit = Number(slider.value);
+break;
 
-            break;
+case 'oversamplesPerDigit':
+ProjectData.OversamplesPerDigit = Number(slider.value);
 
-        case 'maxRotateAngle':
-            ProjectData.MaxRotateAngle = Number(slider.value);
+break;
 
-            break;
+case 'maxRotateAngle':
+ProjectData.MaxRotateAngle = Number(slider.value);
 
-        case 'horizontallyShiftChance':
-            ProjectData.HorizontallyShiftChance = Number(slider.value);
+break;
 
-            break;
+case 'horizontallyShiftChance':
+ProjectData.HorizontallyShiftChance = Number(slider.value);
 
-        case 'verticallyShiftChance':
-            ProjectData.VerticallyShiftChance = Number(slider.value);
+break;
 
-            break;
+case 'verticallyShiftChance':
+ProjectData.VerticallyShiftChance = Number(slider.value);
 
-        case 'noiseSize':
-            ProjectData.NoiseSize = Number(slider.value);
+break;
 
-            break;
+case 'noiseSize':
+ProjectData.NoiseSize = Number(slider.value);
 
-        case 'noiseStrength':
-            ProjectData.NoiseStrength = Number(slider.value);
+break;
 
-            break;
+case 'noiseStrength':
+ProjectData.NoiseStrength = Number(slider.value);
 
-        case 'trainBatchSize':
-            ProjectData.TrainBatchSize = Number(slider.value);
+break;
 
-            break;
+case 'trainBatchSize':
+ProjectData.TrainBatchSize = Number(slider.value);
 
-        case 'learningRate':
-            ProjectData.LearningRate = Number(slider.value);
+break;
 
-            break;
+case 'learningRate':
+ProjectData.LearningRate = Number(slider.value);
 
-        default:
+break;
 
-            console.log('Cant find ProjectData.' + slider.dataset.variable);
+default:
 
-            break;
+console.log('Cant find ProjectData.' + slider.dataset.variable);
 
-    }
-    saveSettings(ProjectData.SettingsName);
+break;
+
+}
+saveSettings(ProjectData.SettingsName);
 }
 
 function selectChange(select) {
 
-    switch (select.id) {
+switch (select.id) {
 
-        case 'normalizationMethodSelect':
-            ProjectData.NormalizationMethod = select.value;
+case 'normalizationMethodSelect':
+ProjectData.NormalizationMethod = select.value;
 
-            break;
+break;
 
-        case 'costFunctionNameSelect':
-            ProjectData.CostFunctionName = select.value;
+case 'costFunctionNameSelect':
+ProjectData.CostFunctionName = select.value;
 
-            break;
+break;
 
-        case 'optimizerNameSelect':
-            ProjectData.OptimizerName = select.value;
+case 'optimizerNameSelect':
+ProjectData.OptimizerName = select.value;
 
-            break;
+break;
 
-        default:
+default:
 
-            console.warn('Cant find selectChange for: ' + select.id);
+console.warn('Cant find selectChange for: ' + select.id);
 
-            break;
+break;
 
-    }
-    saveSettings(ProjectData.SettingsName);
+}
+saveSettings(ProjectData.SettingsName);
 }
 
 function checkboxChange(checkbox) {
 
-    switch (checkbox.dataset.variable) {
+switch (checkbox.dataset.variable) {
 
-        case 'shouldShuffle':
-            ProjectData.ShouldShuffle = Boolean(checkbox.checked);
+case 'shouldShuffle':
+ProjectData.ShouldShuffle =Boolean(checkbox.checked);
 
-            break;
+break;
 
-        case 'addOriginalDigit':
-            ProjectData.AddOriginalDigit = Boolean(checkbox.checked);
+case 'addOriginalDigit':
+ProjectData.AddOriginalDigit =Boolean(checkbox.checked);
 
-            break;
+break;
 
-        default:
+default:
 
-            console.warn('Cant find checkbox variable for: ' + checkbox.dataset.variable);
+console.warn('Cant find checkbox variable for: ' + checkbox.dataset.variable);
 
-            break;
+break;
 
-    }
-    saveSettings(ProjectData.SettingsName);
+}
+saveSettings(ProjectData.SettingsName);
 }
 

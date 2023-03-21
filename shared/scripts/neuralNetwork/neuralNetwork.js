@@ -6,11 +6,21 @@ const TrainingStatus = {
 
 class NeuralNetwork {
 
-    constructor(errorFunction, optimizer) {
+    constructor(costFunction, optimizer) {
+
         /** @type {CostFunction} */
-        this.costFunction = errorFunction;
+        this.costFunction = null;
+
         /** @type {Optimizer} */
-        this.optimizer = optimizer;
+        this.optimizer = null;
+
+        if (costFunction !== undefined && (costFunction instanceof CostFunction) === true) {
+            this.costFunction = costFunction;
+        }
+
+        if ((optimizer !== undefined && optimizer instanceof Optimizer) === true) {
+            this.optimizer = optimizer;
+        }
 
         /** @type {Array<Layer>} */
         this.layers = [];
@@ -25,6 +35,42 @@ class NeuralNetwork {
 
         this.learningEpoch = 0;
         this.trainHistory = new TrainHistory();
+    }
+
+    compile(data) {
+        if (data.costFunction !== undefined && data.costFunction instanceof CostFunction) {
+            this.costFunction = data.costFunction;
+        }
+
+        if (data.optimizer !== undefined && data.optimizer instanceof Optimizer) {
+            this.optimizer = data.optimizer;
+        }
+
+        if (data.layersData !== undefined) {
+            this.loadLayers(data.layersData);
+        }
+    }
+
+    loadLayers(layersData) {
+        if (layersData === undefined) {
+            console.warn("Layers data is undefined!");
+            return;
+        }
+
+        if ((layersData instanceof Array) === false) {
+            console.warn("Layers data is not an array!");
+            console.warn("Layers data type: " + typeof layersData)
+            return;
+        }
+
+        for (let i = 0; i < layersData.length; i++) {
+            const layerData = layersData[i];
+            if ((layerData instanceof LayerData) === false) {
+                console.warn(`Layer data at ${i} is not instance of LayerData class!`);
+                continue;
+            }
+            this.addLayer(layerData);
+        }
     }
 
     // PUBLIC
@@ -321,7 +367,17 @@ class NeuralNetwork {
         }
 
         if (dataPoints[0].inputs.length != this.layers[0].neuronsCount) {
-            console.error("Data is different size than first layer of neural network!");
+            console.error(`Data is different size (${dataPoints[0].inputs.length}) than first layer of neural network (${this.layers[0].neuronsCount})!`);
+            return false;
+        }
+
+        if (this.costFunction === null) {
+            console.error("Neural network has no COST FUNCTION!");
+            return false;
+        }
+
+        if (this.optimizer === null) {
+            console.error("Neural network has no OPTIMIZER!");
             return false;
         }
 
