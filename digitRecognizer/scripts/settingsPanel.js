@@ -66,7 +66,32 @@ function sliderChange(slider) {
 
         case 'learningRate':
             ProjectData.LearningRate = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
+            break;
 
+        case 'optimizerMomentum':
+            ProjectData.OptimizerMomentum = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
+            break;
+
+        case 'optimizerWeightsDecay':
+            ProjectData.OptimizerWeightsDecay = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
+            break;
+
+        case 'optimizerBeta1':
+            ProjectData.OptimizerBeta1 = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
+            break;
+
+        case 'optimizerBeta2':
+            ProjectData.OptimizerBeta2 = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
+            break;
+
+        case 'optimizerEpsilonPower':
+            ProjectData.OptimizerEpsilonPower = Number(slider.value);
+            ProjectData.Model.optimizer = createOptimizer();
             break;
 
         default:
@@ -90,11 +115,13 @@ function selectChange(select) {
 
         case 'costFunctionNameSelect':
             ProjectData.CostFunctionName = select.value;
-
+            ProjectData.model.costFunction = getCostFunction();
             break;
 
         case 'optimizerNameSelect':
             ProjectData.OptimizerName = select.value;
+            changeOptimizerShownData();
+            ProjectData.Model.optimizer = createOptimizer();
 
             break;
 
@@ -131,6 +158,62 @@ function checkboxChange(checkbox) {
     }
     saveSettings(ProjectData.SettingsName);
 }
+
+function changeOptimizerShownData() {
+    let hideShowValues = [false, false, false, false, false];
+    switch (ProjectData.OptimizerName) {
+        case 'sgd':
+            hideShowValues = [false, false, true, true, true];
+            break;
+
+        case 'adam':
+            hideShowValues = [true, false, false, false, false];
+            break;
+
+        case 'rmsProp':
+            hideShowValues = [false, false, true, true, false];;
+            break;
+
+        default:
+            break;
+    }
+
+    document.getElementById("optimizerMomentumSliderContainer").hidden = hideShowValues[0];
+    document.getElementById("optimizerWeightsDecaySliderContainer").hidden = hideShowValues[1];
+    document.getElementById("optimizerBeta1SliderContainer").hidden = hideShowValues[2];
+    document.getElementById("optimizerBeta2SliderContainer").hidden = hideShowValues[3];
+    document.getElementById("optimizerEpsilonPowerSliderContainer").hidden = hideShowValues[4];
+}
+
+function changeOptimizerData(input) {
+    if (input.value.length > 0) {
+        input.value = validateNumberInput(input.value, input.dataset.layerinfo);
+    }
+
+    if (input.value.length == 0) return;
+
+    if (isNaN(input.value)) {
+        console.warn(`Something wrong? ${input.value}`);
+        return;
+    }
+
+    const layerIndex = input.dataset.layerindex;
+    switch (input.dataset.layerinfo) {
+        case "neurons":
+            ProjectData.LayersData[layerIndex].neurons = input.value;
+            break;
+        case "dropout":
+            ProjectData.LayersData[layerIndex].dropoutRate = input.value;
+            break;
+        case "regularizationL1":
+            ProjectData.LayersData[layerIndex].weightsRegulizer = new WeightsRegulizer(input.value, ProjectData.LayersData[layerIndex].weightsRegulizer.l2);
+            break;
+        case "regularizationL2":
+            ProjectData.LayersData[layerIndex].weightsRegulizer = new WeightsRegulizer(ProjectData.LayersData[layerIndex].weightsRegulizer.l1, input.value);
+            break;
+    }
+}
+
 
 // CREATE FUNCTIONS
 
@@ -384,7 +467,6 @@ function changeNumericData(input) {
             ProjectData.LayersData[layerIndex].weightsRegulizer = new WeightsRegulizer(ProjectData.LayersData[layerIndex].weightsRegulizer.l1, input.value);
             break;
     }
-    // createLayersTab();
 }
 
 
@@ -434,11 +516,11 @@ function createOptimizer() {
             break;
 
         case 'adam':
-            optimizer = Optimizer.adam(ProjectData.LearningRate, ProjectData.OptimizerBeta1, ProjectData.OptimizerBeta2, ProjectData.OptimizerEpsilon, ProjectData.OptimizerWeightsDecay);
+            optimizer = Optimizer.adam(ProjectData.LearningRate, ProjectData.OptimizerBeta1, ProjectData.OptimizerBeta2, Math.pow(1, ProjectData.OptimizerEpsilonPower), ProjectData.OptimizerWeightsDecay);
             break;
 
         case 'rmsProp':
-            optimizer = Optimizer.rmsProp(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay, ProjectData.OptimizerEpsilon);
+            optimizer = Optimizer.rmsProp(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay, Math.pow(1, ProjectData.OptimizerEpsilonPower));
             break;
 
         default:

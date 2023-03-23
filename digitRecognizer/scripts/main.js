@@ -80,7 +80,6 @@ function setup() {
 
     textSize(22);
     strokeWeight(5);
-    openSettings();
 }
 
 function draw() {

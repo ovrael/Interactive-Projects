@@ -56,12 +56,11 @@ class ProjectData {
     // section: Optimizer
 
     static OptimizerName = 'sgd'            // select, Optimizer type, Stochastic Gradient Descent[sgd], Adam[adam], RMSprop[rmsProp]
-    static OptimizerMomentum = 0;
-    static OptimizerWeightsDecay = 0;
-    static OptimizerBeta1 = 0.9;
-    static OptimizerBeta2 = 0.999;
-    static OptimizerEpsilon = 1e-8;
-
+    static OptimizerMomentum = 0;           // slider, Momentum, 0.0, 1.0, 0.0, 0.001
+    static OptimizerWeightsDecay = 0;       // slider, Weights decay, 0.0, 1.0, 0.0, 0.001
+    static OptimizerBeta1 = 0.9;            // slider, Beta 1, 0.0, 1.0, 0.9, 0.001
+    static OptimizerBeta2 = 0.999;          // slider, Beta 2, 0.0, 1.0, 0.999, 0.001
+    static OptimizerEpsilonPower = -8;      // slider, Epsilon (small value = 1 to the power -x), -12, -3, -8, 1
 }
 
 // const scriptsTest = [

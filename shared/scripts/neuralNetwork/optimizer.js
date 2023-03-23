@@ -1,3 +1,9 @@
+const OptimizerNames = {
+    SGD: 'Sgd',
+    Adam: 'Adam',
+    RMSProp: 'RMSProp'
+}
+
 class Optimizer {
 
     constructor(optimizerData) {

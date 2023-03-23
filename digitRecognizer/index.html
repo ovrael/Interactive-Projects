@@ -771,21 +771,220 @@
                     </div>
                 </div>
 
+                <!-- Generated slider for optimizerMomentum. -->
+                <div class="row" id="optimizerMomentumSliderContainer">
+
+                    <div class="col-8">
+                        <label for="optimizerMomentumSlider"
+                            class="noselect"> momentum </label><br>
+                        <input type="range" min="0.0" max="1.0" step="0.001"
+                            value="0.0" class="form-range"
+                            id="optimizerMomentumSlider"
+                            data-variable="optimizerMomentum"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerMomentum">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="optimizerMomentumText"
+                                data-variable="optimizerMomentum">0.0
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerMomentum">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for optimizerWeightsDecay. -->
+                <div class="row" id="optimizerWeightsDecaySliderContainer">
+
+                    <div class="col-8">
+                        <label for="optimizerWeightsDecaySlider"
+                            class="noselect"> weights decay </label><br>
+                        <input type="range" min="0.0" max="1.0" step="0.001"
+                            value="0.0" class="form-range"
+                            id="optimizerWeightsDecaySlider"
+                            data-variable="optimizerWeightsDecay"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerWeightsDecay">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="optimizerWeightsDecayText"
+                                data-variable="optimizerWeightsDecay">0.0
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerWeightsDecay">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for optimizerBeta1. -->
+                <div class="row" id="optimizerBeta1SliderContainer">
+
+                    <div class="col-8">
+                        <label for="optimizerBeta1Slider"
+                            class="noselect"> beta 1 </label><br>
+                        <input type="range" min="0.0" max="1.0" step="0.001"
+                            value="0.9" class="form-range"
+                            id="optimizerBeta1Slider"
+                            data-variable="optimizerBeta1"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerBeta1">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="optimizerBeta1Text"
+                                data-variable="optimizerBeta1">0.9
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerBeta1">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for optimizerBeta2. -->
+                <div class="row" id="optimizerBeta2SliderContainer">
+
+                    <div class="col-8">
+                        <label for="optimizerBeta2Slider"
+                            class="noselect"> beta 2 </label><br>
+                        <input type="range" min="0.0" max="1.0" step="0.001"
+                            value="0.999" class="form-range"
+                            id="optimizerBeta2Slider"
+                            data-variable="optimizerBeta2"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerBeta2">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="optimizerBeta2Text"
+                                data-variable="optimizerBeta2">0.999
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerBeta2">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated slider for optimizerEpsilonPower. -->
+                <div class="row" id="optimizerEpsilonPowerSliderContainer">
+
+                    <div class="col-8">
+                        <label for="optimizerEpsilonPowerSlider"
+                            class="noselect"> epsilon (small value = 1 to the
+                            power -x) </label><br>
+                        <input type="range" min="-12" max="-3" step="1"
+                            value="-8" class="form-range"
+                            id="optimizerEpsilonPowerSlider"
+                            data-variable="optimizerEpsilonPower"
+                            oninput="sliderChange(this)">
+                    </div>
+
+                    <div class="col-4 sliderChangerContainer">
+                        <div class="row sliderChanger">
+                            <div class="col-3 sliderButton noselect"
+                                onclick="subtractValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '-')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerEpsilonPower">
+                                -
+                            </div>
+                            <div class="col-6 paremeterValue noselect"
+                                id="optimizerEpsilonPowerText"
+                                data-variable="optimizerEpsilonPower">-8
+                            </div>
+                            <div class="col-3 sliderButton noselect"
+                                onclick="addValue(this.dataset.variable)"
+                                onmousedown="mouseDown(this.dataset.variable,
+                                '+')"
+                                onmouseup="mouseUp()"
+                                data-variable="optimizerEpsilonPower">
+                                +
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
             </div>
 
-
-            <!-- END OF SETTINGS PANEL -->
-
+        </div>
 
 
+        <!-- END OF SETTINGS PANEL -->
 
-            <script>
+
+
+
+        <script>
                 // self executing function here
                 (function() {
-                    createLayersTab();                
+                    createLayersTab();
+                    changeOptimizerShownData();              
                 })();
                 </script>
-        </body>
+    </body>
 
-    </html>
+</html>
