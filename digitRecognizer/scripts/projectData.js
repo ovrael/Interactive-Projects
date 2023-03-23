@@ -30,7 +30,14 @@ class ProjectData {
 
     // tab: Create model
     // firstSection: Layers
-    static LayersData = [];
+    static Model = null;
+    static LayersData = [
+        Layer.Input(28 * 28),
+        Layer.Dropout(0.5),
+        Layer.Dense(512, ActivationFunction.leakyRelu(), WeightsRegulizer.L2(0.1)),
+        Layer.Dropout(0.3),
+        Layer.Dense(10, ActivationFunction.softmax(), WeightsRegulizer.L2(0.1)),
+    ];
     static LayersCount = 0;
 
     static MinLayers = 3;

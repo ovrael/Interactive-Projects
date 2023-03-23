@@ -4,9 +4,6 @@ const yOffset = ProjectData.CanvasHeight / 2 - 100;
 /** @type {HTMLCanvasElement} */
 let canvas;
 
-/** @type {NeuralNetwork} */
-let neuralNetwork;
-
 let splitData;
 let rawData;
 
@@ -63,70 +60,14 @@ function readTextFile(file) {
     rawFile.send(null);
 }
 
-function createOptimizer() {
-    let optimizer = undefined;
-    switch (ProjectData.OptimizerName) {
-        case 'sgd':
-            optimizer = Optimizer.sgd(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay);
-            break;
-
-        case 'adam':
-            optimizer = Optimizer.adam(ProjectData.LearningRate, ProjectData.OptimizerBeta1, ProjectData.OptimizerBeta2, ProjectData.OptimizerEpsilon, ProjectData.OptimizerWeightsDecay);
-            break;
-
-        case 'rmsProp':
-            optimizer = Optimizer.rmsProp(ProjectData.LearningRate, ProjectData.OptimizerMomentum, ProjectData.OptimizerWeightsDecay, ProjectData.OptimizerEpsilon);
-            break;
-
-        default:
-            optimizer = Optimizer.sgd(0.001, 0.9, 0.075);
-            break;
-    }
-    return optimizer;
-}
-
-function getCostFunction() {
-    let costFunction = undefined;
-    switch (ProjectData.CostFunctionName) {
-        case 'crossentropy':
-            costFunction = CostFunction.crossentropy();
-            break;
-
-        case 'mse':
-            costFunction = CostFunction.meanSquaredError();
-            break;
-
-        default:
-            costFunction = CostFunction.crossentropy();
-            break;
-    }
-    return costFunction;
-}
-
-function createModel() {
-    const inputLenght = splitData.train[0].inputs.length;
-    // const neuralNetwork = new NeuralNetwork(CostFunction.crossentropy(), Optimizer.adam(0.002));
-
-    const optimizer = createOptimizer();
-    const costFunction = getCostFunction();
-
-    const neuralNetwork = new NeuralNetwork(costFunction, optimizer);
-
-    neuralNetwork.addLayer(Layer.Input(inputLenght));
-    neuralNetwork.addLayer(Layer.Dropout(0.5));
-    neuralNetwork.addLayer(Layer.Dense(512, ActivationFunction.leakyRelu(), WeightsRegulizer.L2(0.1)));
-    neuralNetwork.addLayer(Layer.Dropout(0.3));
-    neuralNetwork.addLayer(Layer.Dense(10, ActivationFunction.softmax(), WeightsRegulizer.L2(0.1)));
-
-    return neuralNetwork;
-}
-
 function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     frameRate(60);
     centerCanvas();
 
-    neuralNetwork = createModel();
+    if (ProjectData.Model == null)
+        compileModel();
+
     training = false;
 
     userDigit = createGraphics(200, 200);
@@ -139,6 +80,7 @@ function setup() {
 
     textSize(22);
     strokeWeight(5);
+    openSettings();
 }
 
 function draw() {
@@ -157,7 +99,7 @@ function draw() {
         userIsDrawing = false;
     }
 
-    if (training || neuralNetwork.trainHistory.history.length > 0) {
+    if (training || ProjectData.Model.trainHistory.history.length > 0) {
         writeTrainingText();
         if (historyGraphics)
             image(historyGraphics, 200, 400);
@@ -168,8 +110,8 @@ function draw() {
     if (training && !userIsDrawing && learningTimeout == null) {
 
         learningTimeout = setTimeout(() => {
-            neuralNetwork.train(splitData.train, splitData.test, ProjectData.TrainBatchSize, 1);
-            historyGraphics = neuralNetwork.trainHistory.getGraphGraphics(200, 200);
+            ProjectData.Model.train(splitData.train, splitData.test, ProjectData.TrainBatchSize, 1);
+            historyGraphics = ProjectData.Model.trainHistory.getGraphGraphics(200, 200);
             clearTimeout(learningTimeout);
             learningTimeout = null;
         }, 0);
@@ -217,21 +159,21 @@ function writeTrainingText() {
 
     textSize(15);
     fill(50, 168, 131);
-    let nnStatus = neuralNetwork.trainingStatus;
+    let nnStatus = ProjectData.Model.trainingStatus;
     if (nnStatus != TrainingStatus.Before) {
         nnStatus = training ? TrainingStatus.During : TrainingStatus.After;
     }
     text("Status: " + nnStatus, startX, 80);
 
     fill(134, 182, 252);
-    text("Epoch: " + neuralNetwork.learningEpoch, startX, 60);
+    text("Epoch: " + ProjectData.Model.learningEpoch, startX, 60);
 
     pop();
 
-    if (neuralNetwork.trainHistory.history.length == 0) {
+    if (ProjectData.Model.trainHistory.history.length == 0) {
         return;
     }
-    neuralNetwork.trainHistory.writeLastHistoryPoint(startX);
+    ProjectData.Model.trainHistory.writeLastHistoryPoint(startX);
 }
 
 function writeNetworkOutputs() {
@@ -311,7 +253,7 @@ function keyPressed() {
         userDigit.background(0);
     }
     else if (key === 'r') {
-        neuralNetwork.resetNetwork();
+        ProjectData.Model.resetNetwork();
         console.warn("Model weights has been reset");
     }
 }
@@ -328,7 +270,7 @@ function guessUserDigit() {
     for (let i = 0; i < 28 * 28; i++) {
         inputs[i] = DataManage.normalizationFunction(img.pixels[i * 4]);
     }
-    userPrediction = neuralNetwork.predict(inputs);
+    userPrediction = ProjectData.Model.predict(inputs);
 }
 
 function showDataImage() {
@@ -343,10 +285,10 @@ function showDataImage() {
 
 function showWrongImage() {
 
-    if (neuralNetwork.trainHistory.wrongResults.length == 0)
+    if (ProjectData.Model.trainHistory.wrongResults.length == 0)
         return;
 
-    const wrongResults = neuralNetwork.trainHistory.wrongResults;
+    const wrongResults = ProjectData.Model.trainHistory.wrongResults;
 
     if (drawIteration % ProjectData.WrongDataSpeed == 0) {
         const badImageIndex = Math.floor(Math.random() * wrongResults.length);

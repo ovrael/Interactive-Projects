@@ -9,28 +9,33 @@ const ActivationFunctionNames =
 
 // TO ADD - MORE FUNCTIONS E.G. ELU
 class ActivationFunction {
-    constructor(func, dfunc, dfunc2) {
+    constructor(func, dfunc, name) {
         this.function = func;
         this.derivative = dfunc;
-        this.derivative2 = dfunc2;
+        this.name = name;
     }
 
     static sigmoid() {
         return new ActivationFunction(
             neurons => neurons.map((n) => 1.0 / (1.0 + Math.exp(-n))),
-            activations => activations.map((a) => a * (1 - a)),
+            // activations => activations.map((a) => a * (1 - a)),
+            activation => activation * (1 - activation),
+            ActivationFunctionNames.sigmoid
         );
     }
     static tanh() {
         return new ActivationFunction(
             neurons => neurons.map((n) => Math.tanh(n)),
-            activations => activations.map((a) => 1 - (a * a)),
+            activation => 1 - (activation * activation),
+            ActivationFunctionNames.tanh
         );
     }
     static relu() {
         return new ActivationFunction(
             neurons => neurons.map((n) => Math.max(n, 0)),
-            activations => activations.map((a) => a > 0 ? 1 : 0),
+            // activations => activations.map((a) => a > 0 ? 1 : 0),
+            activation => activation > 0 ? 1 : 0,
+            ActivationFunctionNames.relu
         );
     }
 
@@ -38,8 +43,9 @@ class ActivationFunction {
     static leakyRelu() {
         return new ActivationFunction(
             neurons => neurons.map((n) => n > 0 ? n : 0.001 * n),
-            activations => activations.map((a) => a > 0 ? 1 : 0.001),
+            // activations => activations.map((a) => a > 0 ? 1 : 0.001),
             activation => activation > 0 ? 1 : 0.001,
+            ActivationFunctionNames.leakyRelu
         );
     }
 
@@ -59,15 +65,16 @@ class ActivationFunction {
 
                 return exponents.map((e) => e / sum);
             },
-            activations => {
+            // activations => {
 
-                const derivatives = [];
-                for (let i = 0; i < activations.length; i++) {
-                    derivatives.push(activations[i] * (1 - activations[i]));
-                }
-                return derivatives;
-            },
+            //     const derivatives = [];
+            //     for (let i = 0; i < activations.length; i++) {
+            //         derivatives.push(activations[i] * (1 - activations[i]));
+            //     }
+            //     return derivatives;
+            // },
             activation => activation * (1 - activation),
+            ActivationFunctionNames.softmax
         );
     }
 }

@@ -1,5 +1,5 @@
 class BackpropLayer {
-    constructor(currentNeurons, previousNeurons, regulizer) {
+    constructor(currentNeurons, previousNeurons) {
 
         this.currentNeurons = currentNeurons;
         this.previousNeurons = previousNeurons;

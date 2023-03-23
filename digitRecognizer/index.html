@@ -23,7 +23,6 @@
         <script src="../shared/scripts/mathematics.js"></script>
         <script src="../shared/scripts/website.js"></script>
         <script src="../shared/scripts/storageManager.js"></script>
-        <script src="scripts/projectData.js"></script>
         <script src="../shared/scripts/neuralNetwork/activationFunction.js"></script>
         <script src="../shared/scripts/neuralNetwork/costFunction.js"></script>
         <script src="../shared/scripts/neuralNetwork/dataPoint.js"></script>
@@ -36,9 +35,10 @@
         <script src="../shared/scripts/neuralNetwork/backpropLayer.js"></script>
         <script src="../shared/scripts/neuralNetwork/trainHistory.js"></script>
         <script src="../shared/scripts/neuralNetwork/neuralNetwork.js"></script>
+        <script src="scripts/projectData.js"></script>
         <script src="scripts/settingsPanel.js"></script>
-        <!-- <script src="../shared/scripts/neuralNetwork/neuralNetworkAll.min.js"></script> -->
         <script src="scripts/main.js"></script>
+        <!-- <script src="../shared/scripts/neuralNetwork/neuralNetworkAll.min.js"></script> -->
     </head>
 
     <body oncontextmenu="return false;">
@@ -608,7 +608,8 @@
             </div>
 
             <!-- Generated tab for Create model. -->
-            <div id="create modelTab" class="tabContent" hidden>
+            <div id="create modelTab" class="tabContent layersDataContainer"
+                hidden>
 
 
                 <!-- Generated firstsection for Layers. -->
@@ -616,6 +617,33 @@
                         Layers
                     </i></h4>
 
+                <div id="layersDataContainer" class="row fullWidth">
+
+                </div>
+                <div class="row fullWidth" style="margin-bottom: 10px;">
+
+                    <div class="col-12">
+
+                        <button class="addLayerButton" onclick="addLayerData()">
+                            Add layer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row fullWidth">
+
+                    <div class="col-12">
+
+                        <button class="compileModelButton"
+                            onclick="compileModel()">
+                            Compile model
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin: 150px">
+
+                </div>
             </div>
 
             <!-- Generated tab for Adjust model. -->
@@ -712,7 +740,8 @@
                         cost function
                     </div>
                     <div class="col-4">
-                        <select class="form-select" aria-label="CreatedSelect"
+                        <select class="form-select"
+                            aria-label="CreatedSelect"
                             id="costFunctionNameSelect"
                             onchange="selectChange(this)">
                             <option selected value="crossentropy">Crossentropy</option><option
@@ -732,7 +761,8 @@
                         optimizer type
                     </div>
                     <div class="col-4">
-                        <select class="form-select" aria-label="CreatedSelect"
+                        <select class="form-select"
+                            aria-label="CreatedSelect"
                             id="optimizerNameSelect"
                             onchange="selectChange(this)">
                             <option selected value="sgd">Stochastic gradient
@@ -744,13 +774,18 @@
 
             </div>
 
-        </div>
 
-        <!-- END OF SETTINGS PANEL -->
-
+            <!-- END OF SETTINGS PANEL -->
 
 
 
-    </body>
 
-</html>
+            <script>
+                // self executing function here
+                (function() {
+                    createLayersTab();                
+                })();
+                </script>
+        </body>
+
+    </html>

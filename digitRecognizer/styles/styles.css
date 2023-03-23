@@ -7,3 +7,73 @@ body {
 html {
     background-color: rgb(51, 51, 51);
 }
+
+.fullWidth {
+    width: 100% !important;
+}
+
+.addLayerButton {
+    width: 60%;
+    /* margin: 0 auto; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    color: #448c1d !important;
+    border: 1px solid #448c1d;
+    border-radius: 4px;
+}
+
+.layerDataContainer {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #448c1d;
+    border-radius: 4px;
+    margin-left: 12px;
+}
+
+.layersDataContainer {
+    /* overflow-y: auto; */
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.customInput {
+    background-color: transparent;
+    color: #448c1d;
+    width: 100%;
+    border: 1px solid #448c1d;
+    border-radius: 2px;
+}
+
+.customInput:focus {
+    outline: 2px solid #448c1d;
+}
+
+.layerDataRow {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+
+.removeLayerButton {
+    color: red;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.compileModelButton {
+    width: 60%;
+    /* margin: 0 auto; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    color: #2693C9 !important;
+    border: 1px solid #2693C9;
+    border-radius: 4px;
+}

@@ -120,12 +120,12 @@ class Layer {
         return Math.random() < this.dropoutRate ? 0 : this.dropoutScale;
     }
 
-    computeDerivatives() {
-        this.derivatives = this.activationFunction.derivative(this.activations);
-    }
+    // computeDerivatives() {
+    //     this.derivatives = this.activationFunction.derivative(this.activations);
+    // }
 
     computeDerivativeAtIndex(i) {
-        return this.activationFunction.derivative2(this.activations[i]);
+        return this.activationFunction.derivative(this.activations[i]);
     }
 
     reinitializeWeights() {
