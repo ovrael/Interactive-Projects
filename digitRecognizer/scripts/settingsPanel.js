@@ -36,27 +36,31 @@ function sliderChange(slider) {
 
         case 'maxRotateAngle':
             ProjectData.MaxRotateAngle = Number(slider.value);
+            DataManage.maxRotateAngle = ProjectData.MaxRotateAngle;
 
             break;
 
         case 'horizontallyShiftChance':
             ProjectData.HorizontallyShiftChance = Number(slider.value);
+            DataManage.horizontallyShiftChance = ProjectData.HorizontallyShiftChance / 100;
 
             break;
 
         case 'verticallyShiftChance':
             ProjectData.VerticallyShiftChance = Number(slider.value);
+            DataManage.verticallyShiftChance = ProjectData.VerticallyShiftChance / 100;
 
             break;
 
         case 'noiseSize':
             ProjectData.NoiseSize = Number(slider.value);
-
+            DataManage.noiseSize = ProjectData.NoiseSize / 100;
             break;
 
         case 'noiseStrength':
             ProjectData.NoiseStrength = Number(slider.value);
-
+            DataManage.setNormalizationFunction(ProjectData.NormalizationMethod);
+            DataManage.noiseStrength = ProjectData.NoiseStrength;
             break;
 
         case 'trainBatchSize':
@@ -110,7 +114,7 @@ function selectChange(select) {
 
         case 'normalizationMethodSelect':
             ProjectData.NormalizationMethod = select.value;
-
+            DataManage.setNormalizationFunction(ProjectData.NormalizationMethod);
             break;
 
         case 'costFunctionNameSelect':
@@ -214,9 +218,54 @@ function changeOptimizerData(input) {
     }
 }
 
+function updateDataManageSettings() {
+    DataManage.setNormalizationFunction(ProjectData.NormalizationMethod);
+    DataManage.maxRotateAngle = ProjectData.MaxRotateAngle;
+    DataManage.verticallyShiftChance = ProjectData.VerticallyShiftChance / 100;
+    DataManage.horizontallyShiftChance = ProjectData.HorizontallyShiftChance / 100;
+    DataManage.noiseSize = ProjectData.NoiseSize / 100;
+    DataManage.noiseStrength = ProjectData.NoiseStrength;
+}
+
+function loadImages(showAlert) {
+    const filePath = './digits_4kEach_zeroCounter.bin';
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", filePath, false);
+    rawFile.onreadystatechange = function () {
+        if (rawFile.readyState === 4) {
+            if (rawFile.status === 200 || rawFile.status == 0) {
+                const rawData = rawFile.responseText;
+                updateDataManageSettings();
+                const datapoints = DataManage.preprocessMNIST(
+                    rawData,
+                    10,
+                    ProjectData.SamplesPerDigit,
+                    ProjectData.OversamplesPerDigit,
+                    ProjectData.AddOriginalDigit
+                );
+
+                ProjectData.SplitData = DataManage.split(datapoints, ProjectData.SplitFraction, ProjectData.ShouldShuffle);
+
+                console.log("Loaded data!");
+                console.log(ProjectData.SplitData)
+
+                if (showAlert == true)
+                    alert(`Loaded:\n`
+                        + `· ${ProjectData.SplitData.train.length} training samples\n`
+                        + `· ${ProjectData.SplitData.test.length} validation samples!`);
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+function trainOneEpoch() {
+    ProjectData.IsTraning = !ProjectData.IsTraning;
+    ProjectData.TrainOneEpoch = true;
+}
+
 
 // CREATE FUNCTIONS
-
 function randNeuronsNumber() {
     const neurons = [8, 16, 32, 64, 128, 256, 512];
     return neurons[Math.floor(Math.random() * neurons.length)];
@@ -477,10 +526,10 @@ function validateNumberInput(value, type) {
         if (isNaN(lastChar))
             value = value.slice(0, value.length - 1);
 
-        if (Number(value) > 1024)
-            value = '1024';
-        else if (Number(value) <= 0)
-            value = '1';
+        if (Number(value) > ProjectData.MaxNeurons)
+            value = ProjectData.MaxNeurons;
+        else if (Number(value) < ProjectData.MinNeurons)
+            value = ProjectData.MinNeurons;
 
         return value;
     }

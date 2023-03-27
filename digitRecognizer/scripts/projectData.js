@@ -2,6 +2,12 @@ class ProjectData {
     static CanvasWidth = 600;               /* Keep width at 600px */
     static CanvasHeight = 600;              /* Keep height at 600px */
     static BackgroundColor = '#646464';     /* Keep background color at smooth gray */
+    static SplitData = {                    /* Stores data about images */
+        train: [],
+        test: []
+    };
+    static IsTraning = false;               /* Is model currently learning */
+    static TrainOneEpoch = false;
 
     // tab: Look
     // firstSection: Drawing

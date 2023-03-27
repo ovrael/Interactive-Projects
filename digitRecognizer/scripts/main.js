@@ -4,9 +4,6 @@ const yOffset = ProjectData.CanvasHeight / 2 - 100;
 /** @type {HTMLCanvasElement} */
 let canvas;
 
-let splitData;
-let rawData;
-
 let userDigit;
 let userIsDrawing;
 let imageIsEmpty;
@@ -21,43 +18,8 @@ let dataImageData = undefined;
 let historyGraphics = undefined;
 let learningTimeout = null;
 
-function updateDataManageSettings() {
-    DataManage.setNormalizationFunction(ProjectData.NormalizationMethod);
-    DataManage.maxRotateAngle = ProjectData.MaxRotateAngle;
-    DataManage.verticallyShiftChance = ProjectData.VerticallyShiftChance / 100;
-    DataManage.horizontallyShiftChance = ProjectData.HorizontallyShiftChance / 100;
-    DataManage.noiseSize = ProjectData.NoiseSize / 100;
-    DataManage.noiseStrength = ProjectData.NoiseStrength;
-}
-
 function preload() {
-    readTextFile('./digits_4kEach_zeroCounter.bin');
-    updateDataManageSettings();
-    const datapoints = DataManage.preprocessMNIST(
-        rawData,
-        10,
-        ProjectData.SamplesPerDigit,
-        ProjectData.OversamplesPerDigit,
-        ProjectData.AddOriginalDigit
-    );
-
-    splitData = DataManage.split(datapoints, ProjectData.SplitFraction, ProjectData.ShouldShuffle);
-
-    console.log("Loaded data!");
-    console.log(splitData)
-}
-
-function readTextFile(file) {
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function () {
-        if (rawFile.readyState === 4) {
-            if (rawFile.status === 200 || rawFile.status == 0) {
-                rawData = rawFile.responseText;
-            }
-        }
-    }
-    rawFile.send(null);
+    loadImages(false);
 }
 
 function setup() {
@@ -68,8 +30,7 @@ function setup() {
     if (ProjectData.Model == null)
         compileModel();
 
-    training = false;
-
+    ProjectData.IsTraning = false;
     userDigit = createGraphics(200, 200);
     userDigit.pixelDensity(1);
     userDigit.background(0);
@@ -98,7 +59,7 @@ function draw() {
         userIsDrawing = false;
     }
 
-    if (training || ProjectData.Model.trainHistory.history.length > 0) {
+    if (ProjectData.IsTraning || ProjectData.Model.trainHistory.history.length > 0) {
         writeTrainingText();
         if (historyGraphics)
             image(historyGraphics, 200, 400);
@@ -106,13 +67,17 @@ function draw() {
 
 
 
-    if (training && !userIsDrawing && learningTimeout == null) {
+    if (ProjectData.IsTraning && !userIsDrawing && learningTimeout == null && ProjectData.SplitData.train.length > 0) {
 
         learningTimeout = setTimeout(() => {
-            ProjectData.Model.train(splitData.train, splitData.test, ProjectData.TrainBatchSize, 1);
+            ProjectData.Model.train(ProjectData.SplitData.train, ProjectData.SplitData.test, ProjectData.TrainBatchSize, 1);
             historyGraphics = ProjectData.Model.trainHistory.getGraphGraphics(200, 200);
             clearTimeout(learningTimeout);
             learningTimeout = null;
+            if (ProjectData.TrainOneEpoch === true) {
+                ProjectData.IsTraning = false;
+                ProjectData.TrainOneEpoch = false;
+            }
         }, 0);
     }
 
@@ -160,7 +125,7 @@ function writeTrainingText() {
     fill(50, 168, 131);
     let nnStatus = ProjectData.Model.trainingStatus;
     if (nnStatus != TrainingStatus.Before) {
-        nnStatus = training ? TrainingStatus.During : TrainingStatus.After;
+        nnStatus = ProjectData.IsTraning ? TrainingStatus.During : TrainingStatus.After;
     }
     text("Status: " + nnStatus, startX, 80);
 
@@ -239,7 +204,7 @@ function drawDigit() {
 function keyPressed() {
 
     if (keyCode === 32) {
-        training = !training;
+        ProjectData.IsTraning = !ProjectData.IsTraning;
     }
     else if (keyCode === ESCAPE) {
         if (PanelIsOpen === true) {
@@ -273,9 +238,20 @@ function guessUserDigit() {
 }
 
 function showDataImage() {
+
+    // console.log(ProjectData.SplitData)
+    if (ProjectData.SplitData.train.length == 0) {
+
+        push();
+        fill(200, 20, 20);
+        text("No loaded data!", 10, 100);
+        pop();
+        return;
+    }
+
     if (drawIteration % ProjectData.TrainDataSpeed == 0) {
-        dataImageIndex = Math.floor(Math.random() * splitData.train.length);
-        dataImageData = splitData.train[dataImageIndex].inputs;
+        dataImageIndex = Math.floor(Math.random() * ProjectData.SplitData.train.length);
+        dataImageData = ProjectData.SplitData.train[dataImageIndex].inputs;
     }
 
     showImage(dataImageData, 0, 0);
