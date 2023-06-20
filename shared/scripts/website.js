@@ -49,8 +49,12 @@ function moveCanvasBack() {
 function backToMainWebsite() {
     PanelIsOpen = false;
     let url = window.location.href;
-    if (url.includes("127.0.0")) {
+    if (url.includes("20222") || url.includes("30222")) {
+        window.location.href = "/projects/interactive";
+    }
+    else if (url.includes("127.0.0.1")) {
         window.location.href = "/_main/index.html";
+
     }
     else {
         window.location.href = "/projects/interactive";
