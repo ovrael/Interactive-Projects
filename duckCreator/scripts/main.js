@@ -6,7 +6,7 @@ let projectDataBackUp = Object.entries(ProjectData);
 
 let fontMontserrat;
 let counter;
-let counterChange = 0.01;
+let counterChange = 0;
 let usedSlider = false;
 
 const offsetY = 120;

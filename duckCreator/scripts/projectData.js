@@ -44,6 +44,6 @@ class ProjectData {
 
     // section: Fingers
     static LegFingerColor = '#d28c00';      // color,    Color,  #d28c00
-    static LegFingerLength = 20;           // slider,   Length, 100, 1000, 600, 1
+    static LegFingerLength = 20;           // slider,   Length, 10, 50, 20, 1
     static LegFingerAngle = 35;            // slider,   Angle, 20, 60, 35, 1
 }

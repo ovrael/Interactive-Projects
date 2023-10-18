@@ -9,7 +9,7 @@ function sliderChange(slider) {
 
             break;
 
-        case 'headHegiht':
+        case 'headHeight':
             ProjectData.HeadHeight = Number(slider.value);
 
             break;
@@ -24,7 +24,7 @@ function sliderChange(slider) {
 
             break;
 
-        case 'beakHegiht':
+        case 'beakHeight':
             ProjectData.BeakHeight = Number(slider.value);
 
             break;
@@ -39,7 +39,7 @@ function sliderChange(slider) {
 
             break;
 
-        case 'bodyHegiht':
+        case 'bodyHeight':
             ProjectData.BodyHeight = Number(slider.value);
 
             break;
@@ -54,7 +54,7 @@ function sliderChange(slider) {
 
             break;
 
-        case 'wingHegiht':
+        case 'wingHeight':
             ProjectData.WingHeight = Number(slider.value);
 
             break;
@@ -69,7 +69,7 @@ function sliderChange(slider) {
 
             break;
 
-        case 'tailHegiht':
+        case 'tailHeight':
             ProjectData.TailHeight = Number(slider.value);
 
             break;
@@ -80,7 +80,7 @@ function sliderChange(slider) {
             break;
 
         case 'tailAngle':
-            ProjectData.TailAngle = Number(slider.value);
+            ProjectData.TailAngle = -(Number(slider.value) / 180) * Math.PI;
 
             break;
 
@@ -100,7 +100,7 @@ function sliderChange(slider) {
             break;
 
         case 'legFingerAngle':
-            ProjectData.LegFingerAngle = Number(slider.value);
+            ProjectData.LegFingerAngle = (Number(slider.value) / 180) * Math.PI;
 
             break;
 

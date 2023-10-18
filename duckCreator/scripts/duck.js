@@ -8,39 +8,53 @@ class Duck {
         this.#drawSpecificPart = !this.#drawSpecificPart;
     }
 
+    static #updateSlider(variableName, newValue) {
+        const textElement = document.getElementById(variableName + 'Text');
+        if (textElement) {
+            textElement.innerHTML = newValue;
+        }
+
+        const slider = document.getElementById(variableName + 'Slider');
+        if (slider) {
+            slider.value = newValue;
+        }
+
+        console.log("Cannot update slider for: " + variableName);
+    }
+
     static random() {
 
         // BODY
-        ProjectData.BodyWidth = random(50, 80);
-        ProjectData.BodyHeight = random(40, 60);
-        ProjectData.BodyLength = random(60, 120);
+        ProjectData.BodyWidth = Math.round(random(50, 80)); this.#updateSlider('bodyWidth', ProjectData.BodyWidth);
+        ProjectData.BodyHeight = Math.round(random(40, 60)); this.#updateSlider('bodyHeight', ProjectData.BodyHeight);
+        ProjectData.BodyLength = Math.round(random(60, 120)); this.#updateSlider('bodyLength', ProjectData.BodyLength);
 
         // WING
-        ProjectData.WingWidth = random(3, 10);
-        ProjectData.WingHeight = random(ProjectData.BodyHeight * 0.4, ProjectData.BodyHeight * 0.6);
-        ProjectData.WingLength = random(ProjectData.BodyLength * 0.5, ProjectData.BodyLength * 0.7);
+        ProjectData.WingWidth = Math.round(random(3, 10)); this.#updateSlider('wingWidth', ProjectData.WingWidth);
+        ProjectData.WingHeight = Math.round(random(ProjectData.BodyHeight * 0.4, ProjectData.BodyHeight * 0.6)); this.#updateSlider('wingHeight', ProjectData.WingHeight);
+        ProjectData.WingLength = Math.round(random(ProjectData.BodyLength * 0.5, ProjectData.BodyLength * 0.7)); this.#updateSlider('wingLength', ProjectData.WingLength);
 
         // HEAD
-        ProjectData.HeadWidth = random(ProjectData.BodyWidth * 0.7, ProjectData.BodyWidth * 0.8);
-        ProjectData.HeadHeight = random(ProjectData.BodyHeight * 0.6, ProjectData.BodyHeight * 0.7);
-        ProjectData.HeadLength = random(ProjectData.HeadWidth * 0.9, ProjectData.HeadWidth * 1.1);
+        ProjectData.HeadWidth = Math.round(random(ProjectData.BodyWidth * 0.7, ProjectData.BodyWidth * 0.8)); this.#updateSlider('headWidth', ProjectData.HeadWidth);
+        ProjectData.HeadHeight = Math.round(random(ProjectData.BodyHeight * 0.6, ProjectData.BodyHeight * 0.7)); this.#updateSlider('headHeight', ProjectData.HeadHeight);
+        ProjectData.HeadLength = Math.round(random(ProjectData.HeadWidth * 0.9, ProjectData.HeadWidth * 1.1)); this.#updateSlider('headLength', ProjectData.HeadLength);
 
         // BEAK
-        ProjectData.BeakWidth = random(ProjectData.HeadWidth * 0.3, ProjectData.HeadWidth * 0.6);
-        ProjectData.BeakHeight = random(2, 6);
-        ProjectData.BeakLength = random(12, 24);
+        ProjectData.BeakWidth = Math.round(random(ProjectData.HeadWidth * 0.3, ProjectData.HeadWidth * 0.6)); this.#updateSlider('beakWidth', ProjectData.BeakWidth);
+        ProjectData.BeakHeight = Math.round(random(2, 6)); this.#updateSlider('beakHeight', ProjectData.BeakHeight);
+        ProjectData.BeakLength = Math.round(random(12, 24)); this.#updateSlider('beakLength', ProjectData.BeakLength);
 
         // TAIL
-        ProjectData.TailWidth = random(20, 30);
-        ProjectData.TailHeight = random(3, 6);
-        ProjectData.TailLength = random(20, 40);
-        ProjectData.TailAngle = random(-PI / 4, -PI / 12);
+        ProjectData.TailWidth = Math.round(random(20, 30)); this.#updateSlider('tailWidth', ProjectData.TailWidth);
+        ProjectData.TailHeight = Math.round(random(3, 6)); this.#updateSlider('tailHeight', ProjectData.TailHeight);
+        ProjectData.TailLength = Math.round(random(20, 40)); this.#updateSlider('tailLength', ProjectData.TailLength);
+        ProjectData.TailAngle = Math.round(random(-PI / 4, -PI / 12)); this.#updateSlider('tailAngle', ProjectData.TailAngle);
 
         // LEGS
-        ProjectData.LegHeight = random(20, 50);
-        ProjectData.LegSpacing = random(ProjectData.BodyWidth * 0.4, ProjectData.BodyWidth * 0.8);
-        ProjectData.LegFingerLength = random(10, 30);
-        ProjectData.LegFingerAngle = random(PI / 6, PI / 3); // IN RADIANS
+        ProjectData.LegHeight = Math.round(random(20, 50)); this.#updateSlider('legHeight', ProjectData.LegHeight);
+        ProjectData.LegSpacing = Math.round(random(ProjectData.BodyWidth * 0.4, ProjectData.BodyWidth * 0.8)); this.#updateSlider('legSpacing', ProjectData.LegSpacing);
+        ProjectData.LegFingerLength = Math.round(random(10, 30)); this.#updateSlider('legFingerLength', ProjectData.LegFingerLength);
+        ProjectData.LegFingerAngle = Math.round(random(PI / 6, PI / 3)); this.#updateSlider('legFingerAngle', ProjectData.LegFingerAngle);
     }
 
     static draw() {
