@@ -1,6 +1,7 @@
 /** @type {HTMLCanvasElement} */
 let canvas;
-let PROJECT_VARIABLE;
+/** @type {LightningGenerator} */
+let lightningGenerator;
 let projectDataBackUp = Object.entries(ProjectData);
 
 function setup() {
@@ -8,11 +9,16 @@ function setup() {
     frameRate(60);
     centerCanvas();
 
-    PROJECT_VARIABLE = new NEW_CUSTOM_CLASS_Object();
+    lightningGenerator = new LightningGenerator();
+}
+
+function mouseClicked() {
+    lightningGenerator.recreate();
 }
 
 function draw() {
     background(90);
+    lightningGenerator.draw();
 }
 
 function windowResized() {
@@ -28,5 +34,5 @@ function centerCanvas() {
 function resetCanvas() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     centerCanvas();
-    PROJECT_VARIABLE = new NEW_CUSTOM_CLASS_Object();
+    lightningGenerator = new LightningGenerator();
 }

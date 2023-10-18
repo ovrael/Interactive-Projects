@@ -1,18 +1,22 @@
 /** @type {HTMLCanvasElement} */
 let canvas;
-let PROJECT_VARIABLE;
 let projectDataBackUp = Object.entries(ProjectData);
+/** @type {Game} */
+let game;
 
 function setup() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     frameRate(60);
     centerCanvas();
 
-    PROJECT_VARIABLE = new NEW_CUSTOM_CLASS_Object();
+    game = new Game(width, height, ProjectData.PlayersCount);
 }
 
 function draw() {
     background(90);
+
+    game.update();
+    game.draw();
 }
 
 function windowResized() {
@@ -28,5 +32,4 @@ function centerCanvas() {
 function resetCanvas() {
     canvas = createCanvas(ProjectData.CanvasWidth, ProjectData.CanvasHeight);
     centerCanvas();
-    PROJECT_VARIABLE = new NEW_CUSTOM_CLASS_Object();
 }
