@@ -1,67 +1,54 @@
 class Duck {
 
-    // HEAD
-    static #headWidth = 60;
-    static #headHeight = 20;
-    static #headLength = 80;
-
-    // BODY
-    static #bodyColor = [240, 240, 240];
-    static #bodyWidth = 60;
-    static #bodyHeight = 20;
-    static #bodyLength = 80;
-
-    // TAIL
-    static #tailWidth = 60;
-    static #tailHeight = 20;
-    static #tailLength = 80;
-    static #tailAngle = (30 / 180) * Math.PI; // IN RADIANS
-
-    // LEGS
-    static #legsColor = [250, 200, 50];
-    static #legsFingerColor = [210, 140, 0];
-    static #legsSpacing = 40;
-    static #legsHeight = 30;
-    static #legsFingerLength = 20;
-    static #legsFingerAngle = (40 / 180) * Math.PI; // IN RADIANS
-    static #legsRadius = 2;
-    static change = 1;
-
-    // OTHER
+    static #legRadius = 2;
     static #platformHeight = 10;
-
     static #drawSpecificPart = true;
 
     static toggleDrawing() {
         this.#drawSpecificPart = !this.#drawSpecificPart;
     }
 
-    static init() {
+    static random() {
 
-        this.#bodyWidth = random(50, 80);
-        this.#bodyHeight = random(20, 80);
-        this.#bodyLength = random(60, 120);
+        // BODY
+        ProjectData.BodyWidth = random(50, 80);
+        ProjectData.BodyHeight = random(40, 60);
+        ProjectData.BodyLength = random(60, 120);
 
-        this.#headWidth = random(this.#bodyWidth * 0.7, this.#bodyWidth * 0.8);
-        this.#headHeight = random(this.#bodyHeight * 0.6, this.#bodyHeight * 0.8);
-        this.#headLength = random(this.#headWidth * 0.9, this.#headWidth * 1.1);
+        // WING
+        ProjectData.WingWidth = random(3, 10);
+        ProjectData.WingHeight = random(ProjectData.BodyHeight * 0.4, ProjectData.BodyHeight * 0.6);
+        ProjectData.WingLength = random(ProjectData.BodyLength * 0.5, ProjectData.BodyLength * 0.7);
 
-        this.#tailWidth = random(20, 30);
-        this.#tailHeight = random(3, 6);
-        this.#tailLength = random(20, 40);
-        this.#tailAngle = random(-PI / 4, -PI / 12);
+        // HEAD
+        ProjectData.HeadWidth = random(ProjectData.BodyWidth * 0.7, ProjectData.BodyWidth * 0.8);
+        ProjectData.HeadHeight = random(ProjectData.BodyHeight * 0.6, ProjectData.BodyHeight * 0.7);
+        ProjectData.HeadLength = random(ProjectData.HeadWidth * 0.9, ProjectData.HeadWidth * 1.1);
 
+        // BEAK
+        ProjectData.BeakWidth = random(ProjectData.HeadWidth * 0.3, ProjectData.HeadWidth * 0.6);
+        ProjectData.BeakHeight = random(2, 6);
+        ProjectData.BeakLength = random(12, 24);
+
+        // TAIL
+        ProjectData.TailWidth = random(20, 30);
+        ProjectData.TailHeight = random(3, 6);
+        ProjectData.TailLength = random(20, 40);
+        ProjectData.TailAngle = random(-PI / 4, -PI / 12);
+
+        // LEGS
+        ProjectData.LegHeight = random(20, 50);
+        ProjectData.LegSpacing = random(ProjectData.BodyWidth * 0.4, ProjectData.BodyWidth * 0.8);
+        ProjectData.LegFingerLength = random(10, 30);
+        ProjectData.LegFingerAngle = random(PI / 6, PI / 3); // IN RADIANS
     }
 
     static draw() {
 
-        // if (this.#legsHeight >= 10)
-        //     this.#legsHeight -= 1;
-
         this.#drawHead();
 
-        if (this.#drawSpecificPart)
-            this.#drawBody();
+        this.#drawBody();
+
         this.#drawTail();
 
         this.#drawLegs();
@@ -70,12 +57,30 @@ class Duck {
     static #drawHead() {
         push();
 
-        translate(0, -(this.#legsHeight + this.#bodyHeight / 2 + this.#platformHeight), 0);
-        translate(0, -(this.#headHeight + this.#bodyHeight) / 2, this.#bodyLength * 0.4);
-        fill(this.#bodyColor);
+        // HEAD
+        translate(0, -(ProjectData.LegHeight + ProjectData.BodyHeight / 2 + this.#platformHeight), 0);
+        translate(0, -(ProjectData.HeadHeight + ProjectData.BodyHeight) / 2, ProjectData.BodyLength * 0.4);
+        fill(ProjectData.BodyColor);
         strokeWeight(0.5);
 
-        box(this.#headWidth, this.#headHeight, this.#headLength);
+        box(ProjectData.HeadWidth, ProjectData.HeadHeight, ProjectData.HeadLength);
+
+        // BEAK
+        push();
+        translate(0, ProjectData.HeadHeight / 2 - 5, (ProjectData.HeadLength + ProjectData.BeakLength) / 2);
+        fill(ProjectData.BeakColor);
+        box(ProjectData.BeakWidth, ProjectData.BeakHeight, ProjectData.BeakLength);
+        pop();
+
+
+        // EYES
+        fill(0);
+        // LEFT
+        translate(-ProjectData.HeadWidth / 2, -ProjectData.HeadHeight / 2 + 10, ProjectData.HeadLength / 2 - 10);
+        box(5);
+        // RIGHT
+        translate(ProjectData.HeadWidth, 0, 0);
+        box(5);
 
         pop();
     }
@@ -83,11 +88,22 @@ class Duck {
     static #drawBody() {
 
         push();
-        translate(0, -(this.#legsHeight + this.#bodyHeight / 2 + this.#platformHeight), 0);
-        fill(this.#bodyColor);
+
+        // BODY
+        translate(0, -(ProjectData.LegHeight + ProjectData.BodyHeight / 2 + this.#platformHeight), 0);
+        fill(ProjectData.BodyColor);
         strokeWeight(0.5);
 
-        box(this.#bodyWidth, this.#bodyHeight, this.#bodyLength);
+        box(ProjectData.BodyWidth, ProjectData.BodyHeight, ProjectData.BodyLength);
+
+        // WINGS
+        fill(ProjectData.BodyColor);
+        // LEFT
+        translate(-ProjectData.BodyWidth / 2, (ProjectData.WingHeight - ProjectData.BodyHeight) * 0.5 + 5, ProjectData.BodyLength * 0.3 - ProjectData.WingLength / 2);
+        box(ProjectData.WingWidth, ProjectData.WingHeight, ProjectData.WingLength);
+        // RIGHT
+        translate(ProjectData.BodyWidth, 0, 0);
+        box(ProjectData.WingWidth, ProjectData.WingHeight, ProjectData.WingLength);
 
         pop();
     }
@@ -97,39 +113,39 @@ class Duck {
         strokeWeight(0.5);
 
         // Translate at body height
-        translate(0, -(this.#legsHeight + this.#bodyHeight - this.#tailHeight / 2 + this.#platformHeight), 0);
+        translate(0, -(ProjectData.LegHeight + ProjectData.BodyHeight - ProjectData.TailHeight / 2 + this.#platformHeight), 0);
         // Translate at body end
-        translate(0, 0, -(this.#bodyLength + this.#tailLength) / 2);
+        translate(0, 0, -(ProjectData.BodyLength + ProjectData.TailLength) / 2);
         // Translate for start tail rotation
-        translate(0, this.#tailLength / 3, this.#tailLength);
+        translate(0, ProjectData.TailLength / 3, ProjectData.TailLength);
 
         // Rotate around tail start
-        rotateX(this.#tailAngle);
+        rotateX(ProjectData.TailAngle);
 
         // // Rever rotation translation
-        translate(0, 0, -this.#tailLength);
+        translate(0, 0, -ProjectData.TailLength);
 
 
-        fill(this.#bodyColor);
+        fill(ProjectData.BodyColor);
         strokeWeight(0.3);
 
-        box(this.#tailWidth, this.#tailHeight, this.#tailLength);
+        box(ProjectData.TailWidth, ProjectData.TailHeight, ProjectData.TailLength);
 
         pop();
     }
 
     static #drawLegs() {
         push();
-        translate(0, -(this.#platformHeight + this.#legsHeight / 2) - 1, 0);
+        translate(0, -(this.#platformHeight + ProjectData.LegHeight / 2) - 1, 0);
 
         // translate(0, -(10 + this.#legsHeight / 2) - 1, -20);
         noStroke();
-        fill(this.#legsColor);
+        fill(ProjectData.LegColor);
 
-        translate(-this.#legsSpacing / 2, 0, 0);
+        translate(-ProjectData.LegSpacing / 2, 0, 0);
         this.#drawLeg();
 
-        translate(this.#legsSpacing, 0, 0);
+        translate(ProjectData.LegSpacing, 0, 0);
         this.#drawLeg();
 
         pop();
@@ -137,38 +153,37 @@ class Duck {
 
     static #drawLeg() {
 
-        const halfLegsHeight = this.#legsHeight / 2;
+        const halfLegsHeight = ProjectData.LegHeight / 2;
 
-        cylinder(this.#legsRadius, this.#legsHeight, 10, 1);
+        cylinder(this.#legRadius, ProjectData.LegHeight, 10, 1);
 
-        const leftFinger = Tools.rotatePoint(0, this.#legsFingerLength, this.#legsFingerAngle);
-        const rightFinger = Tools.rotatePoint(0, this.#legsFingerLength, -this.#legsFingerAngle);
-        fill(this.#legsColor);
+        const leftFinger = Tools.rotatePoint(0, ProjectData.LegFingerLength, ProjectData.LegFingerAngle);
+        const rightFinger = Tools.rotatePoint(0, ProjectData.LegFingerLength, -ProjectData.LegFingerAngle);
+        fill(ProjectData.LegColor);
 
         push();
         beginShape(LINES);
-        vertex(-this.#legsRadius, halfLegsHeight, 0);
+        vertex(-this.#legRadius, halfLegsHeight, 0);
 
         // LEFT FINGER
         vertex(leftFinger.x, halfLegsHeight, leftFinger.y);
 
         // CENTER FINGER
-        quadraticVertex(leftFinger.x / 2, halfLegsHeight, this.#legsFingerLength * 0.3, 0, halfLegsHeight, this.#legsFingerLength);
+        quadraticVertex(leftFinger.x / 2, halfLegsHeight, ProjectData.LegFingerLength * 0.3, 0, halfLegsHeight, ProjectData.LegFingerLength);
 
         // RIGHT FINGER
-        quadraticVertex(rightFinger.x / 2, halfLegsHeight, this.#legsFingerLength * 0.3, rightFinger.x, halfLegsHeight, rightFinger.y)
+        quadraticVertex(rightFinger.x / 2, halfLegsHeight, ProjectData.LegFingerLength * 0.3, rightFinger.x, halfLegsHeight, rightFinger.y)
 
-        vertex(this.#legsRadius, halfLegsHeight, 0);
-        vertex(-this.#legsRadius, halfLegsHeight, 0);
+        vertex(this.#legRadius, halfLegsHeight, 0);
+        vertex(-this.#legRadius, halfLegsHeight, 0);
         endShape(CLOSE);
 
         strokeWeight(2);
-        stroke(this.#legsFingerColor);
+        stroke(ProjectData.LegFingerColor);
         line(0, halfLegsHeight, 0, leftFinger.x, halfLegsHeight, leftFinger.y)
-        line(0, halfLegsHeight, 0, 0, halfLegsHeight, this.#legsFingerLength)
+        line(0, halfLegsHeight, 0, 0, halfLegsHeight, ProjectData.LegFingerLength)
         line(0, halfLegsHeight, 0, rightFinger.x, halfLegsHeight, rightFinger.y)
 
         pop();
     }
-
 }

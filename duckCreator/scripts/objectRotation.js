@@ -2,6 +2,8 @@ class ObjectRotation {
 
     static #angle = -Math.PI / 6;
     static #angleSmoothed = -Math.PI / 2;
+    // static #angle = 0;
+    // static #angleSmoothed = 0;
 
     static #lerpAmount = 0.02;
     static #wheelMultiplier = 0.005;

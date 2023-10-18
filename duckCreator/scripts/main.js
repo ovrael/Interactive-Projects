@@ -5,6 +5,9 @@ let canvas;
 let projectDataBackUp = Object.entries(ProjectData);
 
 let fontMontserrat;
+let counter;
+let counterChange = 0.01;
+let usedSlider = false;
 
 const offsetY = 120;
 
@@ -21,7 +24,8 @@ function setup() {
     textAlign(CENTER, CENTER);
     textFont(fontMontserrat);
 
-    Duck.init();
+    Duck.random();
+    counter = 0;
 
     centerCanvas();
 }
@@ -36,9 +40,16 @@ function draw() {
     ObjectRotation.update();
     ObjectRotation.applyRotation();
 
+    if (counter >= 60) {
+        Duck.random();
+        counter = 0;
+    }
+
+
     Duck.draw();
 
     drawPlatform();
+    counter += counterChange;
 }
 
 function drawText() {
@@ -52,32 +63,50 @@ function drawText() {
 }
 
 function mouseWheel(event) {
-    return ObjectRotation.mouseWheel(event);
+
+    if (!usedSlider)
+        return ObjectRotation.mouseWheel(event);
 }
 
 function mouseDragged(event) {
 
-    if (event.buttons === 1)
-        return ObjectRotation.mouseDrag(event);
+    if (event.buttons >= 1) {
+        if (!usedSlider) {
+            cursor('grab');
+            ObjectRotation.mousePressed();
+            ObjectRotation.mouseDrag(event);
+        }
+    }
 }
 
 function mousePressed(event) {
 
-
     if (event.button === 0) {
-        ObjectRotation.mousePressed();
-        return;
+        if (!usedSlider) {
+            cursor('grab');
+        }
     }
 
     if (event.button === 1) {
-        Duck.init();
-        return;
+        if (!usedSlider) {
+            Duck.random();
+        }
     }
 
     if (event.button === 2) {
-        Duck.toggleDrawing();
+        if (!usedSlider) {
+            cursor('grab');
+        }
     }
+}
 
+function mouseReleased() {
+    cursor(ARROW);
+    usedSlider = false;
+}
+
+function mouseOnCanvas() {
+    return mouseX >= 0 && mouseX <= ProjectData.CanvasWidth && mouseY >= 0 && mouseY <= ProjectData.CanvasHeight;
 }
 
 function drawLight() {
